@@ -2,20 +2,76 @@
 #
 # [bans] enforces the crate boundaries of SPEC-0001 section 4.4: a denied crate
 # may be a direct dependency only of the crates listed in its `wrappers`.
-# Run: cargo deny check bans
+# Run: cargo deny check
 #
 # Wrappers already name the final owners, so "unmatched wrapper" warnings are
 # expected until WP-0.2 moves the PoC code into its crates.
 #
-# WP-0.4 adds [licenses] (ADR-0022) and [advisories] and runs `cargo deny check`
-# in CI.
+# [licenses] implements ADR-0022. [advisories], [sources], and [bans] are all
+# checked in CI together with the frontend and Rust build gates.
 
 [graph]
 all-features = true
 
+[licenses]
+# Exactly the licenses allowed by ADR-0022. Other licenses require a reviewed,
+# per-crate exception below; forbidden copyleft licenses must not be excepted.
+allow = [
+    "MIT",
+    "Apache-2.0",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Zlib",
+    "Unicode-3.0",
+    "MPL-2.0",
+    "CC0-1.0",
+    "CC-BY-4.0",
+]
+
+# Needs maintainer approval (H4): bzip2's permissive license, via zip/bzip2.
+[[licenses.exceptions]]
+crate = "libbz2-rs-sys"
+allow = ["bzip2-1.0.6"]
+
+# Needs maintainer approval (H4): Apache-2.0 with the LLVM exception, via bindgen.
+[[licenses.exceptions]]
+crate = "target-lexicon"
+allow = ["Apache-2.0 WITH LLVM-exception"]
+
+# Needs maintainer approval (H4): Boost Software License 1.0, via notify.
+[[licenses.exceptions]]
+crate = "xxhash-rust"
+allow = ["BSL-1.0"]
+
+[advisories]
+# Vulnerability and notice advisories are always errors in cargo-deny 0.22.
+unmaintained = "all"
+unsound = "all"
+yanked = "deny"
+ignore = [
+    # Transitive through calamine; no compatible removal is available in WP-0.4.
+    { id = "RUSTSEC-2024-0370", reason = "Needs maintainer approval (H4); remove after `cargo update -p proc-macro-error` (orchestrator, after WP-0.2)" },
+    # Transitive through Tauri's GTK 0.18 stack; patched glib requires 0.20.
+    { id = "RUSTSEC-2024-0429", reason = "Needs maintainer approval (H4); remove after `cargo update -p glib` (orchestrator, after WP-0.2)" },
+    # Transitive through tokenizers; upstream still uses the archived crate.
+    { id = "RUSTSEC-2024-0436", reason = "Needs maintainer approval (H4); remove after `cargo update -p paste` (orchestrator, after WP-0.2)" },
+    # Transitive through tauri-plugin-opener's zbus 5 stack; zbus 6 absorbs it.
+    { id = "RUSTSEC-2026-0370", reason = "Needs maintainer approval (H4); remove after `cargo update -p zvariant` (orchestrator, after WP-0.2)" },
+    { id = "RUSTSEC-2026-0371", reason = "Needs maintainer approval (H4); remove after `cargo update -p zbus_names` (orchestrator, after WP-0.2)" },
+    { id = "RUSTSEC-2026-0372", reason = "Needs maintainer approval (H4); remove after `cargo update -p zvariant_derive` (orchestrator, after WP-0.2)" },
+    # Transitive through pdfium-render; replacing chrono requires an upstream update.
+    { id = "RUSTSEC-2026-0543", reason = "Needs maintainer approval (H4); remove after `cargo update -p chrono` (orchestrator, after WP-0.2)" },
+]
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+
 [bans]
-multiple-versions = "allow" # duplicate-version policy is decided in WP-0.4
-wildcards = "allow"         # workspace path dependencies carry no version
+multiple-versions = "warn" # surface duplicates without blocking independent updates
+wildcards = "allow"        # workspace path dependencies carry no version
 
 deny = [
     # --- Internal dependency matrix -------------------------------------
