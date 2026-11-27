@@ -1,9 +1,9 @@
 """Local-LLM drafts for ``conceptual``, ``exploratory``, and ``cross_language``.
 
 These categories exist to measure semantic paraphrase and pt<->en transfer, so a
-template must never draft them (SPEC-0004 0.3). The pinned Qwen2.5-1.5B-Instruct
-GGUF runs through llama.cpp as a local subprocess: no network, no hosted API,
-model body text never leaves the machine.
+template must never draft them (SPEC-0004 0.3). The pinned local instruct model
+(Qwen3-0.6B by default) runs through llama.cpp as a subprocess: no network, no
+hosted API, model body text never leaves the machine.
 """
 
 from __future__ import annotations
@@ -14,6 +14,7 @@ import unicodedata
 from . import config
 from .corpus import Corpus, Document, tokenize
 from .guard import guard_violation
+from .language import build_lexicons, detect_language
 from .model import ModelError, Runner, prompt_sha256
 from .templates import TEXT_FORMATS, Draft, slice_for_language
 
@@ -102,10 +103,13 @@ def slug_label(text: str, fallback: str = "general") -> str:
 
 
 class LlmDrafter:
+    QUERY_ATTEMPTS = 5
+
     def __init__(self, corpus: Corpus, runner: Runner, model: config.ModelPin = config.DEFAULT_MODEL) -> None:
         self.corpus = corpus
         self.runner = runner
         self.model = model
+        self.lexicons = build_lexicons(corpus)
 
     # -- prompts ---------------------------------------------------------
 
@@ -233,34 +237,66 @@ class LlmDrafter:
     # -- generation ------------------------------------------------------
 
     def _ask_query(self, category: str, doc: Document, query_language: str) -> tuple[str, str]:
-        prompt, digest = self._query_prompt(category, doc, query_language)
+        """Return a query that passes the language, identifier, and copy gates.
+
+        A failing attempt stays on the same target with a specific correction
+        instruction; the gate never relaxes. Exhausting the budget raises
+        ``DraftError`` so the caller can exclude the target and backfill.
+        """
+
+        prompt, _ = self._query_prompt(category, doc, query_language)
+        expected = query_language.split("-")[0]
+        language_name = _LANGUAGE_NAMES[query_language]
+        feedback = ""
         last = ""
-        for attempt in range(3):
-            request = prompt if attempt == 0 else prompt + "\n\nYour previous reply was not valid JSON. Reply with the JSON object only."
-            try:
-                answer = self.runner.complete(request)
-            except ModelError as exc:
-                raise DraftError(str(exc)) from exc
+        for _ in range(self.QUERY_ATTEMPTS):
+            request = prompt + feedback
+            answer = self.runner.complete(request)
+            last = answer
             parsed = _json_object(answer)
             query = ""
             if parsed and isinstance(parsed.get("query"), str):
                 query = " ".join(parsed["query"].split()).strip()
             if not query:
                 query = _plain_query(answer)
-            if query:
-                return query, digest
-            last = answer
-        raise DraftError(f"the model returned no usable query (last reply: {last[:120]!r})")
+            if not query:
+                feedback = (
+                    "\n\nYour previous reply was not valid JSON. "
+                    "Reply with the JSON object only."
+                )
+                continue
+            if _looks_like_identifier(query, doc.id):
+                feedback = (
+                    "\n\nDo not repeat the document identifier. Write a search query in "
+                    f"{language_name} instead."
+                )
+                continue
+            violation = guard_violation(query, [doc.title, doc.text], config.GUARD)
+            if violation is not None:
+                feedback = (
+                    f"\n\nYour previous answer copied the document ({violation}). Rewrite "
+                    "the query with different words and never reuse a phrase from the text."
+                )
+                continue
+            detected = detect_language(query, self.lexicons)
+            if detected != expected:
+                feedback = (
+                    f"\n\nYour previous answer was not written in {language_name}. "
+                    f"Write the query only in {language_name}."
+                )
+                continue
+            return query, prompt_sha256(category, "query", request, self.model)
+        raise DraftError(
+            f"no {expected} query passed the language and no-copy gates for {doc.id} "
+            f"(last reply: {last[:120]!r})"
+        )
 
     def _ask_grades(self, category: str, query: str, candidates: list[Document]) -> tuple[dict[str, int], str]:
         prompt, mapping = self._grade_prompt(category, query, candidates)
         digest = prompt_sha256(category, "grade", prompt, self.model)
         for attempt in range(3):
             request = prompt if attempt == 0 else prompt + "\n\nYour previous reply was not valid JSON. Reply with the JSON object only."
-            try:
-                answer = self.runner.complete(request)
-            except ModelError as exc:
-                raise DraftError(str(exc)) from exc
+            answer = self.runner.complete(request)
             parsed = _json_object(answer)
             if not parsed or not isinstance(parsed.get("grades"), list):
                 continue
@@ -306,18 +342,8 @@ class LlmDrafter:
             anchor = pool[index]
 
             try:
-                query, query_digest = self._ask_query(category, anchor, query_language)
+                text, query_digest = self._ask_query(category, anchor, query_language)
             except DraftError:
-                continue
-            text = " ".join(query.split())
-            violation = guard_violation(
-                text,
-                [anchor.title, anchor.text],
-                config.GUARD,
-            )
-            if violation is not None:
-                continue
-            if _looks_like_identifier(text, anchor.id):
                 continue
             if text.casefold() in used:
                 continue

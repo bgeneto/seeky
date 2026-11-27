@@ -23,50 +23,9 @@ from pathlib import Path
 from . import config
 from .corpus import Corpus, tokenize
 from .guard import guard_violation
+from .language import build_lexicons, detect_language
 from .model import ModelError, Runner, prompt_sha256
 from .semantic import LlmDrafter, _json_object, _plain_query
-
-_PT = {"de", "da", "do", "das", "dos", "para", "com", "que", "não", "uma", "um", "em", "no", "na", "por"}
-_EN = {"the", "of", "with", "for", "and", "from", "in", "to", "on", "by", "a", "an", "is"}
-
-
-def build_lexicons(corpus: Corpus) -> dict[str, set[str]]:
-    """Word sets from the corpus per language, for a fair language check."""
-
-    from collections import Counter
-
-    documents: dict[str, Counter] = {"pt": Counter(), "en": Counter()}
-    for doc in corpus.documents.values():
-        lang = doc.lang
-        if lang not in documents:
-            continue
-        documents[lang].update(set(tokenize(doc.title + " " + doc.text)))
-    return {
-        lang: {word for word, count in counts.items() if count >= 3 and len(word) >= 3}
-        for lang, counts in documents.items()
-    }
-
-
-def detect_language(text: str, lexicons: dict[str, set[str]] | None = None) -> str:
-    tokens = tokenize(text)
-    folded = text.lower()
-    if lexicons:
-        scores = {
-            lang: sum(1 for token in tokens if token in words)
-            for lang, words in lexicons.items()
-        }
-        if scores["pt"] != scores["en"]:
-            return "pt" if scores["pt"] > scores["en"] else "en"
-        if any(ch in folded for ch in "ãõçáéíóúâêôà"):
-            return "pt"
-        return "unknown"
-    pt = sum(1 for token in tokens if token in _PT) + (2 if any(ch in folded for ch in "ãõçáéíóúâêôà") else 0)
-    en = sum(1 for token in tokens if token in _EN)
-    if pt > en:
-        return "pt"
-    if en > pt:
-        return "en"
-    return "unknown"
 
 
 def _spread(corpus: Corpus, category: str, lang: str, count: int, drafter: LlmDrafter):

@@ -184,10 +184,14 @@ class DraftedFixture(unittest.TestCase):
             if category in SEMANTIC
             for count in slices.values()
         )
-        summary = audit_directory(self.directory, check_minima=False)
+        summary = audit_directory(self.directory, check_minima=False, corpus_root=support.CORPUS)
         self.assertEqual(summary["queries"], expected)
         self.assertEqual(summary["llm_drafted"], llm)
         self.assertEqual(summary["tool_drafted"], expected - llm)
+        language = summary["language_copy"]
+        self.assertEqual(language["checked"], llm)
+        self.assertEqual(language["language_failures"], 0)
+        self.assertEqual(language["copy_failures"], 0)
 
     def test_generator_accepts_the_draft(self):
         # The generator requires the quarantined location bench/qrels/sdc/drafts/<id>.

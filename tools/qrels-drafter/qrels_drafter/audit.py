@@ -75,7 +75,7 @@ def _check_provenance(row: dict, *, category: str | None, slice_name: str | None
     if not isinstance(drafted_by, str) or not drafted_by:
         _fail(f"{where}: drafted_by is missing")
     if drafted_by.startswith("llm:"):
-        if drafted_by != config.DEFAULT_MODEL.drafted_by:
+        if drafted_by not in {profile.drafted_by for profile in config.PROFILES.values()}:
             _fail(f"{where}: unexpected model provenance {drafted_by}")
         if not re.fullmatch(r"[0-9a-f]{64}", str(provenance.get("llm_prompt_sha256"))):
             _fail(f"{where}: an LLM draft needs a lowercase SHA-256 llm_prompt_sha256")
@@ -143,6 +143,7 @@ def audit_rows(
     pools: list[dict],
     *,
     check_minima: bool = True,
+    corpus=None,
 ) -> dict:
     if not queries:
         _fail("the draft has no queries")
@@ -303,10 +304,71 @@ def audit_rows(
         "llm_drafted": sum(1 for origin in origins.values() if origin == "llm"),
         "tool_config_sha256": sorted(tool_hashes)[0] if tool_hashes else None,
         "llm_prompt_hashes": len(llm_hashes),
+        "language_copy": language_report(queries, documents, corpus) if corpus is not None else None,
     }
 
 
-def audit_directory(root: Path, *, check_minima: bool = True) -> dict:
+def language_report(queries: list[dict], documents: list[dict], corpus) -> dict:
+    """Per-LLM-query language and no-copy audit (WP-1.4 hard gates).
+
+    The expected language is the query's declared ``language``; the copy check
+    runs the same guard as drafting against every document the query grades 3
+    (the intended target and any judged relevant copy).
+    """
+
+    from .guard import guard_violation
+    from .language import build_lexicons, detect_language
+
+    lexicons = build_lexicons(corpus)
+    targets: dict[str, list[str]] = {}
+    for row in documents:
+        if row["grade"] == 3:
+            targets.setdefault(row["query_id"], []).append(row["document_id"])
+
+    rows: list[dict] = []
+    for query in queries:
+        if not query["provenance"]["drafted_by"].startswith("llm:"):
+            continue
+        expected = query["language"].split("-")[0]
+        detected = detect_language(query["text"], lexicons)
+        reason = None
+        for document_id in sorted(targets.get(query["_id"], [])):
+            document = corpus.documents.get(document_id)
+            if document is None:
+                continue
+            reason = guard_violation(query["text"], [document.title, document.text], config.GUARD)
+            if reason is not None:
+                break
+        rows.append(
+            {
+                "query_id": query["_id"],
+                "category": query["category"],
+                "expected_language": expected,
+                "detected_language": detected,
+                "language_ok": detected == expected,
+                "guard": reason,
+                "ok": detected == expected and reason is None,
+            }
+        )
+    language_failures = sum(1 for row in rows if not row["language_ok"])
+    copy_failures = sum(1 for row in rows if row["guard"] is not None)
+    summary = {
+        "checked": len(rows),
+        "language_failures": language_failures,
+        "copy_failures": copy_failures,
+        "failures": [
+            row for row in rows if not row["ok"]
+        ],
+    }
+    if language_failures or copy_failures:
+        _fail(
+            f"LLM language/copy audit failed: {language_failures} wrong-language and "
+            f"{copy_failures} copying queries"
+        )
+    return summary
+
+
+def audit_directory(root: Path, *, check_minima: bool = True, corpus_root: Path | None = None) -> dict:
     manifest = load_json(root / "judgment-set.json")
     if manifest.get("state") != "draft":
         _fail("only a quarantined draft is audited here")
@@ -314,10 +376,19 @@ def audit_directory(root: Path, *, check_minima: bool = True) -> dict:
     documents = read_jsonl(root / DRAFT_FILES[1])
     passages = read_jsonl(root / DRAFT_FILES[2])
     pools = read_jsonl(root / DRAFT_FILES[3])
+    corpus = None
+    if corpus_root is not None:
+        from .corpus import Corpus
+
+        corpus = Corpus.load(Path(corpus_root))
+        if corpus.corpus_hash not in manifest["compatible_corpus_hashes"]:
+            _fail("the corpus is not listed in compatible_corpus_hashes")
     expected = {
         "dev": sum(1 for query in queries if query["split"] == "dev"),
         "test": sum(1 for query in queries if query["split"] == "test"),
     }
     if manifest.get("query_counts") != expected:
         _fail("manifest query_counts disagree with the query records")
-    return audit_rows(queries, documents, passages, pools, check_minima=check_minima)
+    return audit_rows(
+        queries, documents, passages, pools, check_minima=check_minima, corpus=corpus
+    )

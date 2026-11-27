@@ -66,7 +66,10 @@ def _cmd_draft(args: argparse.Namespace) -> int:
 
 
 def _cmd_audit(args: argparse.Namespace) -> int:
-    summary = audit_directory(Path(args.set))
+    summary = audit_directory(
+        Path(args.set),
+        corpus_root=Path(args.corpus) if args.corpus else None,
+    )
     print(json.dumps(summary, sort_keys=True, separators=(",", ":")))
     return 0
 
@@ -211,6 +214,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     audit = commands.add_parser("audit", help="audit a quarantined draft directory")
     audit.add_argument("--set", required=True)
+    audit.add_argument("--corpus", default=None, help="also run the language and no-copy audit")
     audit.set_defaults(handler=_cmd_audit)
 
     verify = commands.add_parser("verify-model", help="check a pinned local model offline")
