@@ -993,6 +993,7 @@ corrections they name landed in the same commit.
 
 | Version | Date | Change |
 |---|---|---|
+| 0.1 | 2026-11-27 | WP-1.3 implemented R14: offline `judgments validate`, `freeze-split`, and `publish` with the canonical `bench/qrels/sdc/drafts` quarantine, schema/target-hash/provenance/minima/pool checks, immutable query digests, and atomic publication; R15-R27 remain with WP-1.4 |
 | 0.1 | 2026-11-27 | Accepted (maintainer pre-approval in /goal); resolved H1 questions 1-3 with the draft recommendations: documents-only default benchmarks, verified smoke judgments for WP-1.8, and isolated Python 3.12 tooling |
 | 0.1 | 2026-11-27 | WP-1.3 implemented R1-R13: deterministic licensed generator, all renderers/scans, injections, code root, atomic build/verify, committed `sdc-smoke`; R14 remains open for judgment commands and the external-source scope is still v1-synthetic-only |
 | 0.1 | 2026-11-27 | Initial Draft for WP-1.3/WP-1.4: deterministic licensed SDC generation, scale profiles, adversarial fixtures, nine query categories, graded document/passage judgments, provenance, human verification, pooling, and split/version protection. Visual WP-10.1 deferred to a later version |
