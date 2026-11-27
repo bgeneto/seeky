@@ -1,0 +1,47 @@
+{
+  "metrics-v1": {
+    "ndcg_10": {
+      "q1": 0.615610074011697,
+      "q2": 0.0,
+      "q3": 0.0,
+      "macro": 0.205203358003899
+    },
+    "mrr_10": {
+      "q1": 1.0,
+      "q2": 0.0,
+      "q3": 0.0,
+      "macro": 0.3333333333333333
+    },
+    "recall_10": {
+      "q1": 0.75,
+      "q2": 0.0,
+      "q3": 0.0,
+      "macro": 0.25
+    },
+    "success_1": {
+      "q1": 1.0,
+      "q2": 0.0,
+      "q3": 0.0,
+      "macro": 0.3333333333333333
+    }
+  },
+  "duplicates-v1": {
+    "duplicate_rate_5_qdup": 0.6,
+    "duplicate_rate_5_qclean": 0.0,
+    "macro": 0.3
+  },
+  "diversity-v1": {
+    "alpha_ndcg_10": 0.6827811756998109,
+    "distinct_relevant_2": 1,
+    "distinct_relevant_4": 3,
+    "subtopic_recall_2": 0.3333333333333333,
+    "subtopic_recall_4": 1.0,
+    "total_positive_subtopics": 3
+  },
+  "statistics-v1": {
+    "observed_mean_difference": 0.0725,
+    "randomization_extreme_count": 155,
+    "randomization_p_two_sided": 0.015598440155984402,
+    "bootstrap_ci95": [0.04, 0.1075]
+  }
+}
