@@ -104,6 +104,7 @@ pub(crate) fn run(
             ocr: None,
             visual: None,
             energy: None,
+            warnings: Vec::new(),
         }),
         comparisons: Vec::new(),
         gates: Vec::new(),

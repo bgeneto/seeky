@@ -28,10 +28,11 @@ pub use metrics::{
 pub use report::{
     Artifacts, CommitInfo, ComparisonMetric, ComparisonReport, DatasetInfo, Decision,
     DecisionStatus, DiversitySummary, DuplicateSummary, GateResult, GateStatus, IndexingMetrics,
-    InterferenceRatio, LatencyMetrics, ModelInfo, PerformanceReport, QualityReport, QueryMetrics,
-    Report, ReportKind, ReportMetadata, ResourceMetrics, SCHEMA_VERSION, SearchMeasurement,
-    SearchableLatency, SliceGroups, SliceMetrics, StartupMetrics, SystemInfo, TimeToSearchable,
-    ToolInfo, render_markdown, write_report_json, write_report_markdown,
+    InterferenceRatio, LatencyMetrics, ModelInfo, PerformanceReport, QualityReport,
+    QueryEmbeddingMetrics, QueryMetrics, Report, ReportKind, ReportMetadata, ResourceMetrics,
+    SCHEMA_VERSION, SearchMeasurement, SearchableLatency, SliceGroups, SliceMetrics,
+    StartupMetrics, SystemInfo, TimeToSearchable, ToolInfo, render_markdown, write_report_json,
+    write_report_markdown,
 };
 pub use run::{
     ChunkHit, MappedChunkRun, Run, RunRow, RunTarget, map_chunk_run, read_trec_run, write_trec_run,
