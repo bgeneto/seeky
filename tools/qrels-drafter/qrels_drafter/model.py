@@ -114,12 +114,15 @@ def llama_cpp_runner(
     model_path: str,
     model: config.ModelPin = config.DEFAULT_MODEL,
     threads: int = 8,
+    gpu_layers: int = 0,
 ) -> Runner:
     decode = model.decode
     command = [
         cli,
         "-m",
         model_path,
+        "-ngl",
+        str(gpu_layers),
         "-n",
         str(decode["max_tokens"]),
         "--temp",

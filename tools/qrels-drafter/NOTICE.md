@@ -59,6 +59,14 @@ No socket, HTTP client, or hosted API is used for drafting. Only the explicit
 above. The generated prompts, corpus excerpts, and model replies stay on the
 machine.
 
+## Development acceleration
+
+The drafting run may use the CUDA 12.4 build of the same llama.cpp release with
+`--gpu-layers 99`; it is optional local development acceleration, is not
+committed, is not a product component, and is not used to claim any product
+budget (ADR-0019 budgets remain CPU-only). The pinned model file, revision, and
+provenance are unchanged by the choice of runner build.
+
 ## Model revision check
 
 `python -m qrels_drafter verify-model` re-hashes the local weight file against

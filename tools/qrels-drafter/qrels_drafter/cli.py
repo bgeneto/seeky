@@ -57,7 +57,7 @@ def _cmd_draft(args: argparse.Namespace) -> int:
                 file=sys.stderr,
             )
             return 2
-        runner = llama_cpp_runner(args.llama_cli, str(model), profile, args.threads)
+        runner = llama_cpp_runner(args.llama_cli, str(model), profile, args.threads, args.gpu_layers)
     summary = run_draft(Path(args.corpus), Path(args.output), runner)
     if runner is not None:
         summary["model_calls"] = runner.calls
@@ -208,6 +208,12 @@ def build_parser() -> argparse.ArgumentParser:
     draft.add_argument("--model", default=None)
     draft.add_argument("--profile", default=config.DEFAULT_PROFILE, choices=sorted(config.PROFILES))
     draft.add_argument("--threads", type=int, default=8)
+    draft.add_argument(
+        "--gpu-layers",
+        type=int,
+        default=0,
+        help="llama.cpp -ngl; 99 offloads all layers to a CUDA dev runner",
+    )
     draft.add_argument("--llm-command", nargs="+", default=None)
     draft.add_argument("--templates-only", action="store_true")
     draft.set_defaults(handler=_cmd_draft)
