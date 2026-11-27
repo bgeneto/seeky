@@ -1,0 +1,24 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.venv/
+*.egg-info/
+build/
+dist/
+.coverage
+
+# Never keep model artifacts or generated data in the repository.
+artifacts/
+cache/
+models/
+outputs/
+*.onnx
+*.onnx_data
+*.safetensors
+*.gguf
+*.pdiparams
+*.pdmodel
+*.pth
+*.pt

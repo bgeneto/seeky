@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools==80.10.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "seeky-model-export"
+version = "0.1.0"
+description = "Offline ONNX export and WP-0.6 ORT gate tooling"
+requires-python = "==3.11.*"
+dependencies = []
+
+[project.scripts]
+seeky-model-export = "seeky_model_export.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--strict-config --strict-markers"
