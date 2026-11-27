@@ -340,6 +340,66 @@ pub fn load_dataset(
     }
 }
 
+/// Resolve and validate the corpus hash for `seeky-bench index`.
+///
+/// For BEIR datasets this runs full `dev` validation. For SDC corpora it
+/// validates the published judgment set when present; when H6 has not yet
+/// published a frozen judgment set, it validates the SDC corpus manifest and
+/// its five required sidecar files directly so indexing and `--queries-file`
+/// perf runs do not depend on frozen qrels.
+pub fn corpus_hash_for_index(corpus: &Corpus) -> Result<String> {
+    match corpus.kind {
+        CorpusKind::Beir => {
+            let dataset = load_dataset(corpus, Split::Dev, EvaluationConfiguration::Default, None)?;
+            Ok(dataset.corpus_hash)
+        }
+        CorpusKind::Sdc => {
+            if let Some(dir) = &corpus.judgment_dir
+                && dir.join("judgment-set.json").is_file()
+            {
+                let dataset =
+                    load_dataset(corpus, Split::Dev, EvaluationConfiguration::Default, None)?;
+                return Ok(dataset.corpus_hash);
+            }
+            let manifest_text =
+                std::fs::read_to_string(&corpus.manifest_path).map_err(|error| {
+                    Failure::dataset(format!("cannot read corpus manifest: {error}"))
+                })?;
+            let manifest: SdcManifest = serde_json::from_str(&manifest_text)
+                .map_err(|error| Failure::dataset(format!("invalid corpus manifest: {error}")))?;
+            if manifest.schema_version != 1 || manifest.corpus_id != corpus.id {
+                return Err(Failure::dataset(
+                    "SDC manifest does not match the corpus ID",
+                ));
+            }
+            if manifest.corpus_hash.len() != 64
+                || !manifest
+                    .corpus_hash
+                    .bytes()
+                    .all(|byte| byte.is_ascii_hexdigit())
+            {
+                return Err(Failure::dataset(
+                    "SDC manifest corpus_hash must be 64 hex characters",
+                ));
+            }
+            for sidecar in [
+                "corpus.jsonl",
+                "passages.jsonl",
+                "extraction-truth.jsonl",
+                "duplicate-clusters.jsonl",
+                "versions.jsonl",
+            ] {
+                if !corpus.root.join(sidecar).is_file() {
+                    return Err(Failure::dataset(format!(
+                        "SDC corpus is missing required sidecar {sidecar}"
+                    )));
+                }
+            }
+            Ok(manifest.corpus_hash)
+        }
+    }
+}
+
 /// Minimal dataset metadata and fixed dev queries needed by `seeky-bench perf`.
 #[derive(Clone, Debug)]
 pub struct PerfDataset {
