@@ -621,6 +621,16 @@ button {
   padding: 20px 20px 12px;
 }
 
+/* A long title or nowrap path must shrink, not push the close button out. */
+.preview-head > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.preview-head .icon-button {
+  flex-shrink: 0;
+}
+
 .preview-kicker,
 .eyebrow {
   color: var(--accent-2);
@@ -631,6 +641,7 @@ button {
 
 .preview h3 {
   margin: 6px 0 4px;
+  overflow-wrap: anywhere;
   font-size: 17px;
   letter-spacing: -0.02em;
 }
