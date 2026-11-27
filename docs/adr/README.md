@@ -46,3 +46,4 @@ Template: [`_template.md`](_template.md).
 | [0021](0021-no-generative-models-in-product.md) | No generative models in the shipped product | Accepted |
 | [0022](0022-permissive-license-gate.md) | Permissive-license gate for code, models, and data | Accepted |
 | [0023](0023-multimodal-ready-engine.md) | Multimodal-ready engine; visual retrieval as an optional, gated pack | Accepted |
+| [0024](0024-source-code-indexing-opt-in.md) | Source-code indexing is opt-in; source files are never opened directly | Accepted |

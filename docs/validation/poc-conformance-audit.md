@@ -72,6 +72,7 @@ closed, the Status field above becomes `Closed`.
 | A9 | `unsafe { std::env::set_var("PATH", …) }` without a `// SAFETY:` comment, in a multithreaded process | AGENTS.md §6 | Open → WP-0.2 (document or remove), WP-2.1 (load provider libraries by explicit path) |
 | A10 | No `query:`/`passage:` prefixes for an E5-derived model, and no measurement of the choice | [research note](../research/gety/models-and-inference.md) | Open → WP-1.7 (B0 ablation) |
 | A11 | Silent truncation: the NPU path truncates at 256 tokens while chunks are 1,200 characters, often longer | [inference and models §3](../architecture/inference-and-models.md) | Open → WP-2.10 (chunking), WP-5.2 (shape buckets) |
+| A12 | Source code is indexed by default, and a result can be opened with the OS default handler, which executes some source types (`.js`, `.py`, `.bat`) | [ADR-0024](../adr/0024-source-code-indexing-opt-in.md) | Open → WP-0.3 (source files are revealed, never opened; SPEC-0002 R7), WP-3.4 + WP-7.6 ("Index source code" setting, off by default) |
 
 ## 5. Implications for Phase 0
 

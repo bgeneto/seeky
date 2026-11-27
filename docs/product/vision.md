@@ -82,7 +82,8 @@ Derived principles (equally binding):
 - Local filesystem indexing (user-selected folders), with live watching and
   startup reconciliation.
 - Document extraction for the 20–30 most relevant formats (PDF, DOCX, XLSX,
-  PPTX, ODF, RTF, HTML, EPUB, e-mail files, Markdown, plain text, source code),
+  PPTX, ODF, RTF, HTML, EPUB, e-mail files, Markdown, plain text, and source
+  code when the user opts in — [ADR-0024](../adr/0024-source-code-indexing-opt-in.md)),
   with structure and source offsets.
 - Optional OCR for scanned PDFs and images (separately provisioned CPU asset
   pack); an opt-in GPU OCR pack only if its bake-off justifies it — never

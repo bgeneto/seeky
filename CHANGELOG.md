@@ -35,6 +35,9 @@ roadmap (§6), with the date.
 
 ### Product decisions
 
+- Source code is indexed only when the user turns on "Index source code"
+  (off by default), and source files are never opened with the OS default
+  handler; Seeky reveals them in the file manager instead (ADR-0024).
 - Seeky source is now MIT-licensed; no account or commercial license key is
   required.
 - Target distribution is a slim installer with first-run downloads of runtimes,

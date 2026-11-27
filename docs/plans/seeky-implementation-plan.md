@@ -247,7 +247,7 @@ S1/S2 met at `sdc-s` on T1 CPU-only; OCR finalists named.
 | 3.1 | Durable job queue, scheduler, resource governor (background priority, CPU share, search preemption, battery policy, memory ceiling) | SPEC-0007 | 2.4 | Scheduler + governor |
 | 3.2 | Two-speed pipeline: fast lane (metadata, lexical, filename, signatures) and semantic lane (dynamic batching by token length) | SPEC-0007 | 3.1, 2.12 | Pipeline; gates I1, I2, S5 |
 | 3.3 | Content-addressed embedding cache; rename/move/copy without re-embedding | SPEC-0007 | 3.2 | Gate I5 + cache hit-rate report |
-| 3.4 | Structured extraction (blocks, locators, offsets) for all formats; add ODT, RTF, EPUB, EML/MBOX; extractor bake-off where alternatives exist | SPEC-0008 | 2.4 | Extractors + fidelity report |
+| 3.4 | Structured extraction (blocks, locators, offsets) for all formats; add ODT, RTF, EPUB, EML/MBOX; extractor bake-off where alternatives exist; document vs source-code file classes with code indexing off by default ([ADR-0024](../adr/0024-source-code-indexing-opt-in.md)) | SPEC-0008 | 2.4 | Extractors + fidelity report |
 | 3.5 | Extraction hardening: timeouts, memory caps, panic isolation, `cargo-fuzz` targets per format, malformed-file corpus | SPEC-0008 | 3.4 | Fuzz targets in CI (time-boxed) |
 | 3.6 | Startup reconcile (parallel stat walk); bake-off of OS journals (USN, FSEvents) as accelerators | SPEC-0007 | 3.1 | Gate I4; ADR if a journal is adopted |
 | 3.7 | Index generations: background blue/green rebuild, promotion, garbage collection | SPEC-0006 | 3.2 | Model swap without search downtime |
@@ -319,7 +319,7 @@ contains user data (verified by traffic capture).
 | 7.3 | Progressive results UI over Tauri channels; stable reordering between stages; keyboard-first navigation; instant cancellation | SPEC-0014 | 4.3 | Search view v2 |
 | 7.4 | Folders view: lexical/semantic coverage, health, pause/resume, exclusions | SPEC-0014 | 3.2, 6.3 | Folders view |
 | 7.5 | Filters UI (folder, type, date, size) pushed into retrieval | SPEC-0014 | 4.2 | Filters |
-| 7.6 | Settings and advanced diagnostics (providers, models, generation, self-check) | SPEC-0014 | 5.1, 6.3 | Settings |
+| 7.6 | Settings and advanced diagnostics (providers, models, generation, self-check); "Index source code" control, off by default (ADR-0024) | SPEC-0014 | 5.1, 6.3 | Settings |
 | 7.7 | Preview with highlights; open file at locator where supported | SPEC-0014 | 4.10 | Preview |
 | 7.8 | Accessibility pass; component tests with mocked IPC; E2E smoke via WebDriver | SPEC-0014 | 7.1–7.7 | UI test suite |
 | 7.9 | Strict Content Security Policy | SPEC-0014 | 7.3 | CSP enabled |
