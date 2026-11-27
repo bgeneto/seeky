@@ -53,6 +53,8 @@ cargo deny check             # bans, licenses, advisories, sources
 cd apps\desktop
 npm run build
 npm run format:check      # Prettier; `npm run format` fixes
+npm run i18n:check        # en/pt catalog parity
+npm run test:unit         # frontend unit tests (node --test)
 ```
 
 `npm install` enables a pre-commit hook (`.githooks/pre-commit`) that checks
