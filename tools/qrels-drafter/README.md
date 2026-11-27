@@ -15,7 +15,7 @@ every relevance grade before any split can be frozen.
 | Drafter | Categories | Provenance |
 |---|---|---|
 | deterministic templates | `known_item`, `exact_identifier`, `needle_in_haystack`, `mixed_semantic_metadata`, `filename_partial`, `code_search` | `tool:qrels-drafter@0.1.0` + `tool_config_sha256` |
-| local instruct model | `conceptual`, `exploratory`, `cross_language` | `llm:qwen2.5-1.5b-instruct@91cad511…` + `llm_prompt_sha256` |
+| local instruct model | `conceptual`, `exploratory`, `cross_language` | `llm:qwen3-0.6b@23749fef…` + `llm_prompt_sha256` |
 
 A template may only copy corpus wording where copying is faithful (an
 identifier, a filename, a needle phrase, a title, a metadata filter). Semantic
@@ -29,28 +29,66 @@ no copied 5-token verbatim span, and at most 60 % content-token reuse
 
 ## Exact model and configuration
 
+Default profile `qwen3-0.6b` (chosen by the bake-off below):
+
 | Field | Value |
 |---|---|
-| Model | Qwen2.5-1.5B-Instruct, Apache-2.0 |
-| Revision | `91cad51170dc346986eccefdc2dd33a9da36ead9` |
-| Weight file | `qwen2.5-1.5b-instruct-q4_k_m.gguf` |
-| Weight SHA-256 | `6a1a2eb6d15622bf3c96857206351ba97e1af16c30d7a74ee38970e434e9407e` |
+| Model | Qwen3-0.6B, Apache-2.0 |
+| Revision | `23749fefcc72300e3a2ad315e1317431b06b590a` |
+| Weight file | `Qwen3-0.6B-Q8_0.gguf` (639,446,688 bytes) |
+| Weight SHA-256 | `9465e63a22add5354d9bb4b99e90117043c7124007664907259bd16d043bb031` |
+| Mode | non-thinking (`/no_think`, thinking blocks stripped defensively) |
+| Decode | temperature 0.7, top-p 0.8, top-k 20, presence penalty 1.5, seed 42, 200 tokens, 8 threads |
 | Runtime | llama.cpp `b12815` CPU x64, `llama-completion.exe` |
-| Decode | temperature 0, top-k 1, seed 42, 160 tokens, 8 threads |
 | Prompt version | `qrels-drafter-prompts-v1` (hashed per record) |
 | Seeds | draft `sdc-v1-draft-v1`, split `sdc-v1-split-v1` |
 
+Alternative profile `qwen2.5-1.5b-instruct` (kept for comparison and reuse:
+`--profile qwen2.5-1.5b-instruct`): Apache-2.0, revision
+`91cad51170dc346986eccefdc2dd33a9da36ead9`, `qwen2.5-1.5b-instruct-q4_k_m.gguf`,
+SHA-256 `6a1a2eb6d15622bf3c96857206351ba97e1af16c30d7a74ee38970e434e9407e`,
+greedy decoding (temperature 0, top-k 1, seed 42).
+
 Licenses, URLs, and archive digests are in [NOTICE.md](NOTICE.md).
+
+## Model choice (bounded bake-off, 2026-11-27)
+
+24 fixed prompts over `sdc-s` targets: 8 `conceptual`, 8 `cross_language`
+(pt↔en, both directions), 8 `exploratory`. One call per prompt (up to two
+JSON-repair retries), greedy sampling for Qwen2.5 and the card's non-thinking
+sampling for Qwen3. Raw rows: `bakeoff-2026-11-27.json`.
+
+| Model | Quant | Strict JSON | No copy | Language | Mean words | Median latency | Retries | Grade probe |
+|---|---|---:|---:|---:|---:|---:|---:|---:|
+| qwen2.5-1.5b-instruct | Q4_K_M | 24/24 | 23/24 | 14/24 | 4.2 | 2.12 s | 2 | 3/3 |
+| qwen3-0.6b | Q8_0 | 24/24 | 21/24 | 20/24 | 5.8 | 2.7 s | 0 | 3/3 |
+
+Decision rule, fixed before the numbers: both models must pass the validity
+(≥ 23/24), no-copy (≥ 20/24), and grading (3/3) gates; then the model with
+materially better language correctness (≥ 2 prompts ahead) wins; a tie goes to
+the smaller, faster model.
+
+**Decision: `qwen3-0.6b`.** Both pass every gate. Qwen3 is 6 of 24 ahead on
+language correctness — Qwen2.5-1.5B answered Portuguese prompts in English and
+reversed the translation direction on several `cross_language` prompts, which
+would corrupt the slice this category exists to measure. Qwen3's two extra
+copy rejections are replaced deterministically by the next anchor and cost
+latency, not quality. Qwen3 is the slower of the two here (2.7 s vs 2.12 s per
+call including a cold model load) because it writes longer queries; quality
+outranks that difference under the stated rule.
+
+The template categories are unaffected: they are tool-drafted in both profiles,
+and `tool_config_sha256` does not depend on the model.
 
 ## Setup (network used only by the explicit fetch)
 
 ```powershell
-# Downloads the pinned model and runner into %LOCALAPPDATA%\seeky-dev\llm and
-# verifies both SHA-256 pins. Run once; `draft` itself never opens a network.
+# Downloads the pinned models and runner into %LOCALAPPDATA%\seeky-dev\llm and
+# verifies every SHA-256 pin. Run once; `draft` itself never opens a network.
 $env:PYTHONPATH = "tools/qrels-drafter"
 python -m qrels_drafter fetch-model
-python -m qrels_drafter verify-model `
-  --model "$env:LOCALAPPDATA\seeky-dev\llm\qwen2.5-1.5b-instruct-q4_k_m.gguf"
+python -m qrels_drafter verify-model
+python -m qrels_drafter verify-model --profile qwen2.5-1.5b-instruct
 ```
 
 `fetch-model --dry-run` prints the pinned URLs without downloading. Nothing else
@@ -79,8 +117,8 @@ $env:PYTHONPATH = "tools/qrels-drafter"
 python -m qrels_drafter draft `
   --corpus bench/corpora/sdc/sdc-s `
   --output bench/qrels/sdc/drafts/sdc-v1 `
-  --llama-cli "$env:LOCALAPPDATA\seeky-dev\llm\llama.cpp-b12815\llama-completion.exe" `
-  --model "$env:LOCALAPPDATA\seeky-dev\llm\qwen2.5-1.5b-instruct-q4_k_m.gguf"
+  --profile qwen3-0.6b `
+  --llama-cli "$env:LOCALAPPDATA\seeky-dev\llm\llama.cpp-b12815\llama-completion.exe"
 
 python -m qrels_drafter audit --set bench/qrels/sdc/drafts/sdc-v1
 
@@ -141,7 +179,8 @@ committed-draft tests fail loudly if a record stops being an unverified draft.
 
 - The model is a 1.5B draft writer: its queries and grades are candidates for
   H6, not authority. Expect the reviewer to rewrite some wording.
-- Greedy decoding is reproducible on the same runner build and thread count, not
-  guaranteed across builds. The committed files are the artifact of record.
+- Greedy decoding (Qwen2.5) and fixed-seed sampling (Qwen3) are reproducible on
+  the same runner build and thread count, not guaranteed across builds. The
+  committed files are the artifact of record.
 - No pooling, no frozen hashes, no `test` exposure: the manifest stays
   `state: "draft"`, `test_exposure: "unexposed"`.

@@ -1,0 +1,902 @@
+{
+  "tasks": [
+    {
+      "category": "conceptual",
+      "anchor": "doc-contracts-pt-00001",
+      "language": "pt-BR",
+      "target": "pt"
+    },
+    {
+      "category": "conceptual",
+      "anchor": "doc-invoices-pt-01938",
+      "language": "pt-BR",
+      "target": "pt"
+    },
+    {
+      "category": "conceptual",
+      "anchor": "doc-manuals-pt-04914",
+      "language": "pt-BR",
+      "target": "pt"
+    },
+    {
+      "category": "conceptual",
+      "anchor": "doc-research-pt-00142",
+      "language": "pt-BR",
+      "target": "pt"
+    },
+    {
+      "category": "conceptual",
+      "anchor": "doc-contracts-en-00002",
+      "language": "en-US",
+      "target": "en"
+    },
+    {
+      "category": "conceptual",
+      "anchor": "doc-invoices-en-01774",
+      "language": "en-US",
+      "target": "en"
+    },
+    {
+      "category": "conceptual",
+      "anchor": "doc-manuals-en-04480",
+      "language": "en-US",
+      "target": "en"
+    },
+    {
+      "category": "conceptual",
+      "anchor": "doc-policy-en-07191",
+      "language": "en-US",
+      "target": "en"
+    },
+    {
+      "category": "cross_language",
+      "anchor": "doc-contracts-en-00002",
+      "language": "pt-BR",
+      "target": "en"
+    },
+    {
+      "category": "cross_language",
+      "anchor": "doc-contracts-pt-00001",
+      "language": "en-US",
+      "target": "pt"
+    },
+    {
+      "category": "cross_language",
+      "anchor": "doc-invoices-en-01774",
+      "language": "pt-BR",
+      "target": "en"
+    },
+    {
+      "category": "cross_language",
+      "anchor": "doc-invoices-pt-01938",
+      "language": "en-US",
+      "target": "pt"
+    },
+    {
+      "category": "cross_language",
+      "anchor": "doc-manuals-en-04480",
+      "language": "pt-BR",
+      "target": "en"
+    },
+    {
+      "category": "cross_language",
+      "anchor": "doc-manuals-pt-04914",
+      "language": "en-US",
+      "target": "pt"
+    },
+    {
+      "category": "cross_language",
+      "anchor": "doc-policy-en-07191",
+      "language": "pt-BR",
+      "target": "en"
+    },
+    {
+      "category": "cross_language",
+      "anchor": "doc-research-pt-00142",
+      "language": "en-US",
+      "target": "pt"
+    },
+    {
+      "category": "exploratory",
+      "anchor": "doc-contracts-pt-00001",
+      "language": "pt-BR",
+      "target": "pt"
+    },
+    {
+      "category": "exploratory",
+      "anchor": "doc-invoices-pt-01803",
+      "language": "pt-BR",
+      "target": "pt"
+    },
+    {
+      "category": "exploratory",
+      "anchor": "doc-manuals-pt-04809",
+      "language": "pt-BR",
+      "target": "pt"
+    },
+    {
+      "category": "exploratory",
+      "anchor": "doc-research-pt-00112",
+      "language": "pt-BR",
+      "target": "pt"
+    },
+    {
+      "category": "exploratory",
+      "anchor": "doc-contracts-en-00002",
+      "language": "en-US",
+      "target": "en"
+    },
+    {
+      "category": "exploratory",
+      "anchor": "doc-invoices-en-01669",
+      "language": "en-US",
+      "target": "en"
+    },
+    {
+      "category": "exploratory",
+      "anchor": "doc-manuals-en-04405",
+      "language": "en-US",
+      "target": "en"
+    },
+    {
+      "category": "exploratory",
+      "anchor": "doc-policy-en-07161",
+      "language": "en-US",
+      "target": "en"
+    }
+  ],
+  "models": {
+    "qwen2.5-1.5b-instruct": {
+      "model_id": "qwen2.5-1.5b-instruct",
+      "revision": "91cad51170dc346986eccefdc2dd33a9da36ead9",
+      "weight_sha256": "6a1a2eb6d15622bf3c96857206351ba97e1af16c30d7a74ee38970e434e9407e",
+      "quantization": "Q4_K_M GGUF",
+      "decode": {
+        "temperature": 0.0,
+        "top_k": 1,
+        "top_p": 1.0,
+        "presence_penalty": 0.0,
+        "seed": 42,
+        "max_tokens": 160
+      },
+      "queries": 24,
+      "strict_json": 24,
+      "no_copy": 23,
+      "language_ok": 14,
+      "mean_tokens": 4.2,
+      "median_latency_s": 2.12,
+      "retries": 2,
+      "grade_probe_valid": "3/3",
+      "rows": [
+        {
+          "category": "conceptual",
+          "anchor": "doc-contracts-pt-00001",
+          "language": "pt-BR",
+          "target": "pt",
+          "query": "manutenção preventiva trimestral",
+          "strict_json": true,
+          "attempts": 1,
+          "copy_violation": null,
+          "detected_language": "pt",
+          "language_ok": true,
+          "tokens": 3,
+          "latency": 2.17
+        },
+        {
+          "category": "conceptual",
+          "anchor": "doc-invoices-pt-01938",
+          "language": "pt-BR",
+          "target": "pt",
+          "query": "invoice 2020 001938",
+          "strict_json": true,
+          "attempts": 1,
+          "copy_violation": null,
+          "detected_language": "en",
+          "language_ok": false,
+          "tokens": 3,
+          "latency": 2.33
+        },
+        {
+          "category": "conceptual",
+          "anchor": "doc-manuals-pt-04914",
+          "language": "pt-BR",
+          "target": "pt",
+          "query": "manual steps for installing printer",
+          "strict_json": true,
+          "attempts": 1,
+          "copy_violation": null,
+          "detected_language": "en",
+          "language_ok": false,
+          "tokens": 5,
+          "latency": 2.1
+        },
+        {
+          "category": "conceptual",
+          "anchor": "doc-research-pt-00142",
+          "language": "pt-BR",
+          "target": "pt",
+          "query": "doc-research-pt-00142",
+          "strict_json": true,
+          "attempts": 2,
+          "copy_violation": null,
+          "detected_language": "en",
+          "language_ok": false,
+          "tokens": 4,
+          "latency": 2.23
+        },
+        {
+          "category": "conceptual",
+          "anchor": "doc-contracts-en-00002",
+          "language": "en-US",
+          "target": "en",
+          "query": "termination contract terms",
+          "strict_json": true,
+          "attempts": 1,
+          "copy_violation": null,
+          "detected_language": "en",
+          "language_ok": true,
+          "tokens": 3,
+          "latency": 1.86
+        },
+        {
+          "category": "conceptual",
+          "anchor": "doc-invoices-en-01774",
+          "language": "en-US",
+          "target": "en",
+          "query": "invoice 2022 001774",
+          "strict_json": true,
+          "attempts": 1,
+          "copy_violation": null,
+          "detected_language": "en",
+          "language_ok": true,
+          "tokens": 3,
+          "latency": 2.11
+        },
+        {
+          "category": "conceptual",
+          "anchor": "doc-manuals-en-04480",
+          "language": "en-US",
+          "target": "en",
+          "query": "manual troubleshooting steps",
+          "strict_json": true,
+          "attempts": 1,
+          "copy_violation": null,
+          "detected_language": "en",
+          "language_ok": true,
+          "tokens": 3,
+          "latency": 2.3
+        },
+        {
+          "category": "conceptual",
+          "anchor": "doc-policy-en-07191",
+          "language": "en-US",
+          "target": "en",
+          "query": "internal standard code policy",
+          "strict_json": true,
+          "attempts": 1,
+          "copy_violation": null,
+          "detected_language": "en",
+          "language_ok": true,
+          "tokens": 4,
+          "latency": 1.9
+        },
+        {
+          "category": "cross_language",
+          "anchor": "doc-contracts-en-00002",
+          "language": "pt-BR",
+          "target": "en",
+          "query": "contrato de término CT-2020-00002",
+          "strict_json": true,
+          "attempts": 1,
+          "copy_violation": null,
+          "detected_language": "pt",
+          "language_ok": true,
+          "tokens": 6,
+          "latency": 2.54
+        },
+        {
+          "category": "cross_language",
+          "anchor": "doc-contracts-pt-00001",
+          "language": "en-US",
+          "target": "pt",
+          "query": "find document with maintenance contracts",
+          "strict_json": true,
+          "attempts": 1,
+          "copy_violation": null,
+          "detected_language": "en",
+          "language_ok": true,
+          "tokens": 5,
+          "latency": 2.09
+        },
+        {
+          "category": "cross_language",
+          "anchor": "doc-invoices-en-01774",
+          "language": "pt-BR",
+          "target": "en",
+          "query": "document system reconciliation",
+          "strict_json": true,
+          "attempts": 1,
+          "copy_violation": null,
+          "detected_language": "en",
+          "language_ok": false,
+          "tokens": 3,
+          "latency": 1.87
+        },
+        {
+          "category": "cross_language",
+          "anchor": "doc-invoices-pt-01938",
+          "language": "en-US",
+          "target": "pt",
+          "query": "invoice document INV-2020-001938",
+          "strict_json": true,
+          "attempts": 1,
+          "copy_violation": null,
+          "detected_language": "en",
+          "language_ok": true,
+          "tokens": 5,
+          "latency": 2.59
+        },
+        {
+          "category": "cross_language",
+          "anchor": "doc-manuals-en-04480",
+          "language": "pt-BR",
+          "target": "en",
+          "query": "manual troubleshooting code",
+          "strict_json": true,
+          "attempts": 1,
+          "copy_violation": null,
+          "detected_language": "en",
+          "language_ok": false,
+          "tokens": 3,
+          "latency": 1.89
+        },
+        {
+          "category": "cross_language",
+          "anchor": "doc-manuals-pt-04914",
+          "language": "en-US",
+          "target": "pt",
+          "query": "document on hardening network configurations",
+          "strict_json": true,
+          "attempts": 1,
+          "copy_violation": null,
+          "detected_language": "en",
+          "language_ok": true,
+          "tokens": 5,
+          "latency": 2.37
+        },
+        {
+          "category": "cross_language",
+          "anchor": "doc-policy-en-07191",
+          "language": "pt-BR",
+          "target": "en",
+          "query": "document policy review internal standard code",
+          "strict_json": true,
+          "attempts": 1,
+          "copy_violation": "copies a 5-token verbatim span",
+          "detected_language": "en",
+          "language_ok": false,
+          "tokens": 6,
+          "latency": 2.5
+        },
+        {
+          "category": "cross_language",
+          "anchor": "doc-research-pt-00142",
+          "language": "en-US",
+          "target": "pt",
+          "query": "compare RT-2023-0142 with previous studies",
+          "strict_json": true,
+          "attempts": 1,
+          "copy_violation": null,
+          "detected_language": "en",
+          "language_ok": true,
+          "tokens": 7,
+          "latency": 2.57
+        },
+        {
+          "category": "exploratory",
+          "anchor": "doc-contracts-pt-00001",
+          "language": "pt-BR",
+          "target": "pt",
+          "query": "contract service client beta",
+          "strict_json": true,
+          "attempts": 1,
+          "copy_violation": null,
+          "detected_language": "en",
+          "language_ok": false,
+          "tokens": 4,
+          "latency": 2.16
+        },
+        {
+          "category": "exploratory",
+          "anchor": "doc-invoices-pt-01803",
+          "language": "pt-BR",
+          "target": "pt",
+          "query": "invoices and payments",
+          "strict_json": true,
+          "attempts": 1,
+          "copy_violation": null,
+          "detected_language": "en",
+          "language_ok": false,
+          "tokens": 3,
+          "latency": 2.12
+        },
+        {
+          "category": "exploratory",
+          "anchor": "doc-manuals-pt-04809",
+          "language": "pt-BR",
+          "target": "pt",
+          "query": "technical procedure heating system",
+          "strict_json": true,
+          "attempts": 1,
+          "copy_violation": null,
+          "detected_language": "en",
+          "language_ok": false,
+          "tokens": 4,
+          "latency": 1.84
+        },
+        {
+          "category": "exploratory",
+          "anchor": "doc-research-pt-00112",
+          "language": "pt-BR",
+          "target": "pt",
+          "query": "exploratory research document",
+          "strict_json": true,
+          "attempts": 2,
+          "copy_violation": null,
+          "detected_language": "en",
+          "language_ok": false,
+          "tokens": 3,
+          "latency": 2.0
+        },
+        {
+          "category": "exploratory",
+          "anchor": "doc-contracts-en-00002",
+          "language": "en-US",
+          "target": "en",
+          "query": "contract amendment maintenance",
+          "strict_json": true,
+          "attempts": 1,
+          "copy_violation": null,
+          "detected_language": "en",
+          "language_ok": true,
+          "tokens": 3,
+          "latency": 1.9
+        },
+        {
+          "category": "exploratory",
+          "anchor": "doc-invoices-en-01669",
+          "language": "en-US",
+          "target": "en",
+          "query": "invoice delivery receipt debit note",
+          "strict_json": true,
+          "attempts": 1,
+          "copy_violation": null,
+          "detected_language": "en",
+          "language_ok": true,
+          "tokens": 5,
+          "latency": 2.02
+        },
+        {
+          "category": "exploratory",
+          "anchor": "doc-manuals-en-04405",
+          "language": "en-US",
+          "target": "en",
+          "query": "installation operation manuals ventilation",
+          "strict_json": true,
+          "attempts": 1,
+          "copy_violation": null,
+          "detected_language": "en",
+          "language_ok": true,
+          "tokens": 4,
+          "latency": 2.19
+        },
+        {
+          "category": "exploratory",
+          "anchor": "doc-policy-en-07161",
+          "language": "en-US",
+          "target": "en",
+          "query": "data protection business continuity records retention",
+          "strict_json": true,
+          "attempts": 1,
+          "copy_violation": null,
+          "detected_language": "en",
+          "language_ok": true,
+          "tokens": 6,
+          "latency": 1.87
+        }
+      ],
+      "grade_rows": [
+        {
+          "valid": true,
+          "grades": 4
+        },
+        {
+          "valid": true,
+          "grades": 4
+        },
+        {
+          "valid": true,
+          "grades": 4
+        }
+      ]
+    },
+    "qwen3-0.6b": {
+      "model_id": "qwen3-0.6b",
+      "revision": "23749fefcc72300e3a2ad315e1317431b06b590a",
+      "weight_sha256": "9465e63a22add5354d9bb4b99e90117043c7124007664907259bd16d043bb031",
+      "quantization": "Q8_0 GGUF",
+      "decode": {
+        "temperature": 0.7,
+        "top_k": 20,
+        "top_p": 0.8,
+        "presence_penalty": 1.5,
+        "seed": 42,
+        "max_tokens": 200
+      },
+      "queries": 24,
+      "strict_json": 24,
+      "no_copy": 21,
+      "language_ok": 20,
+      "mean_tokens": 5.8,
+      "median_latency_s": 2.7,
+      "retries": 0,
+      "grade_probe_valid": "3/3",
+      "rows": [
+        {
+          "category": "conceptual",
+          "anchor": "doc-contracts-pt-00001",
+          "language": "pt-BR",
+          "target": "pt",
+          "query": "serviço de manutenção predial",
+          "strict_json": true,
+          "attempts": 1,
+          "copy_violation": null,
+          "detected_language": "pt",
+          "language_ok": true,
+          "tokens": 4,
+          "latency": 2.94
+        },
+        {
+          "category": "conceptual",
+          "anchor": "doc-invoices-pt-01938",
+          "language": "pt-BR",
+          "target": "pt",
+          "query": "recibo de liquidação interna e valores fiscal",
+          "strict_json": true,
+          "attempts": 1,
+          "copy_violation": null,
+          "detected_language": "pt",
+          "language_ok": true,
+          "tokens": 7,
+          "latency": 2.52
+        },
+        {
+          "category": "conceptual",
+          "anchor": "doc-manuals-pt-04914",
+          "language": "pt-BR",
+          "target": "pt",
+          "query": "instalação de redes e suporte",
+          "strict_json": true,
+          "attempts": 1,
+          "copy_violation": null,
+          "detected_language": "pt",
+          "language_ok": true,
+          "tokens": 5,
+          "latency": 2.71
+        },
+        {
+          "category": "conceptual",
+          "anchor": "doc-research-pt-00142",
+          "language": "pt-BR",
+          "target": "pt",
+          "query": "relatório técnico RT-2023-0142 - limitação da observação",
+          "strict_json": true,
+          "attempts": 1,
+          "copy_violation": "copies a 5-token verbatim span",
+          "detected_language": "pt",
+          "language_ok": true,
+          "tokens": 8,
+          "latency": 2.81
+        },
+        {
+          "category": "conceptual",
+          "anchor": "doc-contracts-en-00002",
+          "language": "en-US",
+          "target": "en",
+          "query": "termination contract details",
+          "strict_json": true,
+          "attempts": 1,
+          "copy_violation": null,
+          "detected_language": "en",
+          "language_ok": true,
+          "tokens": 3,
+          "latency": 2.69
+        },
+        {
+          "category": "conceptual",
+          "anchor": "doc-invoices-en-01774",
+          "language": "en-US",
+          "target": "en",
+          "query": "document reconciliation details",
+          "strict_json": true,
+          "attempts": 1,
+          "copy_violation": null,
+          "detected_language": "en",
+          "language_ok": true,
+          "tokens": 3,
+          "latency": 2.72
+        },
+        {
+          "category": "conceptual",
+          "anchor": "doc-manuals-en-04480",
+          "language": "en-US",
+          "target": "en",
+          "query": "controlled document troubleshooting manual",
+          "strict_json": true,
+          "attempts": 1,
+          "copy_violation": null,
+          "detected_language": "en",
+          "language_ok": true,
+          "tokens": 4,
+          "latency": 2.75
+        },
+        {
+          "category": "conceptual",
+          "anchor": "doc-policy-en-07191",
+          "language": "en-US",
+          "target": "en",
+          "query": "policy review internal standard code",
+          "strict_json": true,
+          "attempts": 1,
+          "copy_violation": "copies a 5-token verbatim span",
+          "detected_language": "en",
+          "language_ok": true,
+          "tokens": 5,
+          "latency": 2.76
+        },
+        {
+          "category": "cross_language",
+          "anchor": "doc-contracts-en-00002",
+          "language": "pt-BR",
+          "target": "en",
+          "query": "term and conditions of contract reference",
+          "strict_json": true,
+          "attempts": 1,
+          "copy_violation": null,
+          "detected_language": "en",
+          "language_ok": false,
+          "tokens": 6,
+          "latency": 2.69
+        },
+        {
+          "category": "cross_language",
+          "anchor": "doc-contracts-pt-00001",
+          "language": "en-US",
+          "target": "pt",
+          "query": "maintenance schedule for services CT-2019-00001-A1-A3-A5",
+          "strict_json": true,
+          "attempts": 1,
+          "copy_violation": null,
+          "detected_language": "en",
+          "language_ok": true,
+          "tokens": 10,
+          "latency": 3.14
+        },
+        {
+          "category": "cross_language",
+          "anchor": "doc-invoices-en-01774",
+          "language": "pt-BR",
+          "target": "en",
+          "query": "document reconciliation invoice",
+          "strict_json": true,
+          "attempts": 1,
+          "copy_violation": null,
+          "detected_language": "en",
+          "language_ok": false,
+          "tokens": 3,
+          "latency": 2.72
+        },
+        {
+          "category": "cross_language",
+          "anchor": "doc-invoices-pt-01938",
+          "language": "en-US",
+          "target": "pt",
+          "query": "internal project classification document reference",
+          "strict_json": true,
+          "attempts": 1,
+          "copy_violation": null,
+          "detected_language": "en",
+          "language_ok": true,
+          "tokens": 5,
+          "latency": 2.73
+        },
+        {
+          "category": "cross_language",
+          "anchor": "doc-manuals-en-04480",
+          "language": "pt-BR",
+          "target": "en",
+          "query": "manual troubleshooting for MAN-2020-4480",
+          "strict_json": true,
+          "attempts": 1,
+          "copy_violation": null,
+          "detected_language": "en",
+          "language_ok": false,
+          "tokens": 6,
+          "latency": 2.77
+        },
+        {
+          "category": "cross_language",
+          "anchor": "doc-manuals-pt-04914",
+          "language": "en-US",
+          "target": "pt",
+          "query": "installation checklist for man-2021-4914",
+          "strict_json": true,
+          "attempts": 1,
+          "copy_violation": null,
+          "detected_language": "en",
+          "language_ok": true,
+          "tokens": 6,
+          "latency": 2.67
+        },
+        {
+          "category": "cross_language",
+          "anchor": "doc-policy-en-07191",
+          "language": "pt-BR",
+          "target": "en",
+          "query": "policy review internal standard code",
+          "strict_json": true,
+          "attempts": 1,
+          "copy_violation": "copies a 5-token verbatim span",
+          "detected_language": "en",
+          "language_ok": false,
+          "tokens": 5,
+          "latency": 2.84
+        },
+        {
+          "category": "cross_language",
+          "anchor": "doc-research-pt-00142",
+          "language": "en-US",
+          "target": "pt",
+          "query": "technical report identifier RT-2023-0142",
+          "strict_json": true,
+          "attempts": 1,
+          "copy_violation": null,
+          "detected_language": "en",
+          "language_ok": true,
+          "tokens": 6,
+          "latency": 2.86
+        },
+        {
+          "category": "exploratory",
+          "anchor": "doc-contracts-pt-00001",
+          "language": "pt-BR",
+          "target": "pt",
+          "query": "contratos de prestação de serviço e acordos de fornecimento",
+          "strict_json": true,
+          "attempts": 1,
+          "copy_violation": null,
+          "detected_language": "pt",
+          "language_ok": true,
+          "tokens": 9,
+          "latency": 2.62
+        },
+        {
+          "category": "exploratory",
+          "anchor": "doc-invoices-pt-01803",
+          "language": "pt-BR",
+          "target": "pt",
+          "query": "recibo de prestação e documentos relacionados",
+          "strict_json": true,
+          "attempts": 1,
+          "copy_violation": null,
+          "detected_language": "pt",
+          "language_ok": true,
+          "tokens": 6,
+          "latency": 2.28
+        },
+        {
+          "category": "exploratory",
+          "anchor": "doc-manuals-pt-04809",
+          "language": "pt-BR",
+          "target": "pt",
+          "query": "manual de operação técnico bomba de calor",
+          "strict_json": true,
+          "attempts": 1,
+          "copy_violation": null,
+          "detected_language": "pt",
+          "language_ok": true,
+          "tokens": 7,
+          "latency": 2.28
+        },
+        {
+          "category": "exploratory",
+          "anchor": "doc-research-pt-00112",
+          "language": "pt-BR",
+          "target": "pt",
+          "query": "estudo exploratório qualidade do ar interior",
+          "strict_json": true,
+          "attempts": 1,
+          "copy_violation": null,
+          "detected_language": "pt",
+          "language_ok": true,
+          "tokens": 6,
+          "latency": 2.35
+        },
+        {
+          "category": "exploratory",
+          "anchor": "doc-contracts-en-00002",
+          "language": "en-US",
+          "target": "en",
+          "query": "maintenance contract amendments",
+          "strict_json": true,
+          "attempts": 1,
+          "copy_violation": null,
+          "detected_language": "en",
+          "language_ok": true,
+          "tokens": 3,
+          "latency": 2.23
+        },
+        {
+          "category": "exploratory",
+          "anchor": "doc-invoices-en-01669",
+          "language": "en-US",
+          "target": "en",
+          "query": "service invoice client beta delivery receipt gamma group debit note process consulting",
+          "strict_json": true,
+          "attempts": 1,
+          "copy_violation": null,
+          "detected_language": "en",
+          "language_ok": true,
+          "tokens": 12,
+          "latency": 2.31
+        },
+        {
+          "category": "exploratory",
+          "anchor": "doc-manuals-en-04405",
+          "language": "en-US",
+          "target": "en",
+          "query": "gamma group installation guide",
+          "strict_json": true,
+          "attempts": 1,
+          "copy_violation": null,
+          "detected_language": "en",
+          "language_ok": true,
+          "tokens": 4,
+          "latency": 2.05
+        },
+        {
+          "category": "exploratory",
+          "anchor": "doc-policy-en-07161",
+          "language": "en-US",
+          "target": "en",
+          "query": "data protection business continuity policy",
+          "strict_json": true,
+          "attempts": 1,
+          "copy_violation": null,
+          "detected_language": "en",
+          "language_ok": true,
+          "tokens": 5,
+          "latency": 2.07
+        }
+      ],
+      "grade_rows": [
+        {
+          "valid": true,
+          "grades": 4
+        },
+        {
+          "valid": true,
+          "grades": 3
+        },
+        {
+          "valid": true,
+          "grades": 3
+        }
+      ]
+    }
+  },
+  "decision": {
+    "profile": "qwen3-0.6b",
+    "reason": "materially better language correctness at equal validity and no-copy within tolerance"
+  }
+}

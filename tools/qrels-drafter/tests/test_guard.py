@@ -17,9 +17,13 @@ class GuardTests(unittest.TestCase):
         self.assertIsNotNone(guard_violation(query, [TARGET], config.GUARD))
 
     def test_verbatim_span_is_rejected(self):
-        query = "scheduled intervention list annual inspection service harbour"
+        query = "annual inspection service for the harbour"
         reason = guard_violation(query, [TARGET], config.GUARD)
-        self.assertIsNotNone(reason)
+        self.assertEqual(reason, "copies a 5-token verbatim span")
+
+    def test_common_topic_words_are_not_a_copy(self):
+        # Keyword queries legitimately share topic words; only spans are copying.
+        self.assertIsNone(guard_violation("contract renewal inspection terms", [TARGET], config.GUARD))
 
     def test_paraphrase_with_new_wording_passes(self):
         query = "agreement extending yearly depot checks"

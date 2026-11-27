@@ -89,19 +89,24 @@ OTHER_LANGUAGES_MINIMUM = ("es", "fr", "de")
 GUARD = {
     "shingle_tokens": 8,
     "verbatim_tokens": 5,
-    "max_content_overlap_ratio": 0.6,
 }
 
 
 @dataclass(frozen=True)
 class ModelPin:
-    """An immutable local instruct model."""
+    """An immutable local instruct model profile."""
 
+    profile: str
+    repo: str
     model_id: str
     revision: str
     weight_sha256: str
+    weight_file: str
     license: str
     quantization: str
+    prompt_suffix: str
+    strip_think: bool
+    decode: dict
 
     @property
     def drafted_by(self) -> str:
@@ -109,23 +114,64 @@ class ModelPin:
 
     def as_dict(self) -> dict[str, object]:
         return {
+            "profile": self.profile,
+            "repo": self.repo,
             "model_id": self.model_id,
             "revision": self.revision,
             "weight_sha256": self.weight_sha256,
+            "weight_file": self.weight_file,
             "license": self.license,
             "quantization": self.quantization,
+            "decode": self.decode,
+            "prompt_suffix": self.prompt_suffix,
         }
 
 
-DEFAULT_MODEL = ModelPin(
+QWEN25_1_5B = ModelPin(
+    profile="qwen2.5-1.5b-instruct",
+    repo="Qwen/Qwen2.5-1.5B-Instruct-GGUF",
     model_id="qwen2.5-1.5b-instruct",
     revision="91cad51170dc346986eccefdc2dd33a9da36ead9",
     weight_sha256="6a1a2eb6d15622bf3c96857206351ba97e1af16c30d7a74ee38970e434e9407e",
+    weight_file="qwen2.5-1.5b-instruct-q4_k_m.gguf",
     license="Apache-2.0",
     quantization="Q4_K_M GGUF",
+    prompt_suffix="",
+    strip_think=False,
+    decode={
+        "temperature": 0.0,
+        "top_k": 1,
+        "top_p": 1.0,
+        "presence_penalty": 0.0,
+        "seed": 42,
+        "max_tokens": 160,
+    },
 )
 
-DECODE = {"temperature": 0.0, "seed": 42, "top_k": 1, "max_tokens": 160}
+QWEN3_0_6B = ModelPin(
+    profile="qwen3-0.6b",
+    repo="Qwen/Qwen3-0.6B-GGUF",
+    model_id="qwen3-0.6b",
+    revision="23749fefcc72300e3a2ad315e1317431b06b590a",
+    weight_sha256="9465e63a22add5354d9bb4b99e90117043c7124007664907259bd16d043bb031",
+    weight_file="Qwen3-0.6B-Q8_0.gguf",
+    license="Apache-2.0",
+    quantization="Q8_0 GGUF",
+    prompt_suffix=" /no_think",
+    strip_think=True,
+    decode={
+        "temperature": 0.7,
+        "top_k": 20,
+        "top_p": 0.8,
+        "presence_penalty": 1.5,
+        "seed": 42,
+        "max_tokens": 200,
+    },
+)
+
+PROFILES = {profile.profile: profile for profile in (QWEN25_1_5B, QWEN3_0_6B)}
+DEFAULT_PROFILE = "qwen3-0.6b"
+DEFAULT_MODEL = PROFILES[DEFAULT_PROFILE]
 
 
 def tool_config(corpus_hash: str) -> dict[str, object]:
