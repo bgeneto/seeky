@@ -4,9 +4,11 @@
 use seeky_engine::{Engine, EngineConfig, EngineEvents, IndexHealth, IndexProgress, SearchRequest};
 use serde::{Deserialize, Serialize};
 use std::error::Error;
+use std::fs::FileTimes;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex, OnceLock};
+use std::time::{Duration, UNIX_EPOCH};
 
 pub type TestResult = Result<(), Box<dyn Error>>;
 
@@ -199,9 +201,29 @@ pub fn write_documents(root: &Path, count: usize) -> Result<(), Box<dyn Error>> 
     Ok(())
 }
 
+fn golden_corpus(test_dir: &TestDir) -> Result<PathBuf, Box<dyn Error>> {
+    let source = std::fs::canonicalize(repo_path("apps/desktop/demo"))?;
+    // The filename channel matches the full indexed path. A synthetic stable
+    // parent reproduces the capture's "Documents" path component on every OS
+    // without depending on the runner's user profile.
+    let corpus = test_dir.join("Documents").join("demo");
+    std::fs::create_dir_all(&corpus)?;
+    let modified = UNIX_EPOCH + Duration::from_secs(1_700_000_000);
+    for entry in std::fs::read_dir(source)? {
+        let entry = entry?;
+        if entry.file_type()?.is_file() {
+            let destination = corpus.join(entry.file_name());
+            std::fs::copy(entry.path(), &destination)?;
+            let file = std::fs::OpenOptions::new().write(true).open(&destination)?;
+            file.set_times(FileTimes::new().set_modified(modified))?;
+        }
+    }
+    Ok(std::fs::canonicalize(corpus)?)
+}
+
 pub fn run_golden(mode: Mode) -> TestResult {
     let test_dir = TestDir::new(mode.name())?;
-    let demo = std::fs::canonicalize(repo_path("apps/desktop/demo"))?;
+    let demo = golden_corpus(&test_dir)?;
     let events = Arc::new(NoopEvents);
     let engine = match mode {
         Mode::Lexical => lexical_engine(&test_dir, events)?,
