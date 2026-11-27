@@ -250,8 +250,8 @@ Rules:
 
 ### 4.5 Store
 
-See [`04-data-model-and-storage.md`](../research/data-model-and-storage.md) and
-[`sql/minimal_rag_schema.sql`](../../sql/minimal-schema.sql).
+See [`04-data-model-and-storage.md`](../research/gety/data-model-and-storage.md) and
+[`sql/minimal_rag_schema.sql`](minimal-schema-python-era.sql).
 
 Minimum tables:
 

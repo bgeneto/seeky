@@ -26,7 +26,7 @@ flowchart LR
 ```
 
 The retrieval stages are specified in
-[`06-retrieval-ranking-and-reranking.md`](../research/retrieval-ranking-and-reranking.md).
+[`06-retrieval-ranking-and-reranking.md`](../research/gety/retrieval-ranking-and-reranking.md).
 This document covers the last three stages.
 
 ---

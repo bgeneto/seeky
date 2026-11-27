@@ -1,18 +1,13 @@
 # Research
 
-These documents are reverse-engineering research notes about the installed Gety
-application and the retrieval ideas that informed Seeky. They are not the active
-build contract and may contain illustrative snippets in languages or runtimes
-that Seeky does not use.
-
-The active implementation is Rust + Tauri + TypeScript. See
-[`../plans/seeky-implementation-plan.md`](../plans/seeky-implementation-plan.md).
+Non-binding background material. Nothing here is a build contract; when it
+disagrees with [`../product/vision.md`](../product/vision.md), the ADRs, or the
+architecture documents, those win. Code snippets may be in languages Seeky does
+not use.
 
 | Document | Topic |
 |---|---|
-| [`gety-verified-architecture.md`](gety-verified-architecture.md) | Verified Gety stack, processes, storage, search, APIs |
-| [`data-model-and-storage.md`](data-model-and-storage.md) | SQLite schema, vectors, storage tradeoffs |
-| [`models-and-inference.md`](models-and-inference.md) | Gety models, ONNX/OpenVINO formats, model strategy |
-| [`retrieval-ranking-and-reranking.md`](retrieval-ranking-and-reranking.md) | BM25, dense retrieval, fusion, reranking, evaluation |
-| [`glossary.md`](glossary.md) | Retrieval and inference terminology |
-| [`traditional-rag-vs-local-neural-information-retrieval.html`](traditional-rag-vs-local-neural-information-retrieval.html) | Supplied Portuguese technical report: RAG vs Local Neural IR, document/passage ranking, evaluation, ideal architecture |
+| [`traditional-rag-vs-local-neural-information-retrieval.html`](traditional-rag-vs-local-neural-information-retrieval.html) | Supplied report (Portuguese): why semantic file search is not RAG; document vs passage ranking; indexing; evaluation; reference architecture. Its conclusions are adopted in the architecture docs. |
+| [`gety/`](gety/README.md) | Clean-room reverse-engineering notes about the Gety desktop app that inspired Seeky |
+
+Seeky's own terminology is in [`../glossary.md`](../glossary.md).

@@ -1,11 +1,16 @@
-# Seeky Architecture
+# Architecture
 
-Design documents for the target product architecture. The current as-built code
-is described in [`apps/seeky/README.md`](../../apps/seeky/README.md); these
-documents define the target and the gaps to close.
+Target architecture of the Seeky engine and desktop shell. These documents are
+contracts: specs refine them, code implements them, and benchmark reports set
+their numeric defaults. The as-built PoC is described in
+[`../../apps/seeky/README.md`](../../apps/seeky/README.md).
 
-| Document | Purpose |
+| Document | Governs |
 |---|---|
-| [`retrieval-engine.md`](retrieval-engine.md) | SOTA hierarchical retrieval, aggregation, diversity, deduplication, length correction |
-| [`model-strategy.md`](model-strategy.md) | Multilingual model candidates, backend policy, evaluation gates |
-| [`distribution-and-provisioning.md`](distribution-and-provisioning.md) | Slim first-run downloads from Cloudflare R2, checksums, offline behavior |
+| [`overview.md`](overview.md) | Engine-first workspace, crate boundaries, engine API, concurrency, storage layout, shell contract |
+| [`indexing.md`](indexing.md) | Discovery, watcher, reconcile, extraction, chunking, two-speed indexing, embedding cache, index generations |
+| [`retrieval-engine.md`](retrieval-engine.md) | Query analysis, candidate generation, fusion, document layer, reranking, diversity, snippets, progressive stages |
+| [`inference-and-models.md`](inference-and-models.md) | ONNX Runtime, execution providers (CPU-first, NPU-ready), model manifest, lifecycle, quantization |
+| [`distribution-and-provisioning.md`](distribution-and-provisioning.md) | Slim installer, R2 assets, manifest, verification, offline use, updates |
+
+Decisions behind these documents are in [`../adr/`](../adr/README.md).

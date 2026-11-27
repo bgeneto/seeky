@@ -1,346 +1,258 @@
-# Seeky Retrieval Engine
+# Retrieval Engine
 
+| Field | Value |
+|---|---|
+| Status | Accepted target contract (stages exist; defaults are benchmark-owned) |
+| Date | 2026-11-27 (v2; supersedes v1 of 2026-11-26) |
+| Governs | Query analysis, candidate generation, fusion, ranking stages, snippets, progressive delivery |
+| Related | [ADR-0003](../adr/0003-hybrid-retrieval-rrf.md), [ADR-0013](../adr/0013-hierarchical-multilingual-retrieval.md), [methodology](../benchmarks/methodology.md), [candidates](../benchmarks/candidates.md) |
 
-Audience: Rust backend, ranking, and evaluation work
+The retrieval engine optimizes, in order: **finding the right documents**, then
+**showing the right passages**, then **avoiding redundancy** — while meeting
+interactive latency budgets on CPU. It is a cascade: cheap, high-recall stages
+first; expensive neural stages on a bounded candidate set; results delivered
+progressively.
 
-Seeky is a **Local Neural Information Retrieval Engine** for desktop files. The
-retrieval engine must optimize document discovery first, then passage quality,
-then diversity and redundancy, while remaining fast enough for interactive
-search on CPU and accelerated hardware.
-
-This document defines the target pipeline and the mechanisms that must be
-implemented and measured. It does not claim that every stage is in the current
-PoC.
-
-Source context: the supplied report
-[`traditional-rag-vs-local-neural-information-retrieval.html`](../research/traditional-rag-vs-local-neural-information-retrieval.html)
-discusses the distinction between RAG and local neural IR; this document is the
-English engineering contract.
+Every numeric value in this document is an **initial value for benchmarking**,
+not a final default. Final defaults live in `RankingConfig` and change only with
+a benchmark report.
 
 ## 1. Definitions
 
-- **Passage/chunk**: a contiguous span of extracted text with source offsets.
-- **Document**: one indexed file; may have many passages.
-- **Candidate set**: passages and documents produced by lexical, filename, and
-  dense retrievers before reranking.
-- **Reranker**: multilingual cross-encoder that scores `(query, passage)` pairs.
-- **Document aggregation**: a function that turns passage scores into a
-  document-level relevance score.
-- **Near-duplicate**: a document or passage that is substantially redundant with
-  another result, including repeated files, versions, boilerplate, or copies.
+| Term | Meaning |
+|---|---|
+| Passage | Contiguous span of extracted text with source offsets and a locator (page/slide/sheet/line) |
+| Document | One indexed file; one or more passages |
+| Candidate set | Passages/documents produced by first-stage retrievers |
+| Retriever | Filename/path, lexical (BM25), dense, and (gated) learned-sparse first-stage search |
+| Reranker | Multilingual cross-encoder scoring `(query, passage)` pairs |
+| Aggregation | Function mapping passage evidence to a document score |
+| Near-duplicate | Substantially redundant document/passage (copies, versions, boilerplate) |
+| Snippet engine | Query-aware extractive selection of original sentences for display (the search-engine "pruner") |
 
-## 2. Target pipeline
-
-```text
-Query
-  │
-  ├─ language/token analysis and filters
-  │
-  ├─ passage candidates
-  │    ├─ BM25 over FTS5
-  │    ├─ filename/path matches
-  │    └─ dense passage retrieval
-  │
-  ├─ document candidates
-  │    ├─ document aggregation
-  │    └─ hierarchical document retrieval
-  │
-  ├─ multilingual cross-encoder passage reranking
-  │
-  ├─ document-level score aggregation after reranking
-  │
-  ├─ per-document candidate limits
-  │
-  ├─ near-duplicate detection and collapsing
-  │
-  ├─ cross-document diversity
-  │
-  ├─ length-bias correction and calibrated fusion
-  │
-  └─ final document ranking + best passages + snippets
-```
-
-The stages are ordered so expensive neural work runs on a bounded candidate set,
-while cheap lexical and metadata signals can still rescue exact matches.
-
-## 3. Passage-level ranking
-
-### 3.1 Candidate generation
-
-- BM25: top 100 passages.
-- Dense passage retrieval: top 100 passages.
-- Filename/path: top 40 documents, first relevant passage per document.
-- Exact phrase and quoted searches: exact-match candidates are preserved even if
-  their dense score is low.
-- Candidate depth is configurable and benchmarked.
-
-### 3.2 Cross-encoder reranking
-
-- Rerank a bounded set of `(query, passage)` pairs, initially top 100–200.
-- The reranker must be multilingual.
-- Scores are calibrated per model/length bucket before fusion.
-- Reranker failure fails open to the fused pre-rerank ordering.
-- Batch size and sequence length are tuned per backend (CPU/CUDA/AMD/NPU).
-
-### 3.3 Passage limits
-
-- Default: at most 3 passages per document in the final presentation.
-- Optional configurable cap per document for power users; default stays small.
-- Passages below a minimum score or outside the query language distribution may
-  be dropped only after evaluation.
-
-### 3.4 Adaptive reranking and early exit
-
-- Use a cascaded retrieval funnel: cheap candidates first, cross-encoder only on
-  the bounded set.
-- Exact filename/identifier matches may skip or reduce reranking.
-- Ambiguous conceptual queries may receive a larger rerank budget.
-- The budget adapts to hardware, query type, and observed latency.
-- Every adaptive path must preserve deterministic fallback ordering.
-
-### 3.5 Multi-resolution indexing and embedding reuse
-
-- Retrieval units: document, section, passage, sentence.
-- Do not necessarily embed every level; start with passage embeddings plus
-  document aggregates, and derive sentence-level snippets at query time.
-- Hash normalized chunk content and reuse embeddings when the hash,
-  tokenizer revision, and model revision are unchanged.
-- Renaming or moving a file must not re-embed unchanged chunks.
-- An edited paragraph should ideally re-embed only affected chunks, subject to
-  stable segmentation.
-- Multiresolution embeddings are benchmark-gated; storage cost is a first-class
-  metric.
-
-### 3.6 Query-aware extractive snippets
-
-- The file-search equivalent of a pruner is a query-aware extractive snippet
-  engine, not a context compressor for an LLM.
-- Preserve original sentence boundaries, readability, and source offsets.
-- Return the best evidence passages, not a generated summary.
-- Highlight query terms without rewriting content.
-- Keep enough context to open the file at the right page/line when supported.
-
-## 4. Document-level score aggregation
-
-Document retrieval is a first-class stage, not a byproduct of sorting passages.
-
-### 4.1 Signals
-
-For each document:
-
-- `p_max`: best passage score.
-- `p_topk_mean`: mean of the top `k` passage scores.
-- `p_coverage`: fraction of query terms/aspects covered across passages.
-- `title_score`: filename/path relevance.
-- `lexical_score`: calibrated BM25 document signal.
-- `length_prior`: correction for document length.
-- `source_consensus`: agreement across independent retrievers.
-- `rerank_score`: aggregated cross-encoder evidence after reranking.
-
-### 4.2 Aggregation form
-
-A benchmarked weighted aggregation, initially:
+## 2. Pipeline
 
 ```text
-doc_score =
-    w_max      * normalize(p_max)
-  + w_topk     * normalize(p_topk_mean)
-  + w_coverage * p_coverage
-  + w_title    * normalize(title_score)
-  + w_consensus* normalize(source_consensus)
-  + w_length   * length_correction
+query
+  │
+  ├─ 0. Query analysis & routing (no LLM)
+  │      normalize · language ID · quoted phrases · identifiers · filename-like ·
+  │      inline filters (ext:, in:, date) · query class → stage budget
+  │
+  ├─ 1. Candidate generation (parallel)
+  │      filename/path ─┐
+  │      lexical BM25 ──┼─► fusion (RRF baseline) ─► passage candidates
+  │      dense ANN/flat ┘            │
+  │      [learned sparse: gated]     ▼
+  │                         ═══ Stage "Instant" emitted after filename+lexical ═══
+  │
+  ├─ 2. Document layer
+  │      group by document · per-document candidate cap · aggregation ·
+  │      exact/near-duplicate collapsing · length-bias correction
+  │                         ═══ Stage "Hybrid" emitted ═══
+  │
+  ├─ 3. Refinement (bounded, adaptive)
+  │      cross-encoder on best passages of top documents ·
+  │      document re-aggregation · diversity (MMR) · final per-document limits
+  │
+  └─ 4. Presentation
+         extractive snippets + highlights for visible results · locators
+                            ═══ Stage "Refined" emitted ═══
 ```
 
-Constraints:
+## 3. Query analysis and routing
 
-- Every component is normalized to a stable range before weighting.
-- Weights are tuned on the golden set, not guessed in production.
-- `w_max` prevents missing a single highly relevant passage; `w_topk` prevents a
-  one-chunk fluke from dominating.
-- Ablations must show which signals add value.
+Deterministic, sub-millisecond, multilingual:
 
-## 5. Hierarchical document retrieval
+- Unicode normalization; case folding and diacritic folding for lexical keys
+  (the original query is kept for dense/reranker input).
+- Quoted phrases → exact phrase constraints; must be preserved through every
+  stage (exact-match candidates are never dropped by neural stages).
+- **Identifier detection** (UUIDs, hashes, codes, version strings, e-mail-like
+  tokens, paths) → lexical/filename emphasis, dense optional.
+- **Filename-like detection** (extensions, path separators, camel/snake case) →
+  filename retriever emphasis.
+- Inline filters: `ext:pdf`, `in:<folder>`, date expressions (pt/en) → metadata
+  pre-filters pushed into every retriever (filtering after retrieval destroys
+  recall).
+- Query class (navigational / identifier / conceptual / mixed) sets the stage
+  budget: navigational queries may stop after the Instant or Hybrid stage;
+  conceptual queries get the full reranking budget.
 
-1. **Document candidate retrieval**: use lexical, filename, and aggregated dense
-   scores to select `D` documents (for example 100–200).
-2. **Passage retrieval within documents**: rank passages inside those documents,
-   plus any globally strong passages attached to them.
-3. **Passage reranking**: cross-encode the bounded passage set.
-4. **Document re-aggregation**: recompute document scores using reranked passage
-   scores and the same aggregation contract.
-5. **Final document ordering**: apply diversity, duplicate collapsing, and
-   per-document limits.
+Routing rules are evaluated per query category in the benchmark program; a rule
+that hurts any category beyond tolerance is removed.
 
-The hierarchy keeps the reranker budget bounded and makes document quality
-explicit instead of relying on whichever chunk happened to rank highest.
+## 4. Candidate generation
 
-## 6. Per-document candidate limits
+| Retriever | Unit | Initial depth | Notes |
+|---|---|---:|---|
+| Filename/path | document | 40 | Prefix/substring/fuzzy over names and path segments; instant |
+| Lexical BM25 | passage | 200 | Language-aware analyzers (stemming for pt/en is benchmark-gated); phrase support |
+| Dense | passage | 200 | Quantized first pass + rescoring if selected; metadata pre-filtering |
+| Learned sparse (gated) | passage | 200 | Inference-free document-side models only if they beat BM25 at equal latency |
 
-Purpose: prevent long, repetitive, or highly chunked documents from occupying
-the result list.
+### 4.1 Fusion
 
-- Hard default: 3 passages per document in final results.
-- Candidate-stage cap: configurable, e.g. top 8 passages per document entering
-  reranking.
-- A document can contribute multiple distinct passages only when they cover
-  different query aspects.
-- Limits are applied after scoring but before diversity selection.
+- **Baseline:** RRF, `k = 60`, equal weights ([ADR-0003](../adr/0003-hybrid-retrieval-rrf.md)).
+- **Challengers:** weighted RRF; convex combination of normalized scores
+  (min-max/z-score per retriever, tuned on the dev split); query-class-specific
+  weights.
+- Per-retriever ranks are kept for diagnostics and result tags.
 
-## 7. Cross-document diversity
+## 5. Document layer
 
-Diversity operates at both document and passage level.
+### 5.1 Grouping and candidate caps
 
-### 7.1 Document diversity
+- Group passage candidates by document.
+- Candidate-stage cap: at most **8** passages per document enter later stages,
+  preventing long documents from monopolizing the budget.
 
-Use MMR-style selection or xQuAD-style aspect coverage:
+### 5.2 Document-level aggregation
+
+Document retrieval is a first-class stage, not a side effect of sorting chunks.
+
+Signals per document:
+
+| Signal | Definition |
+|---|---|
+| `p_max` | Best passage score |
+| `p_topk` | Mean of the top-k passage scores (k ∈ {2, 3}) |
+| `coverage` | Fraction of query terms/aspects matched across the document's passages |
+| `title` | Filename/path relevance |
+| `consensus` | Number of independent retrievers that surfaced the document |
+| `length_prior` | Correction term for document length (see §5.4) |
+
+Initial form (normalized components, weights tuned on the dev split):
 
 ```text
-MMR(d) = λ * relevance(d) - (1 - λ) * max_similarity(d, selected)
+doc_score = w_max·p_max + w_topk·p_topk + w_cov·coverage
+          + w_title·title + w_cons·consensus + w_len·length_prior
 ```
 
-- `relevance` is the aggregated document score.
-- Similarity is computed from document embeddings or aggregated passage vectors.
-- Default `λ` is tuned on the golden set; relevance remains dominant.
-- Diversity must never promote an irrelevant document merely to fill quota.
+`w_max` protects a single highly relevant passage (needle in a haystack);
+`w_topk` prevents a one-passage fluke from dominating. Few parameters on purpose:
+the golden set is small and overfitting is the main risk. Ablations decide which
+signals stay.
 
-### 7.2 Passage diversity
+### 5.3 Near-duplicate collapsing
 
-- If two passages from the same document are near-identical, keep the higher
-  scoring one.
-- If passages cover different query aspects, both may be shown within the
-  per-document cap.
-- Diversity penalties are reported in evaluation ablations.
+- Exact: content hash (BLAKE3) — collapse immediately.
+- Near-duplicate documents: SimHash (64-bit over word shingles) computed at
+  index time; Hamming threshold tuned; optional MinHash-LSH clusters.
+- Near-duplicate passages: passage hash + embedding cosine threshold.
+- Boilerplate: passages whose hash appears in many documents are down-weighted.
+- Canonical selection by score, then freshness, then path quality; alternates
+  remain reachable through a duplicate-cluster indicator.
+- False-collapse guard: documents with small but meaningful differences (two
+  contract versions) must not merge; thresholds are tuned on labeled pairs.
 
-## 8. Near-duplicate detection
+### 5.4 Length-bias correction
 
-Near-duplicate handling is required at both indexing and query time.
+- BM25 keeps its length normalization; `k1` and `b` are tuned per analyzer.
+- Dense: very short passages (titles, fragments) produce spuriously high
+  cosines → minimum-length handling and length-bucket calibration.
+- Cross-encoder: score calibration by passage length bucket.
+- Document level: `length_prior` so long files do not win by having more
+  chances to match.
+- Evaluated on length-stratified queries; reported as its own ablation.
 
-### 8.1 Signals
+## 6. Refinement
 
-- Exact content hash (fast path).
-- Normalized text SimHash/MinHash for near-duplicate documents.
-- Embedding cosine similarity above a tuned threshold.
-- Same title/filename with high text overlap (versions/copies).
-- Boilerplate/template detection for repeated headers and footers.
+### 6.1 Cascaded, adaptive reranking
 
-### 8.2 Policy
+- Rerank the **best 1–2 passages of the top N documents** (initial N = 30;
+  depth is a benchmark knob), not all passages.
+- Passage input truncated to a tuned token budget (initial 192 tokens) — the
+  cost driver on CPU.
+- Adaptive budget by query class and observed latency; skip for confident
+  navigational/identifier queries (exact filename hit with a strong margin).
+- Score caching per `(query, passage-hash)` for incremental typing.
+- **Fail open:** reranker absent, slow, or failing → keep the Hybrid ordering.
+- Optionally offloaded to the NPU when validated.
 
-- Collapse exact duplicates immediately.
-- Group near-duplicates into clusters; choose the canonical document by
-  freshness, path quality, and score.
-- Keep alternate versions discoverable through a cluster indicator, not by
-  filling the top results with copies.
-- Deduplicate passages before reranking to save neural budget.
-- Store duplicate signatures during indexing; query-time checks use them.
+### 6.2 Re-aggregation and diversity
 
-Thresholds must be evaluated for false collapses: two different contracts with
-small changes must not be treated as the same result.
+- Recompute document scores with reranked passage evidence (same aggregation
+  contract).
+- Cross-document diversity with MMR over document vectors (mean of passage
+  vectors):
+  `MMR(d) = λ·rel(d) − (1−λ)·max_sim(d, selected)`, initial `λ = 0.8`.
+  Diversity never promotes an irrelevant document to fill a quota.
+- Final per-document passage limit: **3** shown passages, and only when they
+  cover different aspects.
 
-## 9. Length-bias correction
+## 7. Presentation: query-aware extractive snippets
 
-Length bias appears in BM25, dense similarity, and cross-encoder scores.
+The file-search equivalent of a pruner selects original text for a human; it
+never compresses, summarizes, or rewrites.
 
-- BM25 keeps its length normalization; `b` is tuned per corpus.
-- Dense passage scores are normalized by length bucket or a calibrated prior
-  rather than raw cosine alone.
-- Cross-encoder scores are calibrated by passage length and query type.
-- Document scores include a document-length prior so long files do not win by
-  having more chances to match.
-- Corrections are evaluated with length-stratified queries and reported as an
-  ablation.
+- Sentence segmentation (Unicode rules, multilingual).
+- Candidate sentences scored by lexical overlap plus semantic similarity
+  (reusing the embedder or, if a bake-off proves it worth the cost, a small
+  scorer model) — only for **visible** results.
+- Readable windows (initial 200–320 characters), original boundaries, exact
+  term highlights, best-sentence highlight for semantic-only matches.
+- Locators let the shell open the file at the page/line when the OS app
+  supports it.
+- Evaluated with snippet evidence-hit rate and span F1 on annotated passages.
 
-## 10. Final result presentation
+## 8. Progressive delivery and latency
 
-Each result contains:
+| Stage | Includes | Budget source |
+|---|---|---|
+| Instant | Analysis, filename, lexical, grouping | P1 in methodology |
+| Hybrid | + dense, fusion, document layer | P2 |
+| Refined | + reranking, diversity, snippets | P3 |
 
-- document title, path, extension, size, modified date;
-- aggregated relevance score normalized for display;
-- up to the per-document passage limit;
-- highlighted query terms;
-- source tags for lexical, semantic, filename, reranker, and diversity where
-  useful;
-- duplicate-cluster indicator when applicable.
+Performance techniques required by design: resident models; query embedding in
+parallel with lexical/filename retrieval; LRU cache of query embeddings; bounded
+candidate sets; cancellation between stages; reranking and snippet extraction
+only for visible results; memory-mapped indexes.
 
-The UI must remain minimal. Ranking internals are diagnostics, not default
-content.
+## 9. Configuration
 
-## 11. Configuration defaults
-
-Initial values are starting points for benchmarks, not final truth:
+All knobs live in one versioned `RankingConfig` with defaults owned by benchmark
+reports:
 
 | Parameter | Initial value |
 |---|---:|
-| BM25 candidate depth | 100 |
-| Dense passage depth | 100 |
-| Filename candidate depth | 40 |
-| Rerank passage depth | 150 |
-| Rerank batch size | backend-specific |
-| Document candidate depth | 150 |
-| Passages per document (final) | 3 |
-| Passages per document (candidate) | 8 |
+| Filename depth | 40 |
+| Lexical depth | 200 |
+| Dense depth | 200 |
 | RRF `k` | 60 |
-| Diversity λ | 0.75 |
-| Duplicate cosine threshold | tune per model |
-| Length correction | tuned per model |
+| Passages per document entering refinement | 8 |
+| Documents reranked (N) | 30 |
+| Passages reranked per document | 1–2 |
+| Reranker passage token budget | 192 |
+| MMR `λ` | 0.8 |
+| Passages shown per document | 3 |
+| SimHash Hamming threshold | tuned |
+| Passage duplicate cosine threshold | tuned per model |
 
-All values live in one ranking configuration module and are covered by tests.
+## 10. Invariants (property-tested)
 
-## 12. Evaluation gates
+1. Quoted exact matches present in the corpus appear in results.
+2. No document appears twice in a result list; cluster alternates are hidden.
+3. Each stage's output is a re-ordering/subset of its input plus documented
+   additions; stages never invent documents.
+4. Disabling any optional stage yields the previous stage's ordering
+   (fail-open).
+5. Metadata filters are honored by every stage.
+6. Results are deterministic for a fixed index, config, and query.
 
-### 12.1 Golden set
-
-- 200+ queries with graded relevance.
-- English, Portuguese, Spanish, French, German, and mixed-language documents.
-- Exact phrase, filename-only, semantic paraphrase, long document, and duplicate
-  queries.
-- Manual and synthetic near-duplicate pairs.
-
-### 12.2 Metrics
-
-- Document Recall@10/20.
-- Passage Recall@10.
-- nDCG@10 at document and passage level.
-- MRR@10.
-- Duplicate rate in top 10.
-- Aspect coverage / diversity.
-- Latency p50/p95 and memory.
-- Length-bias error by document-length bucket.
-
-### 12.3 Acceptance
-
-- Every required mechanism has an implementation and an ablation result.
-- Reranker improves nDCG@10 by at least 5 points, or is not enabled by default.
-- Near-duplicate collapsing reduces duplicate rate by at least 50% without
-  lowering recall.
-- Diversity does not reduce nDCG@10 by more than 1 point.
-- Per-document limits reduce source monopolization and keep Recall@10.
-- p95 latency remains within the budgets in the implementation plan.
-
-## 13. Rust module plan
-
-The current `search.rs` pipeline will be split into explicit stages:
+## 11. Module plan (`crates/seeky-search`)
 
 | Module | Responsibility |
 |---|---|
-| `retrieval/lexical.rs` | FTS query construction and BM25 candidates |
-| `retrieval/filename.rs` | Title/path candidates |
-| `retrieval/dense.rs` | Embedding scan / ANN adapter |
-| `ranking/aggregate.rs` | Document-level aggregation |
-| `ranking/rerank.rs` | Cross-encoder adapter and batching |
-| `ranking/diversity.rs` | MMR/xQuAD and per-document limits |
-| `ranking/dedupe.rs` | Hash, SimHash/MinHash, embedding duplicate clusters |
-| `ranking/calibrate.rs` | Length and backend score calibration |
-| `search.rs` | Orchestration and response shaping |
+| `query/` | Normalization, classification, filter parsing, routing |
+| `retrieve/` | Filename, lexical, dense, (sparse) adapters over `seeky-store` traits |
+| `fuse.rs` | RRF and challengers |
+| `document/` | Grouping, aggregation, dedupe, length correction |
+| `rerank.rs` | Cross-encoder orchestration, budgets, caching, fail-open |
+| `diversity.rs` | MMR, final limits |
+| `snippet/` | Sentence segmentation, scoring, highlighting, locators |
+| `pipeline.rs` | Stage orchestration, progressive emission, cancellation |
+| `config.rs` | `RankingConfig` and defaults |
 
-The module split is a target; the current PoC has a compact search module and
-must be refactored behind tests before adding the full pipeline.
-
-## 14. Risks
-
-- Reranker latency on CPU can dominate search; keep candidate depth bounded and
-  quantization evaluated.
-- Multilingual quality varies by language; evaluate each language separately.
-- Aggressive diversity can hide relevant documents.
-- Near-duplicate thresholds can collapse distinct contracts or versions.
-- AMD/NPU execution-provider coverage is less mature than CUDA.
-- Adding signals without ablation can produce a more complex but worse ranking.
+The PoC's `search.rs` is refactored into this structure behind golden tests
+before any new stage is added.

@@ -10,7 +10,7 @@ from the Gety reverse-engineering research in `docs/research/`.
 - Tauri **2.12.7** desktop app
 - React 19 + Vite + TypeScript frontend
 - Rust backend, SQLite/FTS5, `tokenizers`, ONNX Runtime, OpenVINO
-- **CPU, CUDA and Intel NPU** inference in the current PoC; AMD validation is a target
+- **CPU and Intel NPU** inference (plus a frozen CUDA path kept only in the PoC; the product is CPU-first and GPU-optional per ADR-0016)
 - Live filesystem watching with debounced, incremental per-file reindexing
 - MIT-licensed source; no account or commercial license key
 - Target: slim first-run provisioning from Cloudflare R2
@@ -19,8 +19,8 @@ from the Gety reverse-engineering research in `docs/research/`.
 
 ![Seeky home](../../docs/assets/screenshots/seeky/home.png)
 
-See [`docs/product/seeky-product-decisions.md`](../../docs/product/seeky-product-decisions.md)
-for the accepted product direction. The current PoC still depends on a local Gety
+See [`docs/product/vision.md`](../../docs/product/vision.md)
+for the accepted product direction and [`AGENTS.md`](../../AGENTS.md) for how to work here. The current PoC still depends on a local Gety
 installation, ships a temporary OpenVINO IR, and has a dark, English-only UI.
 
 ---
@@ -84,7 +84,7 @@ access, generative chat, agents, multiuser support, plugin marketplaces, and the
 customization.
 
 The full product record is in
-[`docs/product/seeky-product-decisions.md`](../../docs/product/seeky-product-decisions.md).
+[`docs/product/vision.md`](../../docs/product/vision.md).
 The target retrieval contract is in
 [`docs/architecture/retrieval-engine.md`](../../docs/architecture/retrieval-engine.md).
 
@@ -135,7 +135,7 @@ and length-bias correction. See
 - Node.js 20+ and npm
 - Rust stable (MSVC toolchain) and Visual Studio Build Tools
 - WebView2 (installed with Windows 11)
-- **Gety installed** at `C:\Users\bernh\AppData\Local\Gety` for the current PoC's
+- **Gety installed** at `%LOCALAPPDATA%\Gety` for the current PoC's
   CPU/CUDA model files, PDFium, and runtimes; or set the env vars below.
 - NVIDIA driver + CUDA/cuDNN DLLs for CUDA (Gety downloads them under
   `%APPDATA%\ai.gety\data\third_party_libs\cuda`)
@@ -266,7 +266,8 @@ copy. See
   license key is required. Third-party assets keep their own licenses.
 - **Target models:** the current `gety-embed-v0` integration is a compatibility
   baseline. Multilingual model selection is benchmark-gated; see
-  [`docs/architecture/model-strategy.md`](../../docs/architecture/model-strategy.md).
+  [`docs/architecture/inference-and-models.md`](../../docs/architecture/inference-and-models.md)
+  and [`docs/benchmarks/candidates.md`](../../docs/benchmarks/candidates.md).
 
 ### Gety materials and licenses
 
@@ -285,16 +286,11 @@ copy. See
 
 ## 8. Next steps
 
-1. Build the multilingual golden set and evaluate SOTA embedding/reranker
-   candidates.
-2. Implement hierarchical retrieval: passage ranking, document aggregation,
-   per-document limits, diversity, near-duplicate detection, and length-bias
-   correction.
-3. Add light/dark themes, English/Portuguese locales, and the minimal UI pass.
-4. Add first-run R2 provisioning and remove the Gety/bundled-IR dependency.
-5. Add AMD DirectML validation and scale/ANN evaluation.
-6. Add an optional extractive/LLM answer layer only after an explicit scope
-   change.
+This PoC is the starting point of the
+[implementation plan](../../docs/plans/seeky-implementation-plan.md). Phase 0
+moves this code into an engine-first Cargo workspace (`crates/` + `apps/desktop`)
+without behavior changes; Phase 1 adds the evaluation harness and measures this
+PoC as baseline B0.
 
 ---
 

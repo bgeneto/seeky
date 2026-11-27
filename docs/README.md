@@ -1,31 +1,39 @@
-# Documentation
+# Documentation map
 
-This directory contains the Seeky product, engineering, research, and validation
-documentation.
+## Precedence
 
-## Start here
+When two documents disagree, the higher one wins and the lower one is
+corrected:
 
-| Document | Purpose |
-|---|---|
-| [`plans/seeky-implementation-plan.md`](plans/seeky-implementation-plan.md) | Active implementation plan, milestones, architecture, targets |
-| [`product/seeky-product-decisions.md`](product/seeky-product-decisions.md) | Accepted license, distribution, UI, model, and retrieval decisions |
-| [`product/seeky-scope.md`](product/seeky-scope.md) | English product scope and non-goals |
-| [`architecture/README.md`](architecture/README.md) | Target retrieval engine, model strategy, slim provisioning |
-| [`decisions/seeky-adrs.md`](decisions/seeky-adrs.md) | Architecture decisions for the shipped Rust/Tauri implementation |
-| [`validation/seeky-poc-validation.md`](validation/seeky-poc-validation.md) | Build, test, runtime, watcher, and backend evidence |
+1. [`product/vision.md`](product/vision.md) — vision, non-negotiable principles, scope, product decisions
+2. [`adr/`](adr/README.md) — Accepted architecture decision records
+3. [`specs/`](specs/README.md) — Accepted specifications (Spec-Driven Development)
+4. [`architecture/`](architecture/README.md) — target architecture contracts
+5. [`plans/seeky-implementation-plan.md`](plans/seeky-implementation-plan.md) — phases, work packages, status
+6. [`benchmarks/methodology.md`](benchmarks/methodology.md) — budgets, gates, evaluation protocol
 
-## Reference material
+## Directory guide
 
-- [`research/`](research/README.md) — Gety reverse-engineering research and model notes.
-- [`audits/`](audits/README.md) — report verification, evidence ledger, source report.
-- [`assets/screenshots/`](assets/README.md) — Seeky and Gety UI captures.
-- [`archive/`](archive/README.md) — retired planning documents kept for history.
+| Directory | Contents | Binding? |
+|---|---|---|
+| [`product/`](product/vision.md) | Product constitution | Yes |
+| [`adr/`](adr/README.md) | One decision per file, MADR-style | Yes (Accepted) |
+| [`specs/`](specs/README.md) | Spec process, template, planned specs | Yes (Accepted) |
+| [`architecture/`](architecture/README.md) | Overview, indexing, retrieval engine, inference and models, provisioning | Yes |
+| [`plans/`](plans/README.md) | The single active implementation plan | Yes |
+| [`benchmarks/`](benchmarks/README.md) | Methodology, candidate registry, report template, results | Yes (protocol); results are evidence |
+| [`validation/`](validation/seeky-poc-validation.md) | As-built PoC runtime evidence | Evidence |
+| [`glossary.md`](glossary.md) | Terminology | Reference |
+| [`research/`](research/README.md) | Gety reverse-engineering notes, supplied reports | No — context only |
+| [`archive/`](archive/README.md) | Superseded documents | No |
+| [`assets/`](assets/README.md) | Screenshots | — |
 
 ## Documentation rules
 
-1. The active implementation plan is the source of truth for engineering scope.
-2. Implementation changes update the plan when they affect milestones or contracts.
-3. Runtime claims require evidence in `validation/` or `audits/`.
-4. Historical plans are archived, marked superseded, and never referenced as the
-   current build contract.
-5. Do not put local document content or unredacted personal data in documentation.
+1. One canonical place per topic; link instead of copying.
+2. Product or architecture changes go through an ADR; numeric defaults go
+   through a benchmark report.
+3. Runtime and performance claims require evidence in `benchmarks/results/` or
+   `validation/`.
+4. Superseded documents move to `archive/` with a pointer to their replacement.
+5. Docs are in English. No document content, personal paths, or secrets.

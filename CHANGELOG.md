@@ -19,6 +19,51 @@ All notable changes to Seeky are recorded here.
   document aggregation, per-document limits, diversity, near-duplicate handling,
   and length-bias correction.
 - Added architecture, model strategy, and provisioning documents.
+- Principles formalized: CPU-first, NPU-ready, local-first, performance-first,
+  multilingual-first, search-only, benchmark-driven, model-agnostic core.
+- GPU acceleration is optional and no longer on the default path; NPUs are the
+  designed-for accelerator (ADR-0016).
+- Filename and lexical search work before model provisioning (ADR-0018).
+- The optional answer layer is removed from the roadmap; no generative features
+  ship (ADR-0021). OCR may use a transcription model of any architecture,
+  including small VLMs, only with deterministic decoding, a fixed prompt, and a
+  hallucination gate.
+- ONNX Runtime is the single inference engine for embeddings, reranking,
+  snippet scoring, and OCR (ADR-0019), validated by a priority-zero gate with
+  predeclared kill criteria (plan WP-0.6). Challenger engines (llama.cpp/GGUF,
+  native OpenVINO) are measured only for a role where a criterion fires; a
+  second engine needs a predeclared margin and full deployment-cost
+  accounting.
+- GPU support may come only as opt-in asset packs (for example a GPU OCR pack)
+  when a bake-off justifies them; never required, never the default (ADR-0016).
+
+### Documentation and process
+
+- Added `AGENTS.md` (agent operating manual) and `CLAUDE.md`.
+- Adopted Spec-Driven + Benchmark-Driven Development (ADR-0017): spec process
+  and template (`docs/specs/`), benchmark methodology, budgets, candidate
+  registry, and report template (`docs/benchmarks/`).
+- Rewrote the implementation plan (v2.0): engine-first phases 0–9 with work
+  packages, bake-offs, gates, and a rejected-options log.
+- Added the model bake-off protocol (methodology §8): a Stage 0/A/B/C funnel,
+  comparison of deployment variants (ONNX variant + quantization + provider),
+  ONNX export with alternatives priced only on demand, quantization matrix
+  with tolerances, deployment-cost accounting, new-engine margin, the ORT
+  validation gate with kill criteria K1–K4, and OCR specifics; added OCR
+  budgets O1–O4.
+- Candidate registry: OCR tiers (CPU default, GPU opt-in) with OCRia,
+  MiniCPM-OCR 1.0, OXR-1.0, PaddleOCR-VL, and Florence-2 candidates; new
+  inference-engine section.
+- New architecture documents: `overview.md` (engine-first workspace) and
+  `indexing.md` (two-speed indexing); revised retrieval engine, inference and
+  models (formerly model strategy), and provisioning contracts.
+- Split ADRs into one file per decision under `docs/adr/` (ADR-0015 to
+  ADR-0022 added; 0002, 0004, 0014 superseded).
+- Consolidated product decisions and scope into `docs/product/vision.md`;
+  archived the original Portuguese scope brief.
+- Moved Gety reverse-engineering research, audits, and SQL references under
+  `docs/research/gety/`; removed duplicated READMEs; normalized personal paths.
+- Added a pull request template.
 
 ## 0.1.0 — 2026-11-26
 

@@ -1,10 +1,12 @@
 # Seeky - PoC validation
 
-This file records the commands and observed results for the current **transitional
-PoC**. The target slim first-run provisioning, light/dark themes,
-English/Portuguese UI, and SOTA hierarchical retrieval are not implemented yet;
-their contracts are in `docs/product/seeky-product-decisions.md`,
-`docs/architecture/`, and `docs/plans/seeky-implementation-plan.md`.
+This file records the commands and observed results for the **0.1.0 PoC**
+(as built). It is historical evidence, not a target: the PoC's CUDA backend and
+Gety-provided assets are superseded by ADR-0016 and ADR-0019. Target contracts
+live in [`../product/vision.md`](../product/vision.md),
+[`../architecture/`](../architecture/README.md), and the
+[implementation plan](../plans/seeky-implementation-plan.md). Local user paths
+are normalized to `%APPDATA%`, `%LOCALAPPDATA%`, and `<repo>`.
 
 This validation shows that the PoC is runnable and that CPU, CUDA and NPU
 inference work through Gety's model files.
@@ -14,7 +16,7 @@ inference work through Gety's model files.
 - Windows x64, 20 logical CPUs, 64 GB RAM
 - NVIDIA GeForce RTX 3090 (compute 8.6)
 - Intel AI Boost NPU
-- Gety 0.7.0 installed at `C:\Users\bernh\AppData\Local\Gety`
+- Gety 0.7.0 installed at `%LOCALAPPDATA%\Gety`
 - Rust 1.99.1, Node 26.13.1, Tauri 2.12.7 (CLI 2.12.6)
 
 ---
@@ -62,7 +64,7 @@ npm run tauri -- build --debug --no-bundle
 Observed:
 
 ```text
-Built application at: C:\Users\bernh\Documents\Opencode\REA\Gety\apps\seeky\src-tauri\target\debug\seeky.exe
+Built application at: <repo>\apps\seeky\src-tauri\target\debug\seeky.exe
 ```
 
 Launch:
@@ -91,7 +93,7 @@ Observed:
 
 ```text
 Finished `release` profile [optimized] target(s) in 8m 04s
-Built application at: C:\Users\bernh\Documents\Opencode\REA\Gety\apps\seeky\src-tauri\target\release\seeky.exe
+Built application at: <repo>\apps\seeky\src-tauri\target\release\seeky.exe
 ```
 
 The release binary is 11,469,824 bytes. Tauri copies the bundled NPU IR next to
@@ -132,10 +134,10 @@ Observed:
     "device": "Intel AI Boost · OpenVINO NPU",
     "detail": "384-d · 256-token bucket"
   },
-  "model_root": "C:\\Users\\bernh\\AppData\\Roaming\\ai.gety\\data\\models\\gety-ai\\gety-embed-v0\\424f41cb36776481b7e2c9f619ca7ce5d5351fe0",
-  "npu_model": "C:\\Users\\bernh\\Documents\\Opencode\\REA\\Gety\\apps\\seeky\\src-tauri\\target\\release\\resources\\models\\gety-embed-v0\\openvino",
-  "pdfium": "C:\\Users\\bernh\\AppData\\Local\\Gety\\lib\\pdfium.dll",
-  "db_path": "C:\\Users\\bernh\\AppData\\Roaming\\ai.seeky.desktop\\seeky.db",
+  "model_root": "%APPDATA%\\ai.gety\\data\\models\\gety-ai\\gety-embed-v0\\424f41cb36776481b7e2c9f619ca7ce5d5351fe0",
+  "npu_model": "<repo>\\apps\\seeky\\src-tauri\\target\\release\\resources\\models\\gety-embed-v0\\openvino",
+  "pdfium": "%LOCALAPPDATA%\\Gety\\lib\\pdfium.dll",
+  "db_path": "%APPDATA%\\ai.seeky.desktop\\seeky.db",
   "model_ready": true,
   "health": {
     "indexing": false,

@@ -1,20 +1,34 @@
 # Contributing
 
-## Setup
+Thanks for helping build Seeky. Humans and AI agents follow the same rules,
+described in full in [`AGENTS.md`](AGENTS.md). This page is the short version.
+
+## Workflow
+
+Seeky uses **Spec-Driven Development** plus **Benchmark-Driven Development
+(BmDD)** ([ADR-0017](docs/adr/0017-spec-and-benchmark-driven-development.md)):
+
+1. Pick a work package from the
+   [implementation plan](docs/plans/seeky-implementation-plan.md).
+2. Implement against an **Accepted** spec in [`docs/specs/`](docs/specs/README.md);
+   write one first if it does not exist.
+3. Write tests first; reference requirement IDs.
+4. Attach a benchmark report when quality or performance can change
+   ([methodology](docs/benchmarks/methodology.md)).
+5. Record decisions as ADRs in [`docs/adr/`](docs/adr/README.md).
+
+Bug fixes, behavior-preserving refactors, docs, and tooling do not need a spec.
+
+## Setup (PoC)
 
 Install Node.js 20+, Rust stable with the MSVC toolchain, Visual Studio Build
-Tools, WebView2, Git LFS, and a local Gety installation for model/runtime files.
+Tools, WebView2, and Git LFS. The PoC also needs a local Gety installation for
+model/runtime files until the provisioning phase lands.
 
 ```powershell
 git lfs install
 cd apps\seeky
 npm install
-```
-
-## Development
-
-```powershell
-cd apps\seeky
 npm run tauri dev
 ```
 
@@ -25,50 +39,34 @@ cd apps\seeky
 npm run build
 
 cd src-tauri
+cargo fmt --check
 cargo test --lib -- --test-threads=1
 cargo check
 ```
 
-Inference tests require the local Gety models and the appropriate hardware.
-Frontend build and pure Rust tests must pass without optional hardware.
-
-## Architecture rules
-
-- Backend logic stays in Rust inside the Tauri process.
-- Do not add a sidecar service, local HTTP API, or a second backend runtime.
-- Keep the webview capability surface minimal; add explicit Rust commands for
-  filesystem actions.
-- Do not add accounts, activation, license-key checks, or telemetry.
-- Do not add outbound network calls except the approved first-run/update asset
-  fetch from the seeky R2 bucket.
-- Keep CPU/CUDA/AMD/NPU embeddings compatible; a backend switch must not require
-  reindexing for the same model.
-- Do not bundle large model/runtime assets in the installer; provision and verify
-  them through the asset pipeline.
-- Keep UI strings in locale catalogs and support only the light/dark themes.
-- Update `docs/plans/seeky-implementation-plan.md` when a milestone or contract
-  changes.
-- Add runtime evidence under `docs/validation/` or `docs/audits/`.
-- Add retrieval evaluation evidence before changing ranking behavior.
-- Update `CHANGELOG.md` for user-visible changes.
-
-## License
-
-Seeky is MIT-licensed. Contributions are accepted under the same license.
-Third-party libraries and model weights keep their own licenses; do not add an
-asset without recording its license and redistribution terms.
+Inference tests require local models and hardware; frontend build and pure Rust
+tests must pass without them. The workspace-level commands that replace these
+after Phase 0 are listed in [`AGENTS.md`](AGENTS.md#5-commands).
 
 ## Commit style
 
-Use short imperative subjects, for example:
+Conventional, imperative subjects with a scope:
 
 ```text
-feat(indexer): add watcher debounce and per-folder pause
-fix(search): include filename matches in RRF
-docs(plan): define reranker evaluation gate
+feat(indexer): add durable job queue
+perf(search): binary first-pass vector scan
+bench(rerank): bake-off report for multilingual cross-encoders
+docs(adr): 0023 lock budgets v1
 ```
 
-## Screenshots
+## Licensing
 
-Keep current Seeky captures under `docs/assets/screenshots/seeky/`. Redact local
-paths before adding Gety captures under `docs/assets/screenshots/gety/`.
+Seeky is MIT-licensed; contributions are accepted under the same license. Any
+new dependency, model, runtime, or dataset must pass the license gate
+([ADR-0022](docs/adr/0022-permissive-license-gate.md)).
+
+## Screenshots and privacy
+
+Keep Seeky captures under `docs/assets/screenshots/seeky/`. Never commit
+document content, personal paths, or private corpora; redact paths in Gety
+captures under `docs/assets/screenshots/gety/`.

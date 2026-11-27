@@ -1,0 +1,200 @@
+# Candidate Registry
+
+| Field | Value |
+|---|---|
+| Status | Living document — refreshed at the start of every bake-off |
+| Last refresh | 2026-11-27 |
+| Related | [methodology](methodology.md), [ADR-0022](../adr/0022-permissive-license-gate.md), [inference-and-models](../architecture/inference-and-models.md) |
+
+This registry seeds the bake-offs. It is **not** a ranking. Facts marked
+*(verify)* must be confirmed from the primary source (model card, license file,
+repository) when the bake-off starts; the first task of each bake-off is to
+refresh this list with newly released candidates.
+
+Legend — **Role:** `selected` (current decision, validated by a gate),
+`baseline` (reference point), `challenger` (shippable if it wins), `probe`
+(measured to learn a limit, not expected to ship), `conditional` (enters only if
+a stated condition holds), `ceiling` (quality upper bound; too heavy for the
+CPU budget, run offline only), `excluded`. **License:** `eligible`, `review`,
+`ineligible`.
+
+Candidates are compared as deployed on ONNX Runtime (ONNX variant +
+quantization + provider, [ADR-0019](../adr/0019-single-inference-engine.md)),
+following the funnel in [methodology §8](methodology.md). During Stage 0,
+record every published format and whether an ONNX export path exists:
+running on ONNX Runtime with parity is an eligibility criterion; a model that
+cannot is priced under the ADR-0019 runtime-cost rule.
+
+## 1. Embedding models
+
+| Candidate | Size | Dims | License | Role | Notes |
+|---|---|---|---|---|---|
+| `gety-embed-v0` | 118M (e5-small finetune) | 384 | MIT | baseline | PoC model; CPU/NPU artifacts exist |
+| `intfloat/multilingual-e5-small` | 118M | 384 | MIT | baseline | Prefix-sensitive (`query:`/`passage:`) |
+| `ibm-granite/granite-embedding-97m-multilingual-r2` | 97M | 384 | Apache-2.0 | challenger | ModernBERT, 32k context, released 2026-04; vendor-reported strong multilingual retrieval |
+| `hotchpotch/bekko-embedding-v1-a25m` | ~25M active | 384 (MRL 256/128/64) | MIT | challenger | 2026; ultra-compact; architecture and ONNX export *(verify)* |
+| `hotchpotch/bekko-embedding-v1-a8m` | ~8M active | 384 (MRL) | MIT | challenger | T0-tier candidate; language coverage for pt *(verify)* |
+| `Snowflake/snowflake-arctic-embed-m-v2.0` | 305M | 768 (MRL 256) | Apache-2.0 | challenger | Strong multilingual retrieval; heavier on CPU |
+| `Alibaba-NLP/gte-multilingual-base` | 305M | 768 (elastic) | Apache-2.0 | challenger | Custom architecture; export path *(verify)* |
+| `ibm-granite/granite-embedding-278m-multilingual` | 278M | 768 | Apache-2.0 | challenger | r1 family; check for r2 siblings *(verify)* |
+| `intfloat/multilingual-e5-base` | 278M | 768 | MIT | challenger | Classic quality/CPU trade-off |
+| `google/embeddinggemma-300m` | 308M | 768 (MRL 512/256/128) | Gemma Terms | challenger | **License review** (use policy pass-through) |
+| `nomic-ai/nomic-embed-text-v2-moe` | 475M total / 305M active | 768 (MRL 256) | Apache-2.0 | challenger | MoE export/runtime cost *(verify)* |
+| `minishlab/potion-multilingual-128M` | static | 256 | MIT | challenger | Static (lookup) embedder; native Rust; T0 tier or instant-semantic experiments |
+| `BAAI/bge-m3` | 568M | 1024 (+ sparse, multi-vector) | MIT | ceiling | Offline quality reference |
+| `Qwen/Qwen3-Embedding-0.6B` | 0.6B | 1024 (MRL) | Apache-2.0 | ceiling | Decoder; far beyond CPU indexing budget |
+| `Snowflake/snowflake-arctic-embed-l-v2.0` | 568M | 1024 | Apache-2.0 | ceiling | Offline reference |
+| `jinaai/jina-embeddings-v3` / `v4` / `v5-text-*` | — | — | CC-BY-NC (and variants) | excluded | Non-commercial license |
+| `Qwen3-Embedding-4B` / `8B` | 4B / 8B | — | Apache-2.0 | excluded | GPU-class; violates CPU-first |
+
+## 2. Rerankers (cross-encoders)
+
+| Candidate | Size | License | Role | Notes |
+|---|---|---|---|---|
+| `cross-encoder/mmarco-mMiniLMv2-L12-H384-v1` | 118M | Apache-2.0 weights; trained on mMARCO | baseline | Fast multilingual baseline; **training-data license review** |
+| `Alibaba-NLP/gte-multilingual-reranker-base` | 306M | Apache-2.0 | challenger | Primary CPU candidate *(verify export)* |
+| `agentic-in/elephant-rerank-v1-text-small` | small (ModernBERT) | Apache-2.0 | challenger | 2026; custom heads/loader — export risk *(verify)* |
+| `BAAI/bge-reranker-v2-m3` | 568M | Apache-2.0 | challenger (NPU) / ceiling | Likely NPU-only on budget; community int8 ONNX exists |
+| `mixedbread-ai/mxbai-rerank-base-v2` | 0.5B | Apache-2.0 | ceiling | Decoder-based |
+| `Qwen/Qwen3-Reranker-0.6B` | 0.6B | Apache-2.0 | ceiling | Decoder-based; offline reference |
+| Seeky-distilled small reranker | — | MIT (ours) | post-1.0 R&D | Only if no candidate meets Q6 on CPU |
+| `jinaai/jina-reranker-v2-*` / `v3` | — | CC-BY-NC | excluded | Non-commercial |
+
+## 3. Snippet scorers (search-engine "pruner" slot)
+
+| Candidate | License | Role | Notes |
+|---|---|---|---|
+| Heuristic (lexical overlap, position, sentence quality) | MIT (ours) | baseline | Zero model cost |
+| Bi-encoder sentence similarity (active embedder) | inherits | challenger | Visible results only |
+| Cross-encoder sentence scoring (active reranker) | inherits | challenger | Visible results only; budget P3 |
+| `naver/provence-*`, XProvence | CC-BY-NC | excluded | Non-commercial; LLM-context pruners |
+
+## 4. Learned sparse retrieval (gated)
+
+| Candidate | License | Role | Notes |
+|---|---|---|---|
+| OpenSearch multilingual neural-sparse document encoder (inference-free query side) | Apache-2.0 *(verify name/revision)* | challenger | Query cost ≈ tokenizer lookup; needs weighted-term index support |
+| `BAAI/bge-m3` sparse head | MIT | ceiling | Reference |
+| SPLADE v3 family | CC-BY-NC-SA | excluded | License; English-centric |
+
+## 5. OCR
+
+Two tiers are decided separately: the **CPU default tier** (must meet budgets
+O1–O4) and an optional **GPU opt-in pack** (must clear the new-engine/OCR
+margin over the CPU tier, [ADR-0016](../adr/0016-cpu-first-npu-ready-execution.md)).
+Transcription VLMs are eligible only under the
+[ADR-0021](../adr/0021-no-generative-models-in-product.md) transcription rule
+(deterministic decoding, fixed prompt, hallucination gate). Vendor benchmark
+claims are self-reported until reproduced in Stage A.
+
+Priority follows fit with ONNX Runtime: (1) detection + recognition pipelines
+and small encoder-decoders already in ONNX, plus OS-native OCR (no engine to
+ship); (2) transcription VLMs, only if they export to ONNX and run with parity
+as split graphs; (3) models with their own engine (Tesseract, `ocrs`/RTen) or
+available only in GGUF, priced under the runtime-cost rule.
+
+| Candidate | Type | Size | License | Tier / role | Formats and engine paths | Notes |
+|---|---|---|---|---|---|---|
+| PP-OCRv5 / PP-OCRv6 mobile via `oar-ocr` | det + rec | small *(verify)* | Apache-2.0 | CPU: baseline | ONNX; already runs on ONNX Runtime via `oar-ocr` | Latin incl. pt; expected speed leader |
+| Windows.Media.Ocr | OS-native | 0 MB | OS component | CPU: challenger | OS API (no engine to ship) | Windows only; language packs |
+| Apple Vision text recognition | OS-native | 0 MB | OS component | CPU: challenger | OS API (no engine to ship) | macOS only |
+| Tesseract 5 | det + rec (LSTM) | small | Apache-2.0 | CPU: challenger | Own engine (C/C++ library); priced under the runtime-cost rule | Broad languages |
+| `ocrs` | det + rec | small | MIT / Apache-2.0 | CPU: challenger | Own pure-Rust engine (RTen); priced under the runtime-cost rule | Latin scripts |
+| LlamaIndex **OCRia** family | transcription VLM | OCRia-1: 4B (Qwen3.5-4B base); OCRia-1.5: 4B and 2B (released 2026-11-18) | *(verify: open weights and license)* | CPU: challenger if a variant meets O1 after quantization; else GPU pack | ONNX export path *(verify)*; otherwise priced only | Maintainer-requested as a possible CPU default. "OCRia-nano-1" was not found in public sources on 2026-11-27: **confirm exact name and revision** at Stage 0 |
+| OpenBMB **MiniCPM-OCR 1.0** | transcription VLM | 1.3B | Apache-2.0 per third-party listings *(verify LICENSE file)* | GPU pack: challenger; CPU: int4 probe | ONNX export path *(verify)*; GGUF q4/q8 published (priced only) | Released 2026-10 |
+| SoMark **OXR-1.0** | document parser VLM (Markdown/JSON + layout) | 1.3B | *(verify; possibly restrictive)* | GPU pack: challenger | ONNX export path *(verify)* | Released 2026-10-20; pluggable layout module; vendor serving guide recommends a ≥ 48 GB GPU *(verify inference-only needs)*; claims self-reported |
+| PaddleOCR-VL | transcription VLM | ~0.9B *(verify)* | Apache-2.0 *(verify)* | GPU pack: challenger; CPU: int4 probe | Paddle → ONNX export path *(verify)* | Small VLM; strong multilingual document parsing claims |
+| Florence-2 base / large | encoder-decoder | 0.23B / 0.77B | MIT *(verify)* | CPU: challenger | ONNX exports exist *(verify)* | OCR task; pt diacritics coverage *(verify)* |
+| DeepSeek-OCR, dots.ocr | VLM | ~3B class *(verify)* | *(verify)* | ceiling | Reference runtime | Quality reference on GPU |
+| olmOCR | VLM | 7B | Apache-2.0 *(verify)* | ceiling | Reference runtime | GPU-class; offline reference only |
+| `gety-ocr-v0` | — | — | proprietary, encrypted | excluded | — | Not usable or redistributable |
+
+## 6. Extractors
+
+| Format | Baseline (as built) | Challengers | Excluded |
+|---|---|---|---|
+| PDF | PDFium via `pdfium-render` | `lopdf`/`pdf-extract` (speed), other pure-Rust parsers *(verify)* | MuPDF (AGPL) |
+| DOCX / PPTX | zip + XML (custom) | `docx-rs`, `kreuzberg` core *(verify license)* | Apache Tika (JVM) |
+| XLSX / ODS | `calamine` | — | — |
+| ODT, RTF, EPUB, EML/MBOX, HTML | — (to add) | `quick-xml`, `mail-parser`, `html5ever`/`scraper` class | — |
+
+## 7. Lexical engines and analyzers
+
+| Candidate | License | Role | Notes |
+|---|---|---|---|
+| SQLite FTS5 `unicode61 remove_diacritics 2` | Public domain | baseline | As built; transactional with metadata |
+| SQLite FTS5 trigram tokenizer | Public domain | challenger | Substring/identifier matching |
+| Tantivy with per-language analyzers (Snowball pt/en, ASCII folding) | MIT | challenger | Segment-based, mmap, fast; separate index files |
+| Stemming / stopwords on vs off per language | — | ablation | Portuguese morphology likely benefits *(measure)* |
+
+## 8. Filename/path index
+
+| Candidate | License | Role |
+|---|---|---|
+| Lexical-engine field (FTS5/Tantivy) | — | baseline |
+| `fst` (prefix + Levenshtein automata) | MIT/Unlicense | challenger |
+| Trigram/n-gram inverted index (in-memory) | ours | challenger |
+| Fuzzy matcher over an in-memory path table (nucleo class) | MPL-2.0 *(verify)* | challenger |
+
+## 9. Vector stores and quantization
+
+| Candidate | License | Role | Notes |
+|---|---|---|---|
+| Exact f32 scan over SQLite BLOBs | — | baseline | As built; loads all vectors per query |
+| Flat memory-mapped int8 scan + f32 rescoring (SIMD) | ours | challenger | Trivial updates; no graph maintenance |
+| Binary (1-bit) Hamming first pass + int8/f32 rescoring | ours | challenger | Leading CPU-first candidate at 1M passages |
+| USearch HNSW (f16/i8/b1) | Apache-2.0 | challenger | ANN for L-scale; mmap views; predicate filtering |
+| sqlite-vec | MIT/Apache-2.0 | challenger | Single-file simplicity |
+| LanceDB (embedded) | Apache-2.0 | conditional | Only if lighter options miss budget (dependency weight, binary size) |
+| Qdrant/Milvus/pgvector servers, FAISS | — | excluded | Server processes or heavy native deps with no benefit at target scale |
+| `memista` | GPL-3.0 | excluded | License |
+
+Matryoshka truncation (for example 768 → 256) is evaluated jointly with
+quantization.
+
+## 10. Fusion
+
+| Candidate | Role |
+|---|---|
+| RRF, `k = 60` | baseline |
+| RRF `k ∈ {10, 30, 100}`, weighted RRF | challenger |
+| Convex combination of normalized scores (min-max, z-score) | challenger |
+| Query-class-specific weights (router) | challenger |
+| Gety-style fixed raw-score weights (0.2/0.8) | reference only |
+
+## 11. Chunking
+
+| Candidate | Role |
+|---|---|
+| 1,200 characters / 200 overlap (as built) | baseline |
+| Token windows 128 / 256 / 384 × overlap 0 / 32 / 64 | challenger grid |
+| Structure-aware (headings, paragraphs, pages, slides, sheets, code blocks) | challenger |
+| + in-document heading path as contextual header (never the filename) | ablation |
+
+## 12. Supporting libraries
+
+| Need | Baseline | Challengers |
+|---|---|---|
+| Language ID | — | `whatlang` (MIT), `lingua` (Apache-2.0) |
+| Sentence segmentation | — | `unicode-segmentation`, ICU4X segmenter (Unicode-3.0) |
+| Directory walk | `walkdir` | `ignore` (parallel), `jwalk` |
+| Change detection | `notify` | Windows USN journal, macOS FSEvents replay |
+| Hashing | `blake3` | — |
+| Near-duplicate signatures | — | SimHash, MinHash-LSH (ours or permissive crates) |
+| Tokenizers | `tokenizers` (Apache-2.0) | — |
+
+## 13. Inference engines
+
+ONNX Runtime is the single inference engine ([ADR-0019](../adr/0019-single-inference-engine.md)),
+validated by the gate in [methodology §8.7](methodology.md). The others are
+measured only for a role where a kill criterion fires (plan WP-2.3). Every
+engine below can run encoders (embedders, cross-encoder rerankers) and
+decoders; the file format does not imply a generative model.
+
+| Candidate | Format | License | Role | Notes |
+|---|---|---|---|---|
+| ONNX Runtime (`ort` crate) | ONNX | MIT | selected | Runs the PoC; execution providers for Intel (OpenVINO), Qualcomm (QNN), AMD (VitisAI), Apple (CoreML) NPUs; int8/QDQ and int4 `MatMulNBits` |
+| llama.cpp / ggml | GGUF | MIT | conditional (WP-2.3) | Compact CPU build; k-quants; encoder embeddings and reranking; multimodal projectors for VLMs; Rust bindings and NPU backends *(verify maturity)* |
+| OpenVINO (native API) | OpenVINO IR (reads ONNX too) | Apache-2.0 | conditional (WP-2.3, WP-5.2) | Converts PyTorch/ONNX/TF/Paddle to IR; NNCF int8/int4; CPU plugin on x86-64 and ARM64; strongest on Intel NPU; GenAI pipelines for VLMs *(verify per model)* |
+| candle / burn / tract | safetensors / ONNX | MIT / Apache-2.0 | conditional | Joins only if CPU kernels and NPU coverage qualify at Stage 0 |
+| vLLM, MLX, TensorRT | various | various | excluded (default path) | Server-, GPU-, or platform-specific; may be priced only for a GPU opt-in pack |
