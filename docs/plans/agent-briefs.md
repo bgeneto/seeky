@@ -756,6 +756,105 @@ hermetic, the minima cannot be met without copying text, or a change would
 touch a path outside the list above; report instead of guessing.
 ```
 
+### Lane L: WP-1.6, `seeky-bench perf`
+
+```text
+WORK PACKAGE: WP-1.6 per SPEC-0003 R25-R28 (sections 4.8-4.11 for the CLI,
+artifacts, and environment capture). BRANCH: wp/1.6-perf. STARTS AFTER:
+WP-1.2 merged (PR #14) and SPEC-0002 v1.1 Implemented (both true).
+OWNED PATHS: tools/seeky-bench/ (the perf modules, perf.rs and any new
+perf submodules, the perf command wiring in lib.rs, and tests under
+tools/seeky-bench/tests/); SPEC-0003 Status cells R25-R28. Do not touch
+crates/, apps/, tools/model-export/ (WP-0.6 is active there), root
+Cargo.toml, Cargo.lock, deny.toml, CI, the plan or its indexes,
+CHANGELOG.md, the audit, or any other spec text; propose those records in
+the PR. The perf skeleton already exists (tools/seeky-bench/src/perf.rs,
+command_perf in lib.rs); extend it, keep eval/compare/report unchanged.
+CONTENT: per-stage search latency on a fixed dev query set with warm-up
+discarded, p50/p95/p99 with seeded bootstrap CIs and the R25 sample minima;
+query-embedding batch-1 latency through Engine::probe_query_embedding;
+extraction files/s and MB/s, embedding passages/s, lexical and semantic
+time-to-searchable, and the S5 interference ratio (R26); idle and peak RSS
+with scope and sampling interval, page-cache bytes where available, index
+bytes per 1k passages, cold start to Instant- and semantic-capable, and
+explicit "unavailable" values for optional metrics (R27); tier and
+T1-emulated declaration checked against the captured environment, an
+explicit quiet-window check, and qualifies_for_budget = false on every
+undersampled or synthetic measurement (R28). Use only the SPEC-0002 v1.1
+Engine API; if a metric needs an engine change, stop and report.
+TESTS FIRST: the SPEC-0003 6.1 tests for R25-R28:
+perf_latency_percentiles_match_reference,
+perf_bootstrap_ci_matches_fixed_seed_reference,
+undersampled_perf_is_marked_not_budget_eligible,
+perf_indexing_and_embedding_metrics_are_present,
+time_to_searchable_uses_first_matching_result,
+interference_ratio_matches_hand_calculation,
+perf_resources_match_reference_fixture, perf_startup_marks_cold_and_scope,
+unavailable_optional_metrics_are_explicit,
+perf_rejects_tier_emulation_conflict,
+perf_records_tier_emulation_and_quiet_window,
+perf_budget_eligibility_is_explicit; plus malformed-flag tests. All
+hardware-free and hermetic (fake embedder, injected clock and RSS sampler,
+per-test temp dirs, fixed seeds, no sleeps as synchronization).
+GREEN: AGENTS 5 (Rust checks; the desktop checks only to confirm nothing
+outside the owned paths changed).
+MEASUREMENTS: do not run real perf measurements on this workstation while
+WP-0.6 gates run; a hermetic fixture run that reproduces the artifact
+shape is enough. Real T1/T1-emulated numbers are WP-1.7 (maintainer).
+DONE: R25-R28 Implemented with the tests above; perf writes its results
+through the existing atomic artifact writer; PR "WP-1.6: seeky-bench perf
+harness" with PROPOSED RECORDS (SPEC-0003 R25-R28 status and index count,
+plan WP-1.6 row and 15.2/16, CHANGELOG).
+STOP: a new dependency (for example an RSS or process-metrics crate) needs
+a license and size review and a root Cargo.toml change: report it with the
+candidate and its license instead of adding it; also stop if SPEC-0003
+leaves a metric definition undecided or a change would leave the owned
+paths.
+```
+
+### Lane K2: WP-7.2, light and dark themes
+
+```text
+WORK PACKAGE: WP-7.2 per SPEC-0014 v0.2 R10-R15 (sections 4.3-4.5, 5.2,
+5.4, 6.1, 6.3); R16 still applies. BRANCH: wp/7.2-themes. STARTS AFTER:
+WP-7.1 merged (PR #12, #15) (true).
+OWNED PATHS: apps/desktop/src/ (new src/theme/tokens.ts and theme.ts,
+App.css and components switched to semantic variables, the theme
+preference control in Settings, en/pt catalog keys for it),
+apps/desktop/scripts/check-theme.mjs, apps/desktop/tests/unit/,
+apps/desktop/package.json scripts (add `theme:check`; no new production
+dependency, R16), apps/desktop/src-tauri/ only for the R13 native theme and
+background synchronization (tauri.conf.json window theme/background and the
+narrow capability permissions section 4.5 names); SPEC-0014 Status cells
+R10-R15. The CI step for `npm run theme:check` is proposed in the PR, not
+edited. Do not touch crates/, tools/, root Cargo files, deny.toml,
+.github/, the plan or its indexes, CHANGELOG.md, the audit, or any other
+spec text.
+TESTS FIRST: the SPEC-0014 6.1 tests for R10-R15, including
+token_sets_have_same_semantic_keys, system_theme_changes_only_in_system_mode,
+os_theme_resolution_has_deterministic_fallback,
+theme_override_persists_and_applies_without_reload,
+invalid_theme_falls_back_system, storage_failure_uses_in_memory_preferences,
+native_theme_receives_null_for_system_and_explicit_override,
+native_background_matches_effective_background_token,
+initialization_failure_still_shows_window, contrast_black_white_is_21,
+text_token_pairs_meet_aa_in_both_themes,
+alpha_tokens_are_composited_before_contrast, and the R15 non-text contrast
+tests; native calls behind the section 4.3 adapter so they run with fakes.
+GREEN: AGENTS 5, including npm run build, format:check, i18n:check,
+test:unit, and the new theme:check.
+MANUAL: both themes x both locales, OS theme switch in System mode,
+restart persistence, and the native titlebar/startup background (no white
+flash in dark mode); list what was checked in the PR.
+DONE: R10-R15 Implemented; exactly two themes (ADR-0012); PR "WP-7.2:
+light and dark themes" with the frontend gzip-size delta and PROPOSED
+RECORDS (SPEC-0014 R10-R15 status and index, plan WP-7.2 row and 15.2/16,
+CHANGELOG, CI step for theme:check).
+STOP: a needed token role or contrast rule the spec leaves undecided, a
+new dependency, a Tauri capability beyond section 4.5, or any change
+outside the owned paths.
+```
+
 ## 7. Where the unattended run ends
 
 With the gates answered as they come up, the run can reach:
