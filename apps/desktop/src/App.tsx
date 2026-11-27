@@ -3,6 +3,10 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { open } from "@tauri-apps/plugin-dialog";
 import "./App.css";
+import { useI18n } from "./i18n/I18nProvider";
+import { LOCALE_PREFERENCES, type LocalePreference } from "./i18n/locale";
+import type { I18n, MessageKey, MessageValues } from "./i18n/messages";
+import { OPERATION_ERROR_KEYS, progressPhaseKey } from "./i18n/operations";
 import type {
   DocumentView,
   IndexHealth,
@@ -16,33 +20,63 @@ import type {
 
 type View = "search" | "files" | "settings";
 
-const BACKENDS = [
+/** A notice is re-rendered from its key, so it follows locale changes. */
+type Notice =
+  { key: MessageKey; values?: MessageValues } | { summary: IndexSummary };
+
+const BACKENDS: readonly {
+  id: string;
+  label: MessageKey;
+  detail: MessageKey;
+  description: MessageKey;
+}[] = [
   {
     id: "auto",
-    label: "Auto",
-    detail: "CPU",
-    blurb:
-      "Uses the CPU. NPU and GPU run only when chosen explicitly until they pass validation.",
+    label: "settings.backend.auto.label",
+    detail: "settings.backend.auto.detail",
+    description: "settings.backend.auto.description",
   },
   {
     id: "cpu",
-    label: "CPU",
-    detail: "ONNX Runtime · uint8",
-    blurb: "Universal fallback. Smallest model, lowest memory.",
+    label: "settings.backend.cpu.label",
+    detail: "settings.backend.cpu.detail",
+    description: "settings.backend.cpu.description",
   },
   {
     id: "cuda",
-    label: "CUDA",
-    detail: "RTX / ONNX Runtime · FP16",
-    blurb: "Fastest path on NVIDIA GPUs.",
+    label: "settings.backend.cuda.label",
+    detail: "settings.backend.cuda.detail",
+    description: "settings.backend.cuda.description",
   },
   {
     id: "npu",
-    label: "NPU",
-    detail: "Intel AI Boost · OpenVINO",
-    blurb: "Low-power inference on Intel Core Ultra NPUs.",
+    label: "settings.backend.npu.label",
+    detail: "settings.backend.npu.detail",
+    description: "settings.backend.npu.description",
   },
-] as const;
+];
+
+const SUPPORTED_TYPES: readonly [MessageKey, MessageKey][] = [
+  ["folders.supported.pdf.label", "folders.supported.pdf"],
+  ["folders.supported.docx.label", "folders.supported.docx"],
+  ["folders.supported.xlsx.label", "folders.supported.xlsx"],
+  ["folders.supported.pptx.label", "folders.supported.pptx"],
+  ["folders.supported.text.label", "folders.supported.text"],
+  ["folders.supported.html.label", "folders.supported.html"],
+  ["folders.supported.code.label", "folders.supported.code"],
+];
+
+const MATCH_TAGS: Record<string, MessageKey> = {
+  semantic: "search.tag.semantic",
+  filename: "search.tag.filename",
+  bm25: "search.tag.bm25",
+};
+
+const LOCALE_OPTIONS: Record<LocalePreference, MessageKey> = {
+  system: "settings.locale.option.system",
+  en: "settings.locale.option.en",
+  pt: "settings.locale.option.pt",
+};
 
 function basename(path: string) {
   const parts = path.split(/[\\/]/);
@@ -61,21 +95,42 @@ function cleanPath(path: string) {
   return path;
 }
 
-function formatBytes(bytes: number) {
-  if (!bytes) return "0 B";
-  const units = ["B", "KB", "MB", "GB"];
-  let value = bytes;
-  let unit = 0;
-  while (value >= 1024 && unit < units.length - 1) {
-    value /= 1024;
-    unit += 1;
+function formatWhen(i18n: I18n, timestamp: number | null | undefined) {
+  // Only a missing timestamp is "never"; epoch zero is a valid time (§4.2).
+  if (timestamp === null || timestamp === undefined) {
+    return i18n.t("common.time.never");
   }
-  return `${value.toFixed(value >= 10 || unit === 0 ? 0 : 1)} ${units[unit]}`;
+  return i18n.dateTime(timestamp);
 }
 
-function formatWhen(timestamp: number | null | undefined) {
-  if (!timestamp) return "never";
-  return new Date(timestamp * 1000).toLocaleString();
+function summaryText(i18n: I18n, summary: IndexSummary) {
+  const { t } = i18n;
+  if (summary.cancelled) {
+    return t("folders.notice.indexCancelled", {
+      summary: i18n.list([
+        t("common.count.files", { count: summary.files }),
+        t("indexing.summary.chunks", { count: summary.chunks }),
+      ]),
+    });
+  }
+  const parts = [t("indexing.summary.updated", { count: summary.files })];
+  if (summary.unchanged) {
+    parts.push(t("indexing.summary.unchanged", { count: summary.unchanged }));
+  }
+  parts.push(t("indexing.summary.chunks", { count: summary.chunks }));
+  if (summary.skipped) {
+    parts.push(t("indexing.summary.skipped", { count: summary.skipped }));
+  }
+  if (summary.removed) {
+    parts.push(t("indexing.summary.removed", { count: summary.removed }));
+  }
+  return i18n.list(parts);
+}
+
+function noticeText(i18n: I18n, notice: Notice) {
+  return "summary" in notice
+    ? summaryText(i18n, notice.summary)
+    : i18n.t(notice.key, notice.values);
 }
 
 function escapeRegExp(value: string) {
@@ -147,13 +202,16 @@ function Icon({
 }
 
 function App() {
+  const { i18n, preference, setPreference } = useI18n();
+  const { t } = i18n;
   const [status, setStatus] = useState<Status | null>(null);
   const [view, setView] = useState<View>("search");
   const [query, setQuery] = useState("");
   const [response, setResponse] = useState<SearchResponse | null>(null);
   const [searching, setSearching] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
+  // Raw IPC errors are diagnostic data; the UI shows an operation message (R8).
+  const [error, setError] = useState<MessageKey | null>(null);
+  const [notice, setNotice] = useState<Notice | null>(null);
   const [selected, setSelected] = useState<DocumentView | null>(null);
   const [progress, setProgress] = useState<IndexProgress | null>(null);
   const [indexing, setIndexing] = useState<string | null>(null);
@@ -164,8 +222,8 @@ function App() {
     try {
       const next = await invoke<Status>("get_status");
       setStatus(next);
-    } catch (err) {
-      setError(String(err));
+    } catch {
+      setError(OPERATION_ERROR_KEYS.refresh);
     }
   }
 
@@ -218,9 +276,9 @@ function App() {
           setResponse(result);
           setError(null);
         }
-      } catch (err) {
+      } catch {
         if (seq === searchSeq.current) {
-          setError(String(err));
+          setError(OPERATION_ERROR_KEYS.search);
           setResponse(null);
         }
       } finally {
@@ -235,19 +293,19 @@ function App() {
       const picked = await open({
         directory: true,
         multiple: false,
-        title: "Add a folder to Seeky",
+        title: t("folders.dialog.addTitle"),
       });
       if (!picked || Array.isArray(picked)) return;
       const root = await invoke<Root>("add_root", { path: picked });
       await refresh();
       setView("files");
-      setNotice(
-        root.watch_enabled
-          ? "Folder added. Watching for changes — index it to make it searchable."
-          : "Folder added, but watching failed. Check Index health, then index it manually.",
-      );
-    } catch (err) {
-      setError(String(err));
+      setNotice({
+        key: root.watch_enabled
+          ? "folders.notice.addedWatching"
+          : "folders.notice.addedWatchFailed",
+      });
+    } catch {
+      setError(OPERATION_ERROR_KEYS.addFolder);
     }
   }
 
@@ -255,9 +313,12 @@ function App() {
     try {
       await invoke("remove_root", { id: root.id });
       await refresh();
-      setNotice(`Removed ${cleanPath(root.path)} and its indexed documents.`);
-    } catch (err) {
-      setError(String(err));
+      setNotice({
+        key: "folders.notice.removed",
+        values: { folder: cleanPath(root.path) },
+      });
+    } catch {
+      setError(OPERATION_ERROR_KEYS.removeFolder);
     }
   }
 
@@ -268,13 +329,14 @@ function App() {
         enabled: !root.watch_enabled,
       });
       await refresh();
-      setNotice(
-        updated.watch_enabled
-          ? `Watching ${basename(updated.path)} for changes.`
-          : `Paused watching ${basename(updated.path)}.`,
-      );
-    } catch (err) {
-      setError(String(err));
+      setNotice({
+        key: updated.watch_enabled
+          ? "folders.notice.watchResumed"
+          : "folders.notice.watchPaused",
+        values: { folder: basename(updated.path) },
+      });
+    } catch {
+      setError(OPERATION_ERROR_KEYS.watch);
       await refresh();
     }
   }
@@ -288,27 +350,16 @@ function App() {
       current: 0,
       total: 0,
       file: root.path,
-      message: "Scanning…",
+      message: "",
     });
     try {
       const summary = await invoke<IndexSummary>("start_index", {
         path: root.path,
       });
-      if (summary.cancelled) {
-        setNotice(
-          `Index cancelled after ${summary.files} files / ${summary.chunks} chunks.`,
-        );
-      } else {
-        const parts = [`${summary.files} updated`];
-        if (summary.unchanged) parts.push(`${summary.unchanged} unchanged`);
-        parts.push(`${summary.chunks} chunks`);
-        if (summary.skipped) parts.push(`${summary.skipped} skipped`);
-        if (summary.removed) parts.push(`${summary.removed} removed`);
-        setNotice(parts.join(" · "));
-      }
+      setNotice({ summary });
       await refresh();
-    } catch (err) {
-      setError(String(err));
+    } catch {
+      setError(OPERATION_ERROR_KEYS.startIndex);
     } finally {
       setIndexing(null);
       setProgress(null);
@@ -318,9 +369,9 @@ function App() {
   async function cancelIndexing() {
     try {
       await invoke("cancel_index");
-      setNotice("Cancellation requested. The current file will finish first.");
-    } catch (err) {
-      setError(String(err));
+      setNotice({ key: "folders.notice.cancelRequested" });
+    } catch {
+      setError(OPERATION_ERROR_KEYS.cancelIndex);
     }
   }
 
@@ -334,9 +385,12 @@ function App() {
         model: string;
       }>("probe_backend", { backend });
       await refresh();
-      setNotice(`${info.backend} ready · ${info.device}`);
-    } catch (err) {
-      setError(String(err));
+      setNotice({
+        key: "settings.backend.noticeReady",
+        values: { backend: info.backend, device: info.device },
+      });
+    } catch {
+      setError(OPERATION_ERROR_KEYS.probeBackend);
       await refresh();
     } finally {
       setProbing(null);
@@ -349,9 +403,9 @@ function App() {
         id: hit.doc_id,
       });
       setSelected(doc);
-      if (!doc) setError("Document not found in the index.");
-    } catch (err) {
-      setError(String(err));
+      if (!doc) setError("errors.document.notFound");
+    } catch {
+      setError(OPERATION_ERROR_KEYS.loadPreview);
     }
   }
 
@@ -359,17 +413,35 @@ function App() {
     if (!selected) return;
     try {
       await invoke("open_document", { id: selected.id });
-    } catch (err) {
-      setError(String(err));
+    } catch {
+      setError(OPERATION_ERROR_KEYS.openFile);
     }
   }
 
   const counts = status?.counts;
   const health = status?.health;
+  const documents = counts?.documents ?? 0;
+  const chunks = counts?.chunks ?? 0;
   const progressPercent =
     progress && progress.total > 0
       ? Math.min(100, Math.round((progress.current / progress.total) * 100))
       : 0;
+  const engineName =
+    status?.engine?.backend ??
+    status?.backend_label ??
+    t("common.status.notLoaded");
+
+  function healthMessage() {
+    if (health?.indexing) return t("common.state.working");
+    if (!health || health.last_indexed_at === null) {
+      return t("folders.health.noActivity");
+    }
+    return t("folders.health.state.idle");
+  }
+
+  function pathValue(path: string | null | undefined) {
+    return path ? cleanPath(path) : t("common.status.notFound");
+  }
 
   return (
     <div className="shell">
@@ -380,7 +452,7 @@ function App() {
             seeky<span className="brand-dot">.</span>
           </span>
         </div>
-        <div className="brand-tag">local semantic search</div>
+        <div className="brand-tag">{t("common.brand.tagline")}</div>
 
         <nav className="nav">
           <button
@@ -388,21 +460,21 @@ function App() {
             onClick={() => setView("search")}
           >
             <Icon name="search" />
-            Search
+            {t("nav.search")}
           </button>
           <button
             className={view === "files" ? "nav-item active" : "nav-item"}
             onClick={() => setView("files")}
           >
             <Icon name="folder" />
-            Local Files
+            {t("nav.folders")}
           </button>
           <button
             className={view === "settings" ? "nav-item active" : "nav-item"}
             onClick={() => setView("settings")}
           >
             <Icon name="sliders" />
-            Settings
+            {t("nav.settings")}
           </button>
         </nav>
 
@@ -410,18 +482,16 @@ function App() {
         <div className="backend-card">
           <div className="backend-card-label">
             <Icon name="bolt" />
-            Inference
+            {t("common.inference.label")}
           </div>
-          <div className="backend-card-value">
-            {status?.engine?.backend ?? status?.backend_label ?? "not loaded"}
-          </div>
+          <div className="backend-card-value">{engineName}</div>
           <div className="backend-card-detail">
-            {status?.engine?.detail ?? "384-d Gety embeddings"}
+            {status?.engine?.detail ?? t("common.status.notLoaded")}
           </div>
         </div>
         <div className="sidebar-foot">
-          <span>{counts?.documents ?? 0} files</span>
-          <span>{counts?.chunks ?? 0} chunks</span>
+          <span>{t("common.count.files", { count: documents })}</span>
+          <span>{t("common.count.chunks", { count: chunks })}</span>
         </div>
       </aside>
 
@@ -432,7 +502,7 @@ function App() {
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search keyword, phrase, or meaning…"
+              placeholder={t("search.input.placeholder")}
               spellCheck={false}
               autoFocus
             />
@@ -441,7 +511,7 @@ function App() {
               <button
                 className="clear"
                 onClick={() => setQuery("")}
-                aria-label="Clear search"
+                aria-label={t("search.input.action.clear")}
               >
                 <Icon name="x" />
               </button>
@@ -449,20 +519,24 @@ function App() {
           </div>
           <button className="ghost-button" onClick={() => setView("files")}>
             <Icon name="folder" />
-            Add folder
+            {t("search.action.addFolder")}
           </button>
         </header>
 
         {error && (
           <div className="banner error">
-            <span>{error}</span>
-            <button onClick={() => setError(null)}>Dismiss</button>
+            <span>{t(error)}</span>
+            <button onClick={() => setError(null)}>
+              {t("common.action.dismiss")}
+            </button>
           </div>
         )}
         {notice && (
           <div className="banner notice">
-            <span>{notice}</span>
-            <button onClick={() => setNotice(null)}>Dismiss</button>
+            <span>{noticeText(i18n, notice)}</span>
+            <button onClick={() => setNotice(null)}>
+              {t("common.action.dismiss")}
+            </button>
           </div>
         )}
 
@@ -476,40 +550,35 @@ function App() {
               <>
                 {!query.trim() && (
                   <div className="hero">
-                    <div className="hero-kicker">PRIVATE · LOCAL · FAST</div>
-                    <h1>
-                      Meet Seeky,
-                      <br />
-                      your personal semantic file search.
-                    </h1>
-                    <p>
-                      Index your folders once. Then ask in plain language and
-                      get the passages that matter — with citations, on your
-                      machine.
-                    </p>
+                    <div className="hero-kicker">{t("search.hero.kicker")}</div>
+                    <h1>{t("search.hero.title")}</h1>
+                    <p>{t("search.hero.body")}</p>
                     <div className="hero-actions">
                       <button className="primary" onClick={addFolder}>
-                        Add a folder
+                        {t("search.hero.action.addFolder")}
                       </button>
                       <button
                         className="secondary"
                         onClick={() => setView("settings")}
                       >
-                        Choose CPU / CUDA / NPU
+                        {t("search.hero.action.chooseBackend")}
                       </button>
                     </div>
                     <div className="hero-stats">
                       <div>
-                        <strong>{counts?.documents ?? 0}</strong>
-                        <span>files indexed</span>
+                        <strong>{i18n.number(documents)}</strong>
+                        <span>{t("search.hero.stats.filesIndexed")}</span>
                       </div>
                       <div>
-                        <strong>{counts?.chunks ?? 0}</strong>
-                        <span>semantic chunks</span>
+                        <strong>{i18n.number(chunks)}</strong>
+                        <span>{t("search.hero.stats.semanticChunks")}</span>
                       </div>
                       <div>
-                        <strong>{status?.engine?.backend ?? "—"}</strong>
-                        <span>active backend</span>
+                        <strong>
+                          {status?.engine?.backend ??
+                            t("common.status.notAvailable")}
+                        </strong>
+                        <span>{t("search.hero.stats.activeBackend")}</span>
                       </div>
                     </div>
                   </div>
@@ -519,16 +588,22 @@ function App() {
                   <div className="results-head">
                     <span>
                       {searching
-                        ? "Searching…"
+                        ? t("search.status.searching")
                         : response
-                          ? `${response.hits.length} results · ${response.took_ms} ms`
-                          : "No results yet"}
+                          ? t("search.results.count", {
+                              count: response.hits.length,
+                              elapsedMs: Math.max(
+                                0,
+                                Math.round(response.took_ms),
+                              ),
+                            })
+                          : t("search.status.noResultsYet")}
                     </span>
                     {response && (
                       <span className="result-meta">
                         {response.semantic_used
-                          ? "hybrid BM25 + embeddings"
-                          : "BM25 only"}{" "}
+                          ? t("search.mode.hybrid")
+                          : t("search.mode.lexical")}{" "}
                         · {response.backend}
                       </span>
                     )}
@@ -541,10 +616,8 @@ function App() {
                   !searching && (
                     <div className="empty-state">
                       <Icon name="search" />
-                      <h3>No matches</h3>
-                      <p>
-                        Try a broader phrase, or add and index another folder.
-                      </p>
+                      <h3>{t("search.empty.title")}</h3>
+                      <p>{t("search.empty.body")}</p>
                     </div>
                   )}
 
@@ -565,25 +638,34 @@ function App() {
                       <div className="result-body">
                         <div className="result-title-row">
                           <span className="result-title">{hit.title}</span>
-                          <span className="score">{hit.score.toFixed(2)}</span>
+                          <span className="score">
+                            {i18n.number(hit.score, {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
+                          </span>
                         </div>
                         <div className="result-path">
                           {parentPath(hit.path)} · {hit.ext.toUpperCase()}
-                          {hit.page ? ` · p.${hit.page}` : ""}
+                          {hit.page
+                            ? ` · ${t("search.result.page", {
+                                page: i18n.number(hit.page, {
+                                  useGrouping: false,
+                                }),
+                              })}`
+                            : ""}
                         </div>
                         <p className="result-snippet">
                           <Highlighted text={hit.snippet} query={query} />
                         </p>
                         <div className="result-tags">
-                          {hit.matched.map((kind) => (
-                            <span key={kind} className={`tag ${kind}`}>
-                              {kind === "semantic"
-                                ? "semantic"
-                                : kind === "filename"
-                                  ? "filename"
-                                  : "BM25"}
-                            </span>
-                          ))}
+                          {hit.matched
+                            .filter((kind) => kind in MATCH_TAGS)
+                            .map((kind) => (
+                              <span key={kind} className={`tag ${kind}`}>
+                                {t(MATCH_TAGS[kind])}
+                              </span>
+                            ))}
                         </div>
                       </div>
                     </button>
@@ -596,16 +678,13 @@ function App() {
               <div className="page">
                 <div className="page-head">
                   <div>
-                    <div className="eyebrow">INDEX</div>
-                    <h2>Local Files</h2>
-                    <p>
-                      Folders Seeky can watch and search. Nothing leaves this
-                      machine.
-                    </p>
+                    <div className="eyebrow">{t("folders.eyebrow")}</div>
+                    <h2>{t("folders.title")}</h2>
+                    <p>{t("folders.description")}</p>
                   </div>
                   <button className="primary" onClick={addFolder}>
                     <Icon name="folder" />
-                    Add folder
+                    {t("folders.action.add")}
                   </button>
                 </div>
 
@@ -613,8 +692,8 @@ function App() {
                   {status?.roots.length === 0 && (
                     <div className="empty-state">
                       <Icon name="folder" />
-                      <h3>No folders yet</h3>
-                      <p>Add a folder to start building your local index.</p>
+                      <h3>{t("folders.empty.title")}</h3>
+                      <p>{t("folders.empty.body")}</p>
                     </div>
                   )}
                   {status?.roots.map((root) => (
@@ -626,8 +705,13 @@ function App() {
                         <div className="root-title">{basename(root.path)}</div>
                         <div className="root-path">{cleanPath(root.path)}</div>
                         <div className="root-meta">
-                          {root.documents} documents ·{" "}
-                          {root.documents > 0 ? "indexed" : "ready to index"}
+                          {t("folders.root.meta.documents", {
+                            count: root.documents,
+                          })}{" "}
+                          ·{" "}
+                          {root.documents > 0
+                            ? t("folders.root.status.indexed")
+                            : t("folders.root.status.readyToIndex")}
                         </div>
                       </div>
                       <div className="root-actions">
@@ -637,12 +721,14 @@ function App() {
                           aria-pressed={root.watch_enabled}
                           title={
                             root.watch_enabled
-                              ? "Pause filesystem watching"
-                              : "Resume filesystem watching"
+                              ? t("folders.root.action.pauseWatching")
+                              : t("folders.root.action.resumeWatching")
                           }
                         >
                           <span className="watch-dot" />
-                          {root.watch_enabled ? "Watching" : "Paused"}
+                          {root.watch_enabled
+                            ? t("common.state.watching")
+                            : t("common.state.paused")}
                         </button>
                         <button
                           className="secondary"
@@ -652,15 +738,15 @@ function App() {
                           }
                         >
                           {indexing === root.path
-                            ? "Indexing…"
+                            ? t("folders.root.action.indexing")
                             : root.documents > 0
-                              ? "Reindex"
-                              : "Index"}
+                              ? t("folders.root.action.reindex")
+                              : t("folders.root.action.index")}
                         </button>
                         <button
                           className="icon-button"
                           onClick={() => removeRoot(root)}
-                          aria-label="Remove folder"
+                          aria-label={t("folders.root.action.remove")}
                         >
                           <Icon name="x" />
                         </button>
@@ -672,10 +758,10 @@ function App() {
                 <div className="health-panel">
                   <div className="health-heading">
                     <div>
-                      <div className="panel-heading">Index health</div>
-                      <p>
-                        {health?.last_message ?? "No indexing activity yet."}
-                      </p>
+                      <div className="panel-heading">
+                        {t("folders.health.title")}
+                      </div>
+                      <p>{healthMessage()}</p>
                     </div>
                     <div className="health-actions">
                       {health?.indexing && (
@@ -683,81 +769,77 @@ function App() {
                           className="ghost-button"
                           onClick={cancelIndexing}
                         >
-                          Cancel
+                          {t("folders.health.action.cancel")}
                         </button>
                       )}
                       <span
                         className={`health-state ${health?.indexing ? "busy" : ""}`}
                       >
-                        {health?.indexing ? "Indexing" : "Idle"}
+                        {health?.indexing
+                          ? t("common.state.indexing")
+                          : t("folders.health.state.idle")}
                       </span>
                     </div>
                   </div>
                   <div className="health-grid">
                     <div>
-                      <span>Watcher</span>
+                      <span>{t("folders.health.watcher.label")}</span>
                       <strong>
                         {health?.watching
-                          ? `Watching ${health.watched_roots} folder${health.watched_roots === 1 ? "" : "s"}`
-                          : "Paused"}
+                          ? t("folders.health.watcher.watching", {
+                              count: health.watched_roots,
+                            })
+                          : t("common.state.paused")}
                       </strong>
                     </div>
                     <div>
-                      <span>Pending changes</span>
-                      <strong>{health?.pending ?? 0}</strong>
+                      <span>{t("folders.health.pending")}</span>
+                      <strong>{i18n.number(health?.pending ?? 0)}</strong>
                     </div>
                     <div>
-                      <span>Last indexed</span>
-                      <strong>{formatWhen(health?.last_indexed_at)}</strong>
-                    </div>
-                    <div>
-                      <span>Skipped / errors</span>
+                      <span>{t("folders.health.lastIndexed")}</span>
                       <strong>
-                        {health?.skipped ?? 0} / {health?.errors ?? 0}
+                        {formatWhen(i18n, health?.last_indexed_at)}
+                      </strong>
+                    </div>
+                    <div>
+                      <span>{t("folders.health.skippedErrors")}</span>
+                      <strong>
+                        {i18n.number(health?.skipped ?? 0)} /{" "}
+                        {i18n.number(health?.errors ?? 0)}
                       </strong>
                     </div>
                   </div>
                   {health?.current_file && (
                     <div className="health-current">
-                      Processing <code>{cleanPath(health.current_file)}</code>
+                      {t("folders.health.processing")}{" "}
+                      <code>{cleanPath(health.current_file)}</code>
                     </div>
                   )}
                   {health?.last_error && (
-                    <div className="health-error">{health.last_error}</div>
+                    <div className="health-error">
+                      {t("folders.health.lastError")}
+                    </div>
                   )}
                   {health && health.details.length > 0 && (
-                    <details className="health-details">
-                      <summary>
-                        Recent extraction issues ({health.details.length})
-                      </summary>
-                      <ul>
-                        {health.details.slice(0, 6).map((detail, index) => (
-                          <li key={`${index}-${detail}`}>{detail}</li>
-                        ))}
-                      </ul>
-                    </details>
+                    <div className="health-details">
+                      {t("folders.health.recentIssues", {
+                        count: health.details.length,
+                      })}
+                    </div>
                   )}
-                  <p className="health-hint">
-                    Live changes are applied automatically. Use Reindex to pick
-                    up edits made while Seeky was closed.
-                  </p>
+                  <p className="health-hint">{t("folders.health.hint")}</p>
                 </div>
 
                 <div className="type-panel">
-                  <div className="panel-heading">Supported today</div>
+                  <div className="panel-heading">
+                    {t("folders.supported.title")}
+                  </div>
                   <div className="type-grid">
-                    {[
-                      ["PDF", "text + pages"],
-                      ["DOCX", "paragraphs"],
-                      ["XLSX", "sheet cells"],
-                      ["PPTX", "slide text"],
-                      ["TXT / MD", "plain text"],
-                      ["HTML", "readable text"],
-                      ["CODE", "source files"],
-                    ].map(([label, detail]) => (
+                    {SUPPORTED_TYPES.map(([label, detail]) => (
                       <div className="type-chip" key={label}>
-                        <strong>{label}</strong>
-                        <span>{detail}</span>
+                        <strong>{t(label)}</strong>
+                        <span>{t(detail)}</span>
                       </div>
                     ))}
                   </div>
@@ -766,12 +848,8 @@ function App() {
                 <div className="callout">
                   <Icon name="database" />
                   <div>
-                    <strong>How indexing works</strong>
-                    <p>
-                      Seeky extracts text, chunks it, embeds every chunk with
-                      <code> gety-embed-v0</code>, and stores both BM25 and
-                      vector indexes in one SQLite file.
-                    </p>
+                    <strong>{t("folders.how.title")}</strong>
+                    <p>{t("folders.how.body")}</p>
                   </div>
                 </div>
               </div>
@@ -781,12 +859,9 @@ function App() {
               <div className="page">
                 <div className="page-head">
                   <div>
-                    <div className="eyebrow">INFERENCE</div>
-                    <h2>Hardware & models</h2>
-                    <p>
-                      Switch backends without changing the index. All models are
-                      local.
-                    </p>
+                    <div className="eyebrow">{t("settings.eyebrow")}</div>
+                    <h2>{t("settings.title")}</h2>
+                    <p>{t("settings.description")}</p>
                   </div>
                 </div>
 
@@ -805,16 +880,22 @@ function App() {
                         disabled={!available || Boolean(probing)}
                       >
                         <div className="backend-option-head">
-                          <strong>{backend.label}</strong>
-                          {selected && <span className="pill">active</span>}
+                          <strong>{t(backend.label)}</strong>
+                          {selected && (
+                            <span className="pill">
+                              {t("settings.backend.active")}
+                            </span>
+                          )}
                           {!available && (
-                            <span className="pill muted">unavailable</span>
+                            <span className="pill muted">
+                              {t("settings.backend.unavailable")}
+                            </span>
                           )}
                         </div>
                         <div className="backend-option-detail">
-                          {backend.detail}
+                          {t(backend.detail)}
                         </div>
-                        <p>{backend.blurb}</p>
+                        <p>{t(backend.description)}</p>
                         {probing === backend.id && (
                           <span className="spinner inline" />
                         )}
@@ -825,57 +906,76 @@ function App() {
 
                 <div className="settings-grid">
                   <div className="setting-card">
-                    <div className="panel-heading">Active engine</div>
+                    <div className="panel-heading">
+                      {t("settings.engine.title")}
+                    </div>
                     {status?.engine ? (
                       <dl>
-                        <dt>Backend</dt>
+                        <dt>{t("settings.engine.backend")}</dt>
                         <dd>{status.engine.backend}</dd>
-                        <dt>Device</dt>
+                        <dt>{t("settings.engine.device")}</dt>
                         <dd>{status.engine.device}</dd>
-                        <dt>Model</dt>
+                        <dt>{t("settings.engine.model")}</dt>
                         <dd>{status.engine.model}</dd>
-                        <dt>Shape</dt>
+                        <dt>{t("settings.engine.shape")}</dt>
                         <dd>{status.engine.detail}</dd>
                       </dl>
                     ) : (
-                      <p className="muted">
-                        No engine loaded yet. Choose a backend or run a
-                        search/index.
-                      </p>
+                      <p className="muted">{t("settings.engine.empty")}</p>
                     )}
                   </div>
                   <div className="setting-card">
-                    <div className="panel-heading">Index</div>
+                    <div className="panel-heading">
+                      {t("settings.index.title")}
+                    </div>
                     <dl>
-                      <dt>Documents</dt>
-                      <dd>{counts?.documents ?? 0}</dd>
-                      <dt>Chunks</dt>
-                      <dd>{counts?.chunks ?? 0}</dd>
-                      <dt>Embeddings</dt>
-                      <dd>{counts?.embeddings ?? 0}</dd>
-                      <dt>Roots</dt>
-                      <dd>{counts?.roots ?? 0}</dd>
+                      <dt>{t("settings.index.documents")}</dt>
+                      <dd>{i18n.number(documents)}</dd>
+                      <dt>{t("settings.index.chunks")}</dt>
+                      <dd>{i18n.number(chunks)}</dd>
+                      <dt>{t("settings.index.embeddings")}</dt>
+                      <dd>{i18n.number(counts?.embeddings ?? 0)}</dd>
+                      <dt>{t("settings.index.roots")}</dt>
+                      <dd>{i18n.number(counts?.roots ?? 0)}</dd>
                     </dl>
                   </div>
+                  <div className="setting-card">
+                    <div className="panel-heading">
+                      {t("settings.preferences.title")}
+                    </div>
+                    <label className="preference-row">
+                      <span>{t("settings.locale.label")}</span>
+                      <select
+                        value={preference}
+                        onChange={(event) =>
+                          setPreference(event.target.value as LocalePreference)
+                        }
+                      >
+                        {LOCALE_PREFERENCES.map((option) => (
+                          <option
+                            key={option}
+                            value={option}
+                            lang={option === "system" ? undefined : option}
+                          >
+                            {t(LOCALE_OPTIONS[option])}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  </div>
                   <div className="setting-card wide">
-                    <div className="panel-heading">Model paths</div>
+                    <div className="panel-heading">
+                      {t("settings.paths.title")}
+                    </div>
                     <dl>
-                      <dt>Gety model</dt>
-                      <dd className="path">
-                        {cleanPath(status?.model_root ?? "not found")}
-                      </dd>
-                      <dt>OpenVINO IR</dt>
-                      <dd className="path">
-                        {cleanPath(status?.npu_model ?? "not found")}
-                      </dd>
-                      <dt>PDFium</dt>
-                      <dd className="path">
-                        {cleanPath(status?.pdfium ?? "not found")}
-                      </dd>
-                      <dt>Database</dt>
-                      <dd className="path">
-                        {cleanPath(status?.db_path ?? "not found")}
-                      </dd>
+                      <dt>{t("settings.paths.embeddingModel")}</dt>
+                      <dd className="path">{pathValue(status?.model_root)}</dd>
+                      <dt>{t("settings.paths.openvinoIr")}</dt>
+                      <dd className="path">{pathValue(status?.npu_model)}</dd>
+                      <dt>{t("settings.paths.pdfium")}</dt>
+                      <dd className="path">{pathValue(status?.pdfium)}</dd>
+                      <dt>{t("settings.paths.database")}</dt>
+                      <dd className="path">{pathValue(status?.db_path)}</dd>
                     </dl>
                   </div>
                 </div>
@@ -883,13 +983,8 @@ function App() {
                 <div className="callout">
                   <Icon name="bolt" />
                   <div>
-                    <strong>Backend notes</strong>
-                    <p>
-                      CUDA uses the FP16 Gety export and NVIDIA’s runtime. NPU
-                      uses the OpenVINO IR on Intel AI Boost. CPU uses the uint8
-                      ONNX export. The first load compiles/loads the model and
-                      may take a few seconds.
-                    </p>
+                    <strong>{t("settings.backendNotes.title")}</strong>
+                    <p>{t("settings.backendNotes.body")}</p>
                   </div>
                 </div>
               </div>
@@ -900,24 +995,22 @@ function App() {
             <aside className="preview">
               <div className="preview-head">
                 <div>
-                  <div className="preview-kicker">PREVIEW</div>
+                  <div className="preview-kicker">{t("preview.kicker")}</div>
                   <h3>{selected.title}</h3>
                   <div className="preview-path">{cleanPath(selected.path)}</div>
                 </div>
                 <button
                   className="icon-button"
                   onClick={() => setSelected(null)}
-                  aria-label="Close preview"
+                  aria-label={t("preview.action.close")}
                 >
                   <Icon name="x" />
                 </button>
               </div>
               <div className="preview-meta">
                 <span>{selected.ext.toUpperCase()}</span>
-                <span>{formatBytes(selected.size)}</span>
-                <span>
-                  {new Date(selected.modified * 1000).toLocaleDateString()}
-                </span>
+                <span>{i18n.bytes(selected.size)}</span>
+                <span>{i18n.date(selected.modified)}</span>
               </div>
               <div className="preview-body">
                 <Highlighted
@@ -927,7 +1020,7 @@ function App() {
               </div>
               <div className="preview-foot">
                 <button className="primary" onClick={openFile}>
-                  Open file
+                  {t("preview.action.openFile")}
                   <Icon name="arrow" />
                 </button>
               </div>
@@ -941,17 +1034,17 @@ function App() {
             {indexing || health?.indexing ? (
               <span>
                 {indexing
-                  ? `Indexing ${basename(indexing)} · ${progress?.message ?? "working…"}`
-                  : `Watching · ${
+                  ? `${t("status.indexingFolder", { folder: basename(indexing) })} · ${t(progressPhaseKey(progress?.phase))}`
+                  : `${t("status.watching")} · ${
                       health?.current_file
                         ? cleanPath(health.current_file)
-                        : "applying changes…"
+                        : t("common.state.applyingChanges")
                     }`}
               </span>
             ) : (
               <span>
-                {counts?.documents ?? 0} files searchable ·{" "}
-                {counts?.chunks ?? 0} chunks
+                {t("status.filesSearchable", { count: documents })} ·{" "}
+                {t("common.count.chunks", { count: chunks })}
               </span>
             )}
           </div>
@@ -961,11 +1054,11 @@ function App() {
             </div>
           )}
           <div className="status-right">
-            <span>
-              {status?.engine?.backend ?? status?.backend_label ?? "not loaded"}
-            </span>
+            <span>{engineName}</span>
             <span className="status-sep">·</span>
-            <span>384-d</span>
+            <span>
+              {status?.engine?.detail ?? t("common.status.notAvailable")}
+            </span>
           </div>
         </footer>
       </main>

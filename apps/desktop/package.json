@@ -12,6 +12,8 @@
     "tauri": "tauri",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "i18n:check": "node scripts/check-i18n.mjs",
+    "test:unit": "node --test \"tests/unit/*.test.ts\"",
     "prepare": "node scripts/install-git-hooks.mjs"
   },
   "dependencies": {
