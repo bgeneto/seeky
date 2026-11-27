@@ -569,7 +569,8 @@ Rules:
 | M1 Live incremental index | Done | 0.1.0 |
 | Phase 0 | In progress | WP-0.1 to WP-0.5 done (WP-0.4 after H4 approval on 2026-11-27); WP-0.6 gate tooling merged (bounded timeouts); its final K1–K4 report and H3/H5 are pending (§15.3). Pre-flight fixes done outside any WP: fmt, clippy `-D warnings`, `hw-tests` feature, HTML fix, Auto is CPU-only until the NPU is validated ([conformance audit](../validation/poc-conformance-audit.md)). SPEC-0001 and SPEC-0002 v1 Implemented; manual Phase 0 app checks remain |
 | Phase 1 | In progress | WP-1.1 `seeky-eval` merged (SPEC-0003 R1–R14); WP-1.3 Done (R1–R14, full-scale `sdc-s` verified at 10,000 files and 109,689 passages); WP-1.2 `seeky-bench` implements R15–R22/R32 and SPEC-0002 v1.1, with the real smoke eval waiting on WP-1.4/H6; WP-1.6 Done (`seeky-bench perf`, SPEC-0003 R25–R28; real T1 numbers are WP-1.7); WP-1.4 draft queries and candidate judgments merged (draft-only; H6 verification open); WP-1.5 pins four public datasets, with cross-lingual and large-corpus sources blocked (§15.3) |
-| Phases 2-9 | Not started | - |
+| Phase 7 | In progress | SPEC-0014 v1 complete: WP-7.1 (i18n) and WP-7.2 (themes) Done; WP-7.3–WP-7.9 wait for SPEC-0014 v2 and WP-4.3 |
+| Phases 2-6, 8-9 | Not started | - |
 | Phase 10 | Not started | Planned per ADR-0023, accepted 2026-11-27 (optional visual pack; off the 1.0 critical path) |
 
 ### 15.3 Work packages
@@ -638,7 +639,7 @@ Rules:
 | 6.5 | Not started | — | — |
 | 6.6 | Not started | — | — |
 | 7.1 | Done | SPEC-0014 v0.2 R1–R9, R16, R17: `apps/desktop/src/i18n/`, `src/layout/previewWidth.ts`, `scripts/check-i18n.mjs`, `tests/unit/` (`npm run i18n:check`, `npm run test:unit` in CI); manual locale check by the maintainer 2026-11-27 | Dependency moved from Phase 0 to WP-0.3 by the maintainer on 2026-11-27: the UI needs only the thin shell, not the WP-0.6 ORT gate |
-| 7.2 | Not started | — | — |
+| 7.2 | Done | [SPEC-0014](../specs/SPEC-0014-desktop-experience.md) v0.2 R10–R15: `apps/desktop/src/theme/` (two semantic token sets, System/Light/Dark preference, native theme and background sync), `scripts/check-theme.mjs` (`npm run theme:check`: WCAG 2.2 AA text and non-text pairs in both themes, run in CI), `tests/unit/theme.test.ts` and `theme-check.test.ts`; frontend gzip +2.8 kB; [PR #17](https://github.com/bgeneto/seeky/pull/17); commits: `git log --grep "WP-7.2"` | Merged on the maintainer's go-ahead after the native titlebar/startup-flash check on `tauri dev`; WP-7.3–WP-7.9 await SPEC-0014 v2 |
 | 7.3 | Not started | — | — |
 | 7.4 | Not started | — | — |
 | 7.5 | Not started | — | — |
@@ -689,6 +690,5 @@ finished items and add the next ones, so this list never points at done work.
    Qwen3-0.6B model for semantic paraphrase and pt<->en pairs; all 732 records
    remain unverified drafts. H6 human verification is next, including the
    `sdc-smoke-v1` subset required by WP-1.8.
-5. In parallel (UX track): WP-7.1 is Done; WP-7.2 (themes, SPEC-0014 v1
-   R10–R15) is in progress on `wp/7.2-themes`, based on WP-0.3
-   (maintainer, 2026-11-27).
+5. UX track: SPEC-0014 v1 is complete (WP-7.1 and WP-7.2 Done). WP-7.3 and
+   later need SPEC-0014 v2 and WP-4.3 (progressive search).

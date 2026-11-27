@@ -53,7 +53,7 @@ closed, the Status field above becomes `Closed`.
 | Vector search | Exact scan of every vector decoded from SQLite on each query, while holding the database lock | [ADR-0020](../adr/0020-pluggable-index-backends.md) | WP-2.9 |
 | Ranking | Chunk-level fusion only: no document layer, dedupe, diversity, or reranking | [ADR-0013](../adr/0013-hierarchical-multilingual-retrieval.md) | Phase 4 |
 | Indexing | One pass per file (extract, embed, store); no durable queue or resource governor | [indexing](../architecture/indexing.md) | WP-3.1, WP-3.2 |
-| UI | Dark theme only; English strings hardcoded | [ADR-0012](../adr/0012-two-themes-minimal-ui-en-pt.md) | WP-7.1, WP-7.2 |
+| UI | Dark theme only; English strings hardcoded | [ADR-0012](../adr/0012-two-themes-minimal-ui-en-pt.md) | **Closed** (WP-7.1, WP-7.2): en/pt catalogs (`npm run i18n:check`) and light/dark themes following the OS (`native_theme_receives_null_for_system_and_explicit_override`, `npm run theme:check`) |
 | Webview | Content Security Policy is `null` | ADR-0006 | WP-7.9 |
 | Libraries | `anyhow` in library code; no `tracing` spans | AGENTS.md §6 | **Closed** (WP-0.2): `thiserror` errors in libraries and stage spans without content or paths |
 

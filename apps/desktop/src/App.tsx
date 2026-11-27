@@ -25,6 +25,8 @@ import {
   parsePreviewWidth,
 } from "./layout/previewWidth";
 import { browserStorage, createPreferenceStore } from "./preferences";
+import { THEME_PREFERENCES, type ThemePreference } from "./theme/theme";
+import { useTheme } from "./theme/ThemeProvider";
 import type {
   DocumentView,
   IndexHealth,
@@ -94,6 +96,12 @@ const LOCALE_OPTIONS: Record<LocalePreference, MessageKey> = {
   system: "settings.locale.option.system",
   en: "settings.locale.option.en",
   pt: "settings.locale.option.pt",
+};
+
+const THEME_OPTIONS: Record<ThemePreference, MessageKey> = {
+  system: "settings.theme.option.system",
+  light: "settings.theme.option.light",
+  dark: "settings.theme.option.dark",
 };
 
 const layoutStore = createPreferenceStore(browserStorage);
@@ -223,6 +231,7 @@ function Icon({
 
 function App() {
   const { i18n, preference, setPreference } = useI18n();
+  const theme = useTheme();
   const { t } = i18n;
   const [status, setStatus] = useState<Status | null>(null);
   const [view, setView] = useState<View>("search");
@@ -1030,6 +1039,23 @@ function App() {
                             lang={option === "system" ? undefined : option}
                           >
                             {t(LOCALE_OPTIONS[option])}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="preference-row">
+                      <span>{t("settings.theme.label")}</span>
+                      <select
+                        value={theme.preference}
+                        onChange={(event) =>
+                          theme.setPreference(
+                            event.target.value as ThemePreference,
+                          )
+                        }
+                      >
+                        {THEME_PREFERENCES.map((option) => (
+                          <option key={option} value={option}>
+                            {t(THEME_OPTIONS[option])}
                           </option>
                         ))}
                       </select>

@@ -12,6 +12,12 @@ roadmap (§6), with the date.
 ## Unreleased
 
 ### Added
+- Desktop light and dark themes (SPEC-0014 R10–R15, WP-7.2). Seeky follows
+  the OS theme by default and live; Settings → Theme overrides it (System
+  default / Light / Dark), saved locally. The native window and titlebar
+  match, and the window stays hidden until the theme is applied, so there is
+  no startup flash. All colors come from two semantic token sets checked for
+  WCAG 2.2 AA contrast by the new `npm run theme:check`, which CI runs.
 - `tools/qrels-drafter` drafts the `sdc-v1` query set offline from templates for
   the six template-faithful categories and the pinned Qwen3-0.6B model for
   `conceptual`, `exploratory`, and `cross_language`. The committed
