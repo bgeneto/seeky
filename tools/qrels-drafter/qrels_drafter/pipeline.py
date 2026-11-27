@@ -21,19 +21,26 @@ def run_draft(
     *,
     plan: dict | None = None,
     check_minima: bool = True,
+    progress=None,
 ) -> dict:
     """Draft the full set (or only the template categories when ``runner`` is None)."""
 
     corpus = Corpus.load(Path(corpus_root))
+    if progress is not None:
+        progress(f"corpus loaded: {len(corpus.documents)} documents")
     drafts = build_all_templates(corpus, plan)
+    if progress is not None:
+        progress(f"templates: {len(drafts)} queries ready")
     if runner is not None:
-        drafts.extend(build_all_llm(corpus, runner, plan))
+        drafts.extend(build_all_llm(corpus, runner, plan, progress))
     identified = assign_ids(drafts)
     splits = assign_splits(identified, config.SPLIT_SEED)
     judgments = build_judgments(corpus, [draft for _, draft in identified])
     queries, documents, passages = build_rows(corpus, identified, judgments, splits)
     # Refuse to write a draft that cannot pass the WP-1.4 minima and scope rules.
     summary = audit_rows(queries, documents, passages, [], check_minima=check_minima, corpus=corpus)
+    if progress is not None:
+        progress(f"audit passed: {summary['queries']} queries")
     write_set(output, corpus.corpus_hash, splits, queries, documents, passages)
     summary["output"] = str(output)
     return summary

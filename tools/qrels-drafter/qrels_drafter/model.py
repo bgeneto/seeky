@@ -10,6 +10,7 @@ from __future__ import annotations
 import os
 import re
 import subprocess
+from collections.abc import Callable
 from dataclasses import dataclass, field
 
 from . import config
@@ -58,12 +59,40 @@ class Runner:
     label: str
     model: config.ModelPin = config.DEFAULT_MODEL
     prompt_style: str = "stdin"  # "stdin" for the test stub, "argv" for llama.cpp
+    timeout: float = TIMEOUT_SECONDS
+    deadline: float | None = None  # time.monotonic() cutoff for the whole run
+    on_call: Callable[[float], None] | None = None
+    cache_dir: "Path | None" = None
     _calls: int = field(default=0, init=False)
+    _hits: int = field(default=0, init=False)
     _latencies: list[float] = field(default_factory=list, init=False)
+
+    def _cache_key(self, prompt: str) -> str | None:
+        if self.cache_dir is None:
+            return None
+        from .jsonio import canonical_sha256
+
+        return canonical_sha256(
+            {
+                "prompt": prompt,
+                "model": self.model.as_dict(),
+                "runner": os.path.basename(self.command[0]) if self.command else "",
+            }
+        )
 
     def complete(self, prompt: str) -> str:
         import time
 
+        key = self._cache_key(prompt)
+        if key is not None:
+            cached = self.cache_dir / f"{key}.txt"  # type: ignore[union-attr]
+            if cached.is_file():
+                self._hits += 1
+                return cached.read_text(encoding="utf-8")
+        if self.deadline is not None and time.monotonic() > self.deadline:
+            raise ModelError(
+                "the draft deadline expired before this model call; stop instead of hanging"
+            )
         environment = dict(os.environ)
         # Keep the child deterministic and quiet; llama.cpp logs on stderr.
         environment.pop("LLAMA_ARG_LOG_FILE", None)
@@ -78,14 +107,16 @@ class Runner:
                 stdin=subprocess.DEVNULL if self.prompt_style != "stdin" else None,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.DEVNULL,
-                timeout=TIMEOUT_SECONDS,
+                timeout=self.timeout,
                 check=False,
                 env=environment,
             )
         except OSError as exc:
             raise ModelError(f"cannot start the local runner {self.label!r}: {exc}") from exc
         except subprocess.TimeoutExpired as exc:
-            raise ModelError(f"the local runner {self.label!r} timed out") from exc
+            raise ModelError(
+                f"the local runner {self.label!r} exceeded {self.timeout:.0f} s"
+            ) from exc
         elapsed = time.perf_counter() - started
         if finished.returncode != 0:
             raise ModelError(
@@ -93,11 +124,16 @@ class Runner:
             )
         self._calls += 1
         self._latencies.append(elapsed)
+        if self.on_call is not None:
+            self.on_call(elapsed)
         text = clean_completion(
             finished.stdout.decode("utf-8", "replace"), strip_think=self.model.strip_think
         )
         if not text:
             raise ModelError(f"the local runner {self.label!r} returned no text")
+        if key is not None:
+            self.cache_dir.mkdir(parents=True, exist_ok=True)  # type: ignore[union-attr]
+            (self.cache_dir / f"{key}.txt").write_text(text, encoding="utf-8")  # type: ignore[union-attr]
         return text
 
     @property
@@ -108,6 +144,10 @@ class Runner:
     def latencies(self) -> list[float]:
         return list(self._latencies)
 
+    @property
+    def cache_hits(self) -> int:
+        return self._hits
+
 
 def llama_cpp_runner(
     cli: str,
@@ -115,6 +155,10 @@ def llama_cpp_runner(
     model: config.ModelPin = config.DEFAULT_MODEL,
     threads: int = 8,
     gpu_layers: int = 0,
+    timeout: float = TIMEOUT_SECONDS,
+    deadline: float | None = None,
+    on_call: Callable[[float], None] | None = None,
+    cache_dir=None,
 ) -> Runner:
     decode = model.decode
     command = [
@@ -140,7 +184,16 @@ def llama_cpp_runner(
         "--no-warmup",
         "--no-display-prompt",
     ]
-    return Runner(command=command, label="llama.cpp", model=model, prompt_style="argv")
+    return Runner(
+        command=command,
+        label="llama.cpp",
+        model=model,
+        prompt_style="argv",
+        timeout=timeout,
+        deadline=deadline,
+        on_call=on_call,
+        cache_dir=cache_dir,
+    )
 
 
 def command_runner(argv: list[str], model: config.ModelPin = config.DEFAULT_MODEL) -> Runner:

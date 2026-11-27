@@ -1,11 +1,15 @@
-"""Runner wiring: pinned decode settings, GPU layers, think stripping."""
+"""Runner wiring: pinned decode settings, GPU layers, think stripping, cache."""
 
 from __future__ import annotations
 
+import sys
+import tempfile
 import unittest
+from pathlib import Path
 
+import support
 from qrels_drafter import config
-from qrels_drafter.model import clean_completion, llama_cpp_runner
+from qrels_drafter.model import clean_completion, command_runner, llama_cpp_runner
 
 
 class RunnerWiring(unittest.TestCase):
@@ -28,6 +32,16 @@ class RunnerWiring(unittest.TestCase):
             clean_completion(raw, strip_think=True),
             '{"query": "maintenance schedule"}',
         )
+
+    def test_prompt_cache_replays_without_calling_the_runner(self):
+        runner = command_runner([sys.executable, str(support.STUB)], config.QWEN3_0_6B)
+        runner.cache_dir = Path(tempfile.mkdtemp(prefix="qrels-drafter-cache-"))
+        prompt = "TASK: conceptual\nANCHOR: doc-x\nLANGUAGE: pt-BR\n"
+        first = runner.complete(prompt)
+        second = runner.complete(prompt)
+        self.assertEqual(first, second)
+        self.assertEqual(runner.calls, 1)
+        self.assertEqual(runner.cache_hits, 1)
 
 
 if __name__ == "__main__":
