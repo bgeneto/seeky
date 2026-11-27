@@ -6,6 +6,8 @@
 //! Everything is synthetic and created in a temporary directory; a tiny git
 //! repository supplies commit and clean-tree evidence.
 
+pub mod sdc;
+
 use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
 use std::process::Command;

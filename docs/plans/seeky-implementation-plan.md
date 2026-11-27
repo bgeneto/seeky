@@ -568,7 +568,7 @@ Rules:
 | M0 Runnable PoC | Done | 0.1.0 |
 | M1 Live incremental index | Done | 0.1.0 |
 | Phase 0 | In progress | WP-0.1 to WP-0.5 done (WP-0.4 after H4 approval on 2026-11-27); WP-0.6 gate tooling merged (bounded timeouts); its final K1–K4 report and H3/H5 are pending (§15.3). Pre-flight fixes done outside any WP: fmt, clippy `-D warnings`, `hw-tests` feature, HTML fix, Auto is CPU-only until the NPU is validated ([conformance audit](../validation/poc-conformance-audit.md)). SPEC-0001 and SPEC-0002 v1 Implemented; manual Phase 0 app checks remain |
-| Phase 1 | In progress | WP-1.1 `seeky-eval` merged (SPEC-0003 R1–R14); WP-1.3 Done (R1–R14, full-scale `sdc-s` verified at 10,000 files and 109,689 passages); WP-1.2 `seeky-bench` implements R15–R22/R32 and SPEC-0002 v1.1, with the real smoke eval waiting on WP-1.4/H6; WP-1.6 Done (`seeky-bench perf`, SPEC-0003 R25–R28; real T1 numbers are WP-1.7); WP-1.4 draft queries and candidate judgments merged (draft-only; H6 verification open); WP-1.5 pins four public datasets, with cross-lingual and large-corpus sources blocked (§15.3) |
+| Phase 1 | In progress | WP-1.1 `seeky-eval` merged (SPEC-0003 R1–R14); WP-1.3 Done (R1–R14, full-scale `sdc-s` verified at 10,000 files and 109,689 passages); WP-1.2 `seeky-bench` implements R15–R22/R32 and SPEC-0002 v1.1, with the real smoke eval waiting on WP-1.4/H6; WP-1.6 Done (`seeky-bench perf`, SPEC-0003 R25–R28; real T1 numbers are WP-1.7); WP-1.4 draft queries and candidate judgments merged (draft-only; H6 verification open); WP-1.8 smoke-gate code merged, dormant until H6; WP-1.5 pins four public datasets, with cross-lingual and large-corpus sources blocked (§15.3) |
 | Phase 7 | In progress | SPEC-0014 v1 complete: WP-7.1 (i18n) and WP-7.2 (themes) Done; WP-7.3–WP-7.9 wait for SPEC-0014 v2 and WP-4.3 |
 | Phases 2-6, 8-9 | Not started | - |
 | Phase 10 | Not started | Planned per ADR-0023, accepted 2026-11-27 (optional visual pack; off the 1.0 critical path) |
@@ -590,7 +590,7 @@ Rules:
 | 1.5 | In progress | [SPEC-0003](../specs/SPEC-0003-evaluation-harness.md) R23–R24; `tools/dataset-fetch/` (stdlib-only Python 3.12) and `bench/datasets/` with pinned `beir-scifact`, `beir-nfcorpus`, `beir-fiqa`, and `mldr-pt` manifests, locks, and notices; 56 tool tests, offline `verify` on all four, and real `seeky-eval` BEIR-loader parity; [PR #11](https://github.com/bgeneto/seeky/pull/11) | Remaining: no real mMARCO-pt/pt↔en pair pin (recipe tested synthetically), MIRACL publishes dev qrels only, and TREC-COVID/MLDR-en/Quati are deferred for size; FiQA's manifest is ~8.9 MB because §4.2 requires a per-document hash |
 | 1.6 | Done | [SPEC-0003](../specs/SPEC-0003-evaluation-harness.md) R25–R28 (v0.2); `tools/seeky-bench/src/perf.rs` and `src/perf/` (search, embedding, indexing/time-to-searchable, interference, resources, startup suites; tier/quiet-window/eligibility); `crates/seeky-eval` §4.10 performance shape (`query_embedding {batch, samples, latency_ms}`, optional RSS, `warnings`); 13 perf acceptance tests in `tools/seeky-bench/tests/perf.rs` plus unit tests; SPEC-0001 §5.3 windows-sys exemption; [PR #18](https://github.com/bgeneto/seeky/pull/18); commits: `git log --grep "WP-1.6"` | Real T1/T1-emulated numbers are WP-1.7. Extraction and embedding throughput share one timed pass until the engine exposes indexing stage timings |
 | 1.7 | Not started | — | — |
-| 1.8 | Not started | — | — |
+| 1.8 | In progress | [SPEC-0003](../specs/SPEC-0003-evaluation-harness.md) R29–R31 implemented: `tools/seeky-bench/src/smoke_gate.rs` (typed gate reasons, R30 provenance, R31 run invariants and repeat determinism), `compare --gate wp1.8` writes a `smoke_gate` report; tests `tools/seeky-bench/tests/wp18_gate.rs` (synthetic verified `sdc-smoke` fixture); dormant job `.github/workflows/smoke-gate.yml`; [PR #22](https://github.com/bgeneto/seeky/pull/22); commits: `git log --grep "WP-1.8"` | Activation: publish the H6-verified `sdc-smoke-v1` on `main`, confirm the first real run (PDFium/OCR absence on the runner), define the re-baseline path for intentional default changes, then make the job a required check |
 | 2.1 | Not started | — | — |
 | 2.2 | Not started | — | — |
 | 2.3 | Not started | — | Conditional on a WP-0.6 kill criterion |
@@ -690,5 +690,9 @@ finished items and add the next ones, so this list never points at done work.
    Qwen3-0.6B model for semantic paraphrase and pt<->en pairs; all 732 records
    remain unverified drafts. H6 human verification is next, including the
    `sdc-smoke-v1` subset required by WP-1.8.
-5. UX track: SPEC-0014 v1 is complete (WP-7.1 and WP-7.2 Done). WP-7.3 and
+5. WP-1.8: after H6 publishes `sdc-smoke-v1`, confirm the first
+   `Smoke gate (WP-1.8)` run on a PR (decide on PDFium for the runner and a
+   re-baseline path for intentional default changes), then make it a
+   required check (WP-1.8 → Done).
+6. UX track: SPEC-0014 v1 is complete (WP-7.1 and WP-7.2 Done). WP-7.3 and
    later need SPEC-0014 v2 and WP-4.3 (progressive search).

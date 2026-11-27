@@ -1,13 +1,13 @@
 //! Test confirmation, append-only exposure, comparison gates, and report
-//! rendering (SPEC-0003 R19-R21, R31-compatible gate hooks).
+//! rendering (SPEC-0003 R19-R21; the WP-1.8 gate rules live in `smoke_gate`).
 
 use crate::corpus::{BenchPaths, Corpus};
 use crate::environment::{EvaluationSettings, sha256_hex};
 use crate::{Failure, Result};
 use seeky_eval::{
     Artifacts, CommitInfo, ComparisonReport, Dataset, Decision, DecisionStatus, EvaluationResult,
-    GateResult, GateStatus, Report, ReportKind, ReportMetadata, SCHEMA_VERSION, Split,
-    StatsOptions, ToolInfo,
+    GateResult, GateStatus, Report, ReportKind, ReportMetadata, SCHEMA_VERSION, StatsOptions,
+    ToolInfo,
 };
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
@@ -658,6 +658,21 @@ pub fn compare(
     metadata: ReportMetadata,
     command: &[String],
 ) -> Result<()> {
+    if let Some(gate) = gate {
+        if gate != "wp1.8" {
+            return Err(Failure::usage(format!("unknown gate {gate}")));
+        }
+        return compare_wp18(
+            paths,
+            baseline_path,
+            candidate_paths,
+            repeat,
+            baseline_commit,
+            output,
+            metadata,
+            command,
+        );
+    }
     let baseline = read_report(baseline_path)?;
     let mut candidates = Vec::with_capacity(candidate_paths.len());
     for path in candidate_paths {
@@ -665,9 +680,44 @@ pub fn compare(
         compatible(&baseline, &report)?;
         candidates.push(report);
     }
-    let baseline_result = result_from_report(&baseline)?;
+    let comparisons = paired_comparisons(&baseline, &candidates, seed)?;
+    let report = comparison_report(
+        paths,
+        ReportKind::Comparison,
+        &baseline,
+        comparisons,
+        Vec::new(),
+        None,
+        metadata,
+        output,
+        command,
+    )?;
+    report
+        .validate()
+        .map_err(|error| Failure::report(error.to_string()))?;
+
+    let artifacts = crate::artifact::ArtifactDir::new(output)?;
+    artifacts.write_report("results.json", &report)?;
+    artifacts.write_text("summary.md", &seeky_eval::render_markdown(&report))?;
+    artifacts.write_json("environment.json", &report.environment)?;
+    artifacts.commit()?;
+
+    println!(
+        "compared {} candidate(s) against {}",
+        candidates.len(),
+        baseline.system.system_id
+    );
+    Ok(())
+}
+
+fn paired_comparisons(
+    baseline: &Report,
+    candidates: &[Report],
+    seed: &str,
+) -> Result<Vec<ComparisonReport>> {
+    let baseline_result = result_from_report(baseline)?;
     let mut candidate_results = Vec::new();
-    for report in &candidates {
+    for report in candidates {
         candidate_results.push((report.system.system_id.clone(), result_from_report(report)?));
     }
     let pair: Vec<(&str, &EvaluationResult)> = candidate_results
@@ -685,30 +735,32 @@ pub fn compare(
         &baseline.system.system_id,
     )
     .map_err(|error| Failure::report(error.to_string()))?;
-    let comparisons: Vec<ComparisonReport> = comparisons
+    Ok(comparisons
         .iter()
         .map(ComparisonReport::from_comparison)
-        .collect();
+        .collect())
+}
 
-    let mut gates = Vec::new();
-    let mut gate_failure = None;
-    if let Some(gate) = gate {
-        if gate != "wp1.8" {
-            return Err(Failure::usage(format!("unknown gate {gate}")));
-        }
-        let result = wp18_gate(&baseline, &candidates, repeat, baseline_commit)?;
-        if result.status == GateStatus::Fail {
-            gate_failure = Some(result.details.clone());
-        }
-        gates.push(result);
-    }
-
+/// Assemble a `comparison` or WP-1.8 `smoke_gate` report.
+#[allow(clippy::too_many_arguments)]
+fn comparison_report(
+    paths: &BenchPaths,
+    kind: ReportKind,
+    source: &Report,
+    comparisons: Vec<ComparisonReport>,
+    gates: Vec<GateResult>,
+    quality: Option<seeky_eval::QualityReport>,
+    metadata: ReportMetadata,
+    output: &Path,
+    command: &[String],
+) -> Result<Report> {
     let commit = crate::commit_info(&paths.root)?;
     let environment = crate::environment::capture("T2", None, None);
-    let report = Report {
+    let smoke = kind == ReportKind::SmokeGate;
+    Ok(Report {
         schema_version: SCHEMA_VERSION,
-        run_id: crate::run_id("cmp"),
-        kind: ReportKind::Comparison,
+        run_id: crate::run_id(if smoke { "gate" } else { "cmp" }),
+        kind,
         generated_at: crate::environment::rfc3339_now(),
         report: metadata,
         tool: ToolInfo {
@@ -721,8 +773,8 @@ pub fn compare(
             dirty: commit.dirty,
         },
         environment,
-        dataset: baseline.dataset.clone(),
-        system: baseline.system.clone(),
+        dataset: source.dataset.clone(),
+        system: source.system.clone(),
         command: {
             let mut rendered = vec!["seeky-bench".to_string()];
             rendered.extend(crate::command_display(
@@ -732,143 +784,135 @@ pub fn compare(
             ));
             rendered
         },
-        quality: None,
+        quality,
         performance: None,
         comparisons,
         gates,
         decision: Decision {
             status: DecisionStatus::NotApplicable,
-            text: "Comparison evidence only".to_string(),
+            text: if smoke {
+                "WP-1.8 smoke gate evidence".to_string()
+            } else {
+                "Comparison evidence only".to_string()
+            },
         },
         artifacts: Artifacts {
-            run: None,
+            run: smoke.then(|| "run.trec".to_string()),
             passage_run: None,
-            config_snapshot: None,
+            config_snapshot: smoke.then(|| "config.snapshot.json".to_string()),
             environment: Some("environment.json".to_string()),
             checksums: Some("checksums.sha256".to_string()),
             index: None,
             exposure: None,
             pareto: None,
         },
+    })
+}
+
+/// `compare --gate wp1.8` (SPEC-0003 R29-R31, section 5.6).
+///
+/// Writes a `smoke_gate` report whose primary payload is the candidate's
+/// quality plus exactly one typed `WP-1.8` gate row. The gate is a plain
+/// threshold on the macro drop, so it carries no paired statistics (run
+/// `compare` without `--gate` for those). A failed gate still writes the
+/// report and exits with code 6.
+#[allow(clippy::too_many_arguments)]
+fn compare_wp18(
+    paths: &BenchPaths,
+    baseline_path: &Path,
+    candidate_paths: &[PathBuf],
+    repeat: Option<&Path>,
+    baseline_commit: Option<&str>,
+    output: &Path,
+    metadata: ReportMetadata,
+    command: &[String],
+) -> Result<()> {
+    use crate::smoke_gate::{self, GateInputs, GateRun, Reason};
+
+    let baseline = read_report(baseline_path)?;
+    let mut candidates = Vec::with_capacity(candidate_paths.len());
+    for path in candidate_paths {
+        candidates.push(read_report(path)?);
+    }
+    let missing = if candidates.len() != 1 {
+        Some("wp1.8 requires exactly one candidate")
+    } else if repeat.is_none() {
+        Some("wp1.8 requires --repeat-candidate")
+    } else if baseline_commit.is_none() {
+        Some("wp1.8 requires --baseline-commit")
+    } else {
+        None
     };
+    let result = match (missing, repeat, baseline_commit) {
+        (None, Some(repeat), Some(commit)) => {
+            let baseline_run = GateRun::load(baseline_path, baseline.clone())?;
+            let candidate_run = GateRun::load(&candidate_paths[0], candidates[0].clone())?;
+            let repeat_run = GateRun::load(repeat, read_report(repeat)?)?;
+            let smoke_set = smoke_gate::load_smoke_set(paths);
+            smoke_gate::evaluate(&GateInputs {
+                baseline: &baseline_run,
+                candidate: &candidate_run,
+                repeat: &repeat_run,
+                baseline_commit: commit,
+                smoke_set: &smoke_set,
+            })
+        }
+        (message, _, _) => smoke_gate::gate_result(
+            Reason::MissingInput,
+            message.unwrap_or("wp1.8 is missing an input"),
+            Value::Null,
+        ),
+    };
+
+    let source = candidates.first().unwrap_or(&baseline);
+    let failure = (result.status != GateStatus::Pass).then(|| result.details.clone());
+    let report = comparison_report(
+        paths,
+        ReportKind::SmokeGate,
+        source,
+        Vec::new(),
+        vec![result],
+        source.quality.clone(),
+        metadata,
+        output,
+        command,
+    )?;
     report
         .validate()
         .map_err(|error| Failure::report(error.to_string()))?;
+
+    // The gate report carries the candidate's run and configuration snapshot
+    // so that its artifact hashes are self-contained.
+    let source_path = candidate_paths
+        .first()
+        .map_or(baseline_path, PathBuf::as_path);
+    let source_dir = source_path.parent().unwrap_or_else(|| Path::new("."));
+    let run_text = source
+        .artifacts
+        .run
+        .as_deref()
+        .and_then(|name| std::fs::read_to_string(source_dir.join(name)).ok())
+        .unwrap_or_default();
+    let snapshot = source
+        .artifacts
+        .config_snapshot
+        .as_deref()
+        .and_then(|name| std::fs::read_to_string(source_dir.join(name)).ok())
+        .unwrap_or_else(|| "{}\n".to_string());
 
     let artifacts = crate::artifact::ArtifactDir::new(output)?;
     artifacts.write_report("results.json", &report)?;
     artifacts.write_text("summary.md", &seeky_eval::render_markdown(&report))?;
     artifacts.write_json("environment.json", &report.environment)?;
+    artifacts.write_text("run.trec", &run_text)?;
+    artifacts.write_text("config.snapshot.json", &snapshot)?;
     artifacts.commit()?;
 
-    println!(
-        "compared {} candidate(s) against {}",
-        pair.len(),
-        baseline.system.system_id
-    );
-    if let Some(details) = gate_failure {
+    println!("WP-1.8 smoke gate: {}", report.gates[0].details);
+    if let Some(details) = failure {
         return Err(Failure::gate(details));
     }
     Ok(())
-}
-
-fn wp18_gate(
-    baseline: &Report,
-    candidates: &[Report],
-    repeat: Option<&Path>,
-    baseline_commit: Option<&str>,
-) -> Result<GateResult> {
-    let fail = |details: &str| GateResult {
-        id: "WP-1.8".to_string(),
-        status: GateStatus::Fail,
-        threshold: "candidate macro nDCG@10 drop <= 1.0 point vs main".to_string(),
-        observed: json!(null),
-        details: details.to_string(),
-    };
-    if candidates.len() != 1 {
-        return Ok(fail("wp1.8 requires exactly one candidate"));
-    }
-    let candidate = &candidates[0];
-    if repeat.is_none() {
-        return Ok(fail("wp1.8 requires --repeat-candidate"));
-    }
-    let Some(commit) = baseline_commit else {
-        return Ok(fail("wp1.8 requires --baseline-commit"));
-    };
-    if baseline.commit.sha != commit {
-        return Ok(fail(
-            "wp1.8 requires the baseline to be the supplied main commit",
-        ));
-    }
-    if baseline.dataset.id != "sdc-smoke"
-        || baseline.dataset.split != Split::Dev
-        || baseline.dataset.judgment_set_id != "sdc-smoke-v1"
-        || baseline.dataset.configuration != seeky_eval::EvaluationConfiguration::Default
-    {
-        return Ok(fail(
-            "wp1.8 requires sdc-smoke-v1 dev in the default configuration",
-        ));
-    }
-    if baseline.system.config_hash != candidate.system.config_hash {
-        return Ok(fail("wp1.8 requires the same configuration"));
-    }
-    let baseline_metric = baseline
-        .quality
-        .as_ref()
-        .and_then(|quality| quality.macro_metrics.get("ndcg_10").copied().flatten());
-    let candidate_metric = candidate
-        .quality
-        .as_ref()
-        .and_then(|quality| quality.macro_metrics.get("ndcg_10").copied().flatten());
-    let (Some(baseline_metric), Some(candidate_metric)) = (baseline_metric, candidate_metric)
-    else {
-        return Ok(fail(
-            "wp1.8 requires a measured macro nDCG@10 for both runs",
-        ));
-    };
-    let drop_points = 100.0 * (baseline_metric - candidate_metric);
-    let observe = json!({"drop_points": drop_points, "baseline": baseline_metric, "candidate": candidate_metric});
-    if let Some(repeat) = repeat {
-        let repeated = read_report(repeat)?;
-        compatible(baseline, &repeated)?;
-        let left = result_from_report(candidate)?;
-        let right = result_from_report(&repeated)?;
-        let same = left.per_query.iter().all(|(query_id, metrics)| {
-            right.per_query.get(query_id).is_some_and(|other| {
-                metrics.len() == other.len()
-                    && metrics.iter().all(|(metric, value)| {
-                        other
-                            .get(metric)
-                            .is_some_and(|other| (value - other).abs() <= 1e-9)
-                    })
-            })
-        });
-        if !same {
-            return Ok(GateResult {
-                id: "WP-1.8".to_string(),
-                status: GateStatus::Fail,
-                threshold: "candidate macro nDCG@10 drop <= 1.0 point vs main".to_string(),
-                observed: observe,
-                details: "wp1.8 repeat run is not deterministic".to_string(),
-            });
-        }
-    }
-    let pass = drop_points <= 1.0 + 1e-12;
-    Ok(GateResult {
-        id: "WP-1.8".to_string(),
-        status: if pass {
-            GateStatus::Pass
-        } else {
-            GateStatus::Fail
-        },
-        threshold: "candidate macro nDCG@10 drop <= 1.0 point vs main".to_string(),
-        observed: observe,
-        details: if pass {
-            "drop within threshold".to_string()
-        } else {
-            "drop exceeds 1.0 point".to_string()
-        },
-    })
 }
 
 // ---------------------------------------------------------------------------
