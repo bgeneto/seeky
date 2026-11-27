@@ -12,6 +12,9 @@ roadmap (§6), with the date.
 ## Unreleased
 
 ### Added
+- The maintainer accepted SPEC-0014 v0.2, an addendum that adds R17: a
+  resizable preview panel (drag or keyboard, 300 px to 60% of the content
+  area, width kept in `seeky.ui.previewWidth.v1`) to WP-7.1.
 
 - The maintainer accepted the SPEC-0002 v1.1 evaluation extension (R17–R25:
   evaluation depth to 1,000, stage and query-embedding telemetry, exact
