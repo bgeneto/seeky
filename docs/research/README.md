@@ -15,3 +15,4 @@ The active implementation is Rust + Tauri + TypeScript. See
 | [`models-and-inference.md`](models-and-inference.md) | Gety models, ONNX/OpenVINO formats, model strategy |
 | [`retrieval-ranking-and-reranking.md`](retrieval-ranking-and-reranking.md) | BM25, dense retrieval, fusion, reranking, evaluation |
 | [`glossary.md`](glossary.md) | Retrieval and inference terminology |
+| [`traditional-rag-vs-local-neural-information-retrieval.html`](traditional-rag-vs-local-neural-information-retrieval.html) | Supplied Portuguese technical report: RAG vs Local Neural IR, document/passage ranking, evaluation, ideal architecture |

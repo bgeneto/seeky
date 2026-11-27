@@ -13,7 +13,7 @@ implemented and measured. It does not claim that every stage is in the current
 PoC.
 
 Source context: the supplied report
-[`traditional-rag-vs-local-neural-information-retrieval.html`](../audits/source/traditional-rag-vs-local-neural-information-retrieval.html)
+[`traditional-rag-vs-local-neural-information-retrieval.html`](../research/traditional-rag-vs-local-neural-information-retrieval.html)
 discusses the distinction between RAG and local neural IR; this document is the
 English engineering contract.
 
@@ -88,6 +88,37 @@ while cheap lexical and metadata signals can still rescue exact matches.
 - Optional configurable cap per document for power users; default stays small.
 - Passages below a minimum score or outside the query language distribution may
   be dropped only after evaluation.
+
+### 3.4 Adaptive reranking and early exit
+
+- Use a cascaded retrieval funnel: cheap candidates first, cross-encoder only on
+  the bounded set.
+- Exact filename/identifier matches may skip or reduce reranking.
+- Ambiguous conceptual queries may receive a larger rerank budget.
+- The budget adapts to hardware, query type, and observed latency.
+- Every adaptive path must preserve deterministic fallback ordering.
+
+### 3.5 Multi-resolution indexing and embedding reuse
+
+- Retrieval units: document, section, passage, sentence.
+- Do not necessarily embed every level; start with passage embeddings plus
+  document aggregates, and derive sentence-level snippets at query time.
+- Hash normalized chunk content and reuse embeddings when the hash,
+  tokenizer revision, and model revision are unchanged.
+- Renaming or moving a file must not re-embed unchanged chunks.
+- An edited paragraph should ideally re-embed only affected chunks, subject to
+  stable segmentation.
+- Multiresolution embeddings are benchmark-gated; storage cost is a first-class
+  metric.
+
+### 3.6 Query-aware extractive snippets
+
+- The file-search equivalent of a pruner is a query-aware extractive snippet
+  engine, not a context compressor for an LLM.
+- Preserve original sentence boundaries, readability, and source offsets.
+- Return the best evidence passages, not a generated summary.
+- Highlight query terms without rewriting content.
+- Keep enough context to open the file at the right page/line when supported.
 
 ## 4. Document-level score aggregation
 

@@ -88,11 +88,13 @@ Rules:
 3. Evaluate each embedding candidate with the same chunking and retrieval depth.
 4. Shortlist models that meet quality thresholds.
 5. Benchmark CPU, CUDA, DirectML/AMD, and NPU latency and memory.
-6. Evaluate storage cost at 100k chunks.
-7. Select the smallest model that meets the quality gate, or the best quality
+6. Measure indexing throughput and query latency separately; a model can be good
+   at batch indexing and poor at single-query latency.
+7. Evaluate storage cost at 100k chunks.
+8. Select the smallest model that meets the quality gate, or the best quality
    model that meets the latency/memory budget.
-8. Re-index and re-run the golden set with the selected model.
-9. Record the decision in `docs/audits/evaluations/` and an ADR.
+9. Re-index and re-run the golden set with the selected model.
+10. Record the decision in `docs/audits/evaluations/` and an ADR.
 
 ## 7. Quality gates
 

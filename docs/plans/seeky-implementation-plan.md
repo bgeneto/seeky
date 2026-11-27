@@ -274,6 +274,8 @@ Before SOTA ranking work, add benchmark-backed fields/tables:
 - document content hash and SimHash/MinHash signature;
 - normalized document length and document-level statistics;
 - duplicate cluster ID and canonical flag;
+- chunk content hash and an embedding cache keyed by chunk hash + model/tokenizer
+  revision;
 - optional document-level embedding aggregate;
 - model/asset revision on documents and embeddings;
 - ranking/feature cache only if measurements justify it.
@@ -301,7 +303,10 @@ the embedding model changes.
    - Extract text without holding DB/engine locks.
    - Detect language/encoding metadata where needed.
    - Chunk with a model-aware size and overlap.
-   - Embed chunks.
+   - Hash normalized chunks and reuse cached embeddings when the chunk hash and
+     model/tokenizer revision are unchanged. A rename must not re-embed an
+     unchanged file.
+   - Embed only new or changed chunks.
    - Compute duplicate signatures.
    - Upsert document/chunks/signatures in one transaction.
 4. Prune documents whose paths disappeared.
@@ -513,6 +518,8 @@ Benchmarks are reproducible and committed under `docs/audits/evaluations/`.
 - 200+ queries with graded relevance.
 - English, Portuguese, Spanish, French, German, and mixed-language files.
 - Exact phrase, filename, semantic paraphrase, long-document, and duplicate cases.
+- Query categories: known-item, conceptual, exact identifier, cross-language,
+  needle-in-a-haystack, exploratory, mixed semantic+metadata, and code search.
 - Manual and synthetic near-duplicate pairs.
 - Queries that require passage-level evidence.
 
@@ -672,10 +679,11 @@ health, cancellation, filename/path signal.
 
 1. 10k documents / 100k chunks benchmark.
 2. Batch embedding and transaction tuning.
-3. ANN decision gate: `sqlite-vec` or USearch only if exact cosine misses budget.
-4. Database maintenance and integrity checks.
-5. Startup reconcile evaluation for offline edits.
-6. Storage growth and quantized-vector evaluation.
+3. Content-addressable embedding cache and multi-resolution indexing evaluation.
+4. ANN decision gate: `sqlite-vec` or USearch only if exact cosine misses budget.
+5. Database maintenance and integrity checks.
+6. Startup reconcile evaluation for offline edits.
+7. Storage growth and quantized-vector evaluation.
 
 **Acceptance:**
 
