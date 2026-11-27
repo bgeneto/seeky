@@ -4207,6 +4207,38 @@ dependencies = [
 ]
 
 [[package]]
+name = "seeky-core"
+version = "0.1.0"
+
+[[package]]
+name = "seeky-engine"
+version = "0.1.0"
+
+[[package]]
+name = "seeky-eval"
+version = "0.1.0"
+
+[[package]]
+name = "seeky-extract"
+version = "0.1.0"
+
+[[package]]
+name = "seeky-infer"
+version = "0.1.0"
+
+[[package]]
+name = "seeky-provision"
+version = "0.1.0"
+
+[[package]]
+name = "seeky-search"
+version = "0.1.0"
+
+[[package]]
+name = "seeky-store"
+version = "0.1.0"
+
+[[package]]
 name = "selectors"
 version = "0.38.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

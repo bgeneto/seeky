@@ -561,7 +561,7 @@ Rules:
 |---|---|---|
 | M0 Runnable PoC | Done | 0.1.0 |
 | M1 Live incremental index | Done | 0.1.0 |
-| Phase 0 | In progress | WP-0.4 in progress, WP-0.5 done (§15.3). Pre-flight fixes done outside any WP: fmt, clippy `-D warnings`, `hw-tests` feature, HTML fix, Auto is CPU-only until the NPU is validated ([conformance audit](../validation/poc-conformance-audit.md)). SPEC-0001 and SPEC-0002 v1 Accepted |
+| Phase 0 | In progress | WP-0.1 and WP-0.4 in progress, WP-0.5 done (§15.3). Pre-flight fixes done outside any WP: fmt, clippy `-D warnings`, `hw-tests` feature, HTML fix, Auto is CPU-only until the NPU is validated ([conformance audit](../validation/poc-conformance-audit.md)). SPEC-0001 and SPEC-0002 v1 Accepted |
 | Phases 1–9 | Not started | — |
 | Phase 10 | Not started | Planned per ADR-0023, accepted 2026-11-27 (optional visual pack; off the 1.0 critical path) |
 
@@ -569,7 +569,7 @@ Rules:
 
 | WP | Status | Evidence | Notes |
 |---|---|---|---|
-| 0.1 | Not started | — | — |
+| 0.1 | In progress | [SPEC-0001](../specs/SPEC-0001-workspace-and-crate-boundaries.md) | Done: root workspace, eight crate stubs, toolchain pin, profiles, `hw-tests` in every member (R1–R4, R7, R8, R15). Remaining: shared lints (R5, R6), rename to `apps/desktop` (R9, R10, R16, R17), `cargo-deny` bans (R11–R14) |
 | 0.2 | Not started | — | — |
 | 0.3 | Not started | — | — |
 | 0.4 | In progress | `.github/workflows/ci.yml` (`format` job), `.githooks/pre-commit` | Done: rustfmt + Prettier in CI and a check-only pre-commit hook; hardware tests behind the `hw-tests` feature (pre-flight). Remaining CI jobs: clippy `-D warnings`, hardware-free tests, `cargo-deny`, TypeScript typecheck + build, Windows/Linux/macOS compile |

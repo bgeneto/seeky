@@ -1,0 +1,16 @@
+[package]
+name = "seeky-infer"
+description = "ONNX Runtime sessions, execution-provider selection, tokenizers, model discovery and registry, and embedder implementations"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+publish = false
+
+[features]
+# Hardware/asset tests (SPEC-0001 R15); empty until this crate has any.
+hw-tests = []
+
+[dependencies]

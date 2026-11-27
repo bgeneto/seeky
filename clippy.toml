@@ -1,0 +1,3 @@
+# Tests may unwrap and expect; library code may not (SPEC-0001 section 4.3).
+allow-unwrap-in-tests = true
+allow-expect-in-tests = true

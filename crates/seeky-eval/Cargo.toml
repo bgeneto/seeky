@@ -1,0 +1,16 @@
+[package]
+name = "seeky-eval"
+description = "Datasets, relevance judgments, metrics, statistics, and report writing"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+publish = false
+
+[features]
+# Hardware/asset tests (SPEC-0001 R15); empty until this crate has any.
+hw-tests = []
+
+[dependencies]

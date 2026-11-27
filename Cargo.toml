@@ -1,0 +1,54 @@
+# Seeky Cargo workspace (SPEC-0001). Engine crates live in crates/, the Tauri
+# shell in apps/seeky/src-tauri. Profiles must live here: Cargo ignores
+# profiles declared in member manifests.
+[workspace]
+resolver = "3"
+members = ["crates/*", "apps/seeky/src-tauri"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.99"
+license = "MIT"
+repository = "https://github.com/bgeneto/seeky"
+authors = ["Seeky contributors"]
+
+# Single version source for external dependencies (SPEC-0001 R3). Owners of
+# heavy dependencies are fixed in SPEC-0001 section 4.4.
+[workspace.dependencies]
+anyhow = "1.0.105"
+blake3 = "1.8.8"
+calamine = "0.38.0"
+half = "2.7.1"
+notify = "9"
+openvino = { version = "0.11.2", features = ["runtime-linking"] }
+openvino-sys = { version = "0.11.2", features = ["runtime-linking"] }
+ort = { version = "=2.0.0-rc.10", default-features = false, features = ["load-dynamic", "ndarray", "std", "half"] }
+pdfium-render = { version = "0.9.6", default-features = false, features = ["pdfium_7881", "image_latest", "thread_safe"] }
+regex = "1.13.2"
+rusqlite = { version = "0.43.0", features = ["bundled"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tauri = { version = "2", features = [] }
+tauri-build = { version = "2", features = [] }
+tauri-plugin-dialog = "2.8.4"
+tauri-plugin-opener = "2"
+thiserror = "2.0.21"
+tokenizers = "0.23.2"
+walkdir = "2.5.1"
+zip = "9.8.2"
+
+# Release values carried over from the PoC (SPEC-0001 R8).
+# See https://tauri.app/concept/size/#cargo-configuration
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = 3
+panic = "abort"
+strip = true
+
+# Release code with line tables for profilers and seeky-bench perf runs.
+[profile.profiling]
+inherits = "release"
+debug = "line-tables-only"
+strip = false

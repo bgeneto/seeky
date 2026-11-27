@@ -1,0 +1,6 @@
+# Pinned toolchain (SPEC-0001 R7). Bump deliberately, in its own PR, with all
+# checks green.
+[toolchain]
+channel = "1.99.1"
+components = ["rustfmt", "clippy"]
+profile = "minimal"
