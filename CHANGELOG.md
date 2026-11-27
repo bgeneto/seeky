@@ -18,6 +18,10 @@ roadmap (§6), with the date.
 
 ### Changed
 
+- Search results open through the engine by document ID instead of sending a
+  file path from the webview. Source code and other non-document formats are
+  revealed in the system file manager, and stale index entries return an error
+  (SPEC-0002, ADR-0024).
 - ADR-0025 (Accepted): the execution provider is chosen automatically per
   workload (measured, power-aware, never a fixed order); the model is never
   chosen automatically. Adds a temporary, user-started "Full speed" indexing

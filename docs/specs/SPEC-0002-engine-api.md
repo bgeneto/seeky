@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Status | Accepted |
+| Status | Implemented |
 | Version | 0.2 (API v1; API v2 adds progressive search in WP-4.3) |
 | Owner | Maintainer |
 | Phase / work packages | Phase 0 — WP-0.2, WP-0.3 |
@@ -276,4 +276,5 @@ behavior. Index and search timings must not be claimed better or worse.
 |---|---|---|
 | 0.1 | 2026-11-27 | Initial draft of API v1 |
 | 0.2 | 2026-11-27 | Accepted; open allowlist decided: source files are never opened directly (ADR-0024) |
-| 0.2 | 2026-11-27 | WP-0.2 implemented R2–R4, the engine halves of R1/R6, and R9–R16; R5, R7, R8, and the shell halves of R1/R6 remain for WP-0.3 |
+| 0.2 | 2026-11-27 | WP-0.2 implemented R2-R4, the engine halves of R1/R6, and R9-R16; R5, R7, R8, and the shell halves of R1/R6 remain for WP-0.3 |
+| 0.2 | 2026-11-27 | WP-0.3 implemented R1 and R5-R8: the shell calls only Engine, accepts document IDs instead of paths, opens only the §5.4 allowlist, and reveals source/unknown types. All v1 requirements are implemented |
