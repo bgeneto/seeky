@@ -103,18 +103,16 @@ deny = [
     { crate = "tauri-plugin-opener", wrappers = ["seeky-desktop"] },
 
     # --- Owners of heavy dependencies (SPEC-0001 R13) ---------------------
-    # `seeky-desktop` is listed only while it still holds the PoC engine;
-    # WP-0.2/WP-0.3 move that code and remove it from these wrappers.
-    { crate = "rusqlite", wrappers = ["seeky-store", "seeky-desktop"] },
-    { crate = "ort", wrappers = ["seeky-infer", "seeky-desktop"] },
-    { crate = "openvino", wrappers = ["seeky-infer", "seeky-desktop"] },
-    { crate = "openvino-sys", wrappers = ["seeky-infer", "openvino", "seeky-desktop"] },
-    { crate = "tokenizers", wrappers = ["seeky-infer", "seeky-desktop"] },
-    { crate = "half", wrappers = ["seeky-infer", "ort", "seeky-desktop"] },
-    { crate = "pdfium-render", wrappers = ["seeky-extract", "seeky-desktop"] },
-    { crate = "calamine", wrappers = ["seeky-extract", "seeky-desktop"] },
-    { crate = "zip", wrappers = ["seeky-extract", "calamine", "seeky-desktop"] },
-    { crate = "notify", wrappers = ["seeky-engine", "seeky-desktop"] },
+    { crate = "rusqlite", wrappers = ["seeky-store"] },
+    { crate = "ort", wrappers = ["seeky-infer"] },
+    { crate = "openvino", wrappers = ["seeky-infer"] },
+    { crate = "openvino-sys", wrappers = ["seeky-infer", "openvino"] },
+    { crate = "tokenizers", wrappers = ["seeky-infer"] },
+    { crate = "half", wrappers = ["seeky-infer", "ort"] },
+    { crate = "pdfium-render", wrappers = ["seeky-extract"] },
+    { crate = "calamine", wrappers = ["seeky-extract"] },
+    { crate = "zip", wrappers = ["seeky-extract", "calamine"] },
+    { crate = "notify", wrappers = ["seeky-engine"] },
     # `walkdir` is not banned: Tauri's build crates and `notify` depend on it,
     # so its ownership (seeky-engine) is checked in review.
 ]

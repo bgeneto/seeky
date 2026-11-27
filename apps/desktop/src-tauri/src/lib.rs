@@ -3,7 +3,7 @@ use seeky_engine::{
     Engine, EngineConfig, EngineEvents, EngineInfo, EngineStatus, IndexHealth, IndexProgress,
     IndexSummary, Root, SearchRequest, SearchResponse,
 };
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use tauri::{AppHandle, Emitter, Manager, State};
 
@@ -110,22 +110,58 @@ fn get_document(
     state.document(&id).map_err(|error| error.to_string())
 }
 
-fn openable_path(path: String) -> String {
-    if let Some(rest) = path.strip_prefix(r"\\?\UNC\") {
-        format!(r"\\{rest}")
-    } else if let Some(rest) = path.strip_prefix(r"\\?\") {
-        rest.to_string()
+const OPEN_EXTENSIONS: &[&str] = &[
+    "txt", "md", "markdown", "rst", "log", "pdf", "docx", "xlsx", "xls", "pptx", "csv", "json",
+    "jsonl", "xml", "yaml", "yml", "toml", "html", "htm",
+];
+
+fn is_open_allowlisted(path: &Path) -> bool {
+    path.extension()
+        .and_then(|extension| extension.to_str())
+        .is_some_and(|extension| {
+            let extension = extension.to_ascii_lowercase();
+            OPEN_EXTENSIONS.contains(&extension.as_str())
+        })
+}
+
+fn resolve_document_path(path: Option<PathBuf>) -> Result<PathBuf, String> {
+    path.ok_or_else(|| "document is not in the index".to_string())
+}
+
+fn ensure_document_exists(path: &Path) -> Result<(), String> {
+    if path.is_file() {
+        Ok(())
     } else {
-        path
+        Err("indexed document no longer exists".to_string())
     }
 }
 
-// WP-0.3 replaces this command with `open_document`, which resolves a
-// document ID through `Engine::document_path` before opening or revealing it.
+fn openable_path(path: &Path) -> PathBuf {
+    let text = path.to_string_lossy();
+    if let Some(rest) = text.strip_prefix(r"\\?\UNC\") {
+        PathBuf::from(format!(r"\\{rest}"))
+    } else if let Some(rest) = text.strip_prefix(r"\\?\") {
+        PathBuf::from(rest)
+    } else {
+        path.to_path_buf()
+    }
+}
+
 #[tauri::command]
-fn open_local_file(path: String) -> Result<(), String> {
-    let path = openable_path(path);
-    tauri_plugin_opener::open_path(&path, None::<&str>).map_err(|error| format!("{error}"))
+#[allow(clippy::needless_pass_by_value)] // Tauri passes command arguments by value
+fn open_document(state: State<'_, Engine>, id: String) -> Result<(), String> {
+    let path = state
+        .document_path(&id)
+        .map_err(|error| error.to_string())?;
+    let path = resolve_document_path(path)?;
+    ensure_document_exists(&path)?;
+    let path = openable_path(&path);
+    if is_open_allowlisted(&path) {
+        tauri_plugin_opener::open_path(&path, None::<&str>)
+    } else {
+        tauri_plugin_opener::reveal_item_in_dir(&path)
+    }
+    .map_err(|error| error.to_string())
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -158,8 +194,54 @@ pub fn run() {
             cancel_index,
             search_documents,
             get_document,
-            open_local_file
+            open_document
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// SPEC-0002-R7: only document formats are opened; code and unknown types
+    /// are revealed instead.
+    #[test]
+    fn open_allowlist_reveals_code_and_unknown_types() {
+        for extension in [
+            "txt", "md", "markdown", "rst", "log", "pdf", "docx", "xlsx", "xls", "pptx", "csv",
+            "json", "jsonl", "xml", "yaml", "yml", "toml", "html", "htm",
+        ] {
+            let path = Path::new("document").with_extension(extension);
+            assert!(is_open_allowlisted(&path), "{extension} should open");
+        }
+        for extension in [
+            "py", "js", "ts", "rs", "go", "java", "c", "cpp", "cs", "sh", "ps1", "sql", "exe",
+            "bin", "dll", "",
+        ] {
+            let path = Path::new("document").with_extension(extension);
+            assert!(!is_open_allowlisted(&path), "{extension} should reveal");
+        }
+        assert!(is_open_allowlisted(Path::new("REPORT.PDF")));
+    }
+
+    /// SPEC-0002-R6: an ID with no indexed path fails before any file action.
+    #[test]
+    fn unknown_document_path_opens_nothing() {
+        assert!(resolve_document_path(None).is_err());
+        let expected = std::env::temp_dir().join("seeky-known-document.pdf");
+        assert_eq!(
+            resolve_document_path(Some(expected.clone())).unwrap(),
+            expected
+        );
+    }
+
+    /// SPEC-0002 §5.4: a stale indexed path is rejected before any file action.
+    #[test]
+    fn missing_document_path_is_rejected() {
+        let path =
+            std::env::temp_dir().join(format!("seeky-missing-document-{}.pdf", std::process::id()));
+        let _ = std::fs::remove_file(&path);
+        assert!(ensure_document_exists(&path).is_err());
+    }
 }

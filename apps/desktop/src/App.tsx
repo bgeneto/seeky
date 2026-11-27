@@ -358,7 +358,7 @@ function App() {
   async function openFile() {
     if (!selected) return;
     try {
-      await invoke("open_local_file", { path: selected.path });
+      await invoke("open_document", { id: selected.id });
     } catch (err) {
       setError(String(err));
     }
