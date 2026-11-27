@@ -19,6 +19,49 @@ Portuguese configuration. The MIRACL sample below is therefore English `dev`;
 mMARCO remains the Portuguese sample. No model or dataset rows had been run or
 acquired when this correction was made, and no result is affected.
 
+**Post-measurement amendment 2 (2026-11-27): supplementary embedders.** Frozen
+after the e5-small, Granite, and reranker fp32 rows were measured and before
+any row below was run. It adds two embedders to the gate without changing any
+rule above. The amendment rows do not change the frozen K1 embedder verdict in
+§6, which stays computed from the two proxies alone, and they are never pooled
+with the proxy rows. They answer one question for H5: does a fired embedder K1
+reflect model compute that any engine would pay, or ONNX Runtime itself?
+
+| Slug | Model and revision | Why | License evidence |
+|---|---|---|---|
+| `bekko-a8m` | `hotchpotch/bekko-embedding-v1-a8m` @ `c721113d59a1d91b447450324f51c4b3332c924a` | ModernBERT encoder, 4 layers, 384-d, ~8M active parameters behind a 256k-token embedding table; a compact challenger already in `candidates.md` §1 | MIT in the upstream model card |
+| `gety-embed-v0` | `gety-ai/gety-embed-v0` @ `424f41cb36776481b7e2c9f619ca7ce5d5351fe0` | The PoC's embedder (an e5-small fine-tune); downloaded from Hugging Face, never read from a Gety install | MIT in the upstream model card |
+
+Rules for the amendment rows:
+
+- **Data, profile, parity, timing, and statistics:** exactly §3.1, §4, and §5
+  for embedders; same frozen 1,024 passages and 64 queries, same T1-emulated
+  profile, same tolerances (mean cosine ≥0.99, neighbor Recall@100 ≥0.98,
+  |nDCG@10 change| ≤0.5 points), same timing.
+- **Inputs:** Bekko uses no prefix (its model card: no prefixes or task
+  instructions). gety-embed-v0 uses the e5 `query: `/`passage: ` prefixes of its
+  base model; the published card states none, so this is recorded as a threat to
+  validity for its nDCG only. Parity compares identical inputs and does not depend
+  on it.
+- **Bekko variants:** published `onnx/model_fp32_not_recommended.onnx` as `fp32`;
+  published default `onnx/model.onnx` (int8 token-embedding table only) as
+  `published-default`; `int8-dynamic` and `int8-static-qdq` derived from `fp32`
+  exactly as §2. Reference: PyTorch/Transformers fp32 from `model.safetensors`,
+  mean pooling of `last_hidden_state`, as the upstream pooling config states.
+- **gety-embed-v0 variants:** the upstream publishes no fp32 weights, only
+  `onnx/model_uint8.onnx` (uint8 dynamic), `onnx_cuda/model_fp16.onnx`, Core ML,
+  and an OpenVINO IR. The reference is `onnx_cuda/model_fp16.onnx` with every
+  fp16 tensor, cast, and constant upcast to fp32 (`fp16-upcast`), run on ORT CPU;
+  the upcast is exact for the weights, so the reference is the fp16 model computed
+  in fp32, not an fp32 checkpoint. This is a stated limitation. `published-uint8`
+  is compared with that reference using its `sentence_embedding` output. No new
+  quantized variant is derived.
+- **Outside the amendment:** no NPU, T0, or K4 row changes. The OpenVINO IRs
+  that both repositories publish are native-OpenVINO artifacts and are not
+  measured here: challenger engines are WP-2.3 work (§6). The Bekko model card's
+  own claim that native OpenVINO ran about 5.5× faster than ONNX Runtime on an
+  x86 CPU is cited as vendor evidence for H5, not as a measurement.
+
 ## 1. Fixed proxy portfolio
 
 Only license-Allowed models under ADR-0022 are included. Revisions are immutable
