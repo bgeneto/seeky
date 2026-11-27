@@ -567,6 +567,80 @@ file before launching the lane.
 | M, WP-1.8 | CI smoke gate: `sdc-smoke` nDCG@10 over the eight non-code categories (at most 1.0 drop versus `main`) plus the ranking invariants, through `seeky-bench compare`; code-enabled results are separate. Owns `.github/workflows/` (owner at that time). Must stay hardware-free (lexical, or a CI-safe CPU model if the spec allows one) and starts only after `sdc-smoke-v1` is human-verified (H6) |
 | N, specs | SPEC-0005 (model manifest, ORT adapter, bake-off toolchain: WP-2.1, WP-2.2, WP-2.13) once the WP-0.6 report is merged and gate H5 is decided; SPEC-0006 (storage, index backends, generations, embedding channels: WP-2.4, WP-2.5, WP-2.13, WP-3.7). Drafts only; one PR each; gate H7 |
 
+### Lane S: SPEC-0002 v1.1 evaluation extension draft
+
+```text
+WORK PACKAGE: docs-only draft of the SPEC-0002 v1.1 evaluation extension
+required by SPEC-0003 H1 question 1; not an implementation.
+BRANCH: wp/2-v1.1-eval-draft. STARTS AFTER: SPEC-0003 Accepted and WP-1.1
+merged.
+OWNED PATHS: docs/specs/SPEC-0002-engine-api.md only.
+CONTENT: an additive v1.1 section that keeps every accepted v1 requirement
+unchanged and adds the engine capabilities SPEC-0003 R15-R22 and R32 depend
+on: configurable result depth sufficient for the largest metric cutoff with
+deterministic order and tie-breaking, search telemetry the perf harness can
+consume per stage without changing results, exact structured metadata filters
+(extension, date, folder, size) with explicit push-down versus post-filter
+reporting and typed errors when metadata is unavailable, and a stable
+configuration snapshot for hashing. Define new requirement IDs, interfaces,
+errors, the tests to write first, and acceptance; state what remains out of
+scope.
+DONE: Draft only; PR titled "SPEC-0002: v1.1 evaluation extension draft"
+with the requirement-to-test table. Do not accept, implement, or bump any
+existing accepted requirement. Stop if a proposal conflicts with ADR-0015,
+ADR-0019, ADR-0023, or the vision.
+```
+
+### Lane G2: WP-1.3 R14 judgment commands (after R1-R13)
+
+```text
+WORK PACKAGE: WP-1.3 continuation, SPEC-0004 R14 and the judgment command
+interface in 4.1. BRANCH: wp/1.3-r14. STARTS AFTER: WP-1.3 R1-R13 merged.
+SPECS: SPEC-0004 v0.1 R14; 4.1 (commands), 4.5-4.7 (records and manifest),
+5.4 (split freeze), 5.5-5.6 (verification and pooling).
+OWNED PATHS: tools/sdc-generator/ only; SPEC-0004 Status column for R14.
+TESTS FIRST: command smoke tests for `judgments validate`, `freeze-split`,
+and `publish`; a networking-disabled test proving build, verify, and judgment
+validation never access the network (R14); a draft is rejected by validate
+without `--allow-draft`; publish refuses unverified, missing-provenance,
+non-split-frozen, or existing output; freeze-split validates the query minima
+and records immutable query hashes; malformed-input tests with typed errors.
+GREEN: AGENTS 5 (Rust workspace checks), the generator's Python test suite,
+and its lockfile/dependency inspection.
+DONE: R14 Implemented and the judgment commands usable by WP-1.4; PR with
+PROPOSED RECORDS (SPEC-0004 R14 status, plan WP-1.3 row, CHANGELOG).
+STOP: if 4.5-4.7 or 5.4 leave a validation rule ambiguous, or a command
+would need a change outside tools/sdc-generator/.
+```
+
+### Lane I: WP-1.5 public dataset scripts
+
+```text
+WORK PACKAGE: WP-1.5 per SPEC-0003 R23-R24 and 4.2 (BEIR layout).
+BRANCH: wp/1.5-datasets. STARTS AFTER: WP-1.1 merged and SPEC-0003 Accepted.
+DATASETS: MLDR, MIRACL, mMARCO-pt with constructed pt<->en pairs, and BEIR
+subsets. Quati only after a documented license check passes; otherwise leave
+it out and report it.
+OWNED PATHS: bench/datasets/ and tools/dataset-fetch/ (Python only,
+development tooling that never ships); SPEC-0003 Status cells R23/R24.
+Bulk data is downloaded to an external cache and never committed; only
+manifests, scripts, and small synthetic fixtures enter the repository.
+TESTS FIRST: manifest completeness (license, source revision and URLs,
+expected and local hashes, splits, transform version); download rejects a
+hash or terms mismatch; the transform is byte-deterministic for the same
+inputs, version, and seed; constructed cross-lingual pairs are stable;
+manifest splits, categories, and language slices validate against 4.2;
+repository-size and license inspection.
+GREEN: AGENTS 5 plus the new tool's Python tests run with networking
+disabled after download.
+DONE: a versioned manifest and offline prepare script per completed dataset,
+with real pinned hashes computed from the external cache; PR with PROPOSED
+RECORDS (SPEC-0003 R23/R24 status, plan WP-1.5 row, CHANGELOG).
+STOP: unclear or non-redistributable license, credentials required, terms
+that forbid automated download, or a dataset too large for an unattended
+run; record the blocker and continue with the others.
+```
+
 ## 7. Where the unattended run ends
 
 With the gates answered as they come up, the run can reach:
