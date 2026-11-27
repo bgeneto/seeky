@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Status | Draft |
+| Status | Accepted (2026-11-27, gate H2) |
 | Version | 0.1 (desktop experience v1) |
 | Owner | Maintainer |
 | Phase / work packages | Phase 7 — WP-7.1, WP-7.2 |
@@ -802,9 +802,10 @@ follow [ADR-0025](../adr/0025-automatic-provider-opt-in-gpu-tier-full-speed.md)
   `settings.backend.cuda.*` describe the frozen PoC CUDA path and are
   replaced in v2.
 
-There are no unresolved technical questions in this draft. H2 acceptance is the
-maintainer's gate for the recommendations and explicit v1 scope above; this
-file must remain **Draft** until that gate.
+There are no unresolved technical questions. The maintainer accepted this spec
+at gate H2 on 2026-11-27, including the §7.1 recommendation (in-house module, no
+production i18n library), the §7.2 confirmations (R8 does not change SPEC-0002;
+v1 has one `pt` catalog with `pt-BR` formatting), and the explicit v1 scope.
 
 ## 8. Changelog
 
@@ -812,3 +813,4 @@ file must remain **Draft** until that gate.
 |---|---|---|
 | 0.1 | 2026-11-27 | Initial Draft for desktop experience v1 (WP-7.1 localization and WP-7.2 themes); WP-7.3–WP-7.9 deferred to later versions |
 | 0.1 | 2026-11-27 | Added §7.3 forward decisions for v2 (Full speed, indexing labels, provider override, opt-in GPU tier) from ADR-0025; no v1 requirement changed |
+| 0.1 | 2026-11-27 | Accepted at gate H2 with the §7.1 recommendation and §7.2 confirmations as written; unblocks WP-7.1 then WP-7.2 |

@@ -66,7 +66,7 @@ Specs are written just-in-time, as the first task of their phase (see the
 | Spec | Title | Phase | Work packages | Status |
 |---|---|---|---|---|
 | [SPEC-0001](SPEC-0001-workspace-and-crate-boundaries.md) | Workspace and crate boundaries | 0 | WP-0.1 | Implemented (v0.1) |
-| [SPEC-0002](SPEC-0002-engine-api.md) | Engine API (v1 headless; v1.1 evaluation extension; v2 progressive search) | 0, 4 | WP-0.2, WP-0.3, WP-4.3; v1.1 gates WP-1.2/WP-1.6 | Implemented (v1); v1.1 Draft |
+| [SPEC-0002](SPEC-0002-engine-api.md) | Engine API (v1 headless; v1.1 evaluation extension; v2 progressive search) | 0, 4 | WP-0.2, WP-0.3, WP-4.3; v1.1 gates WP-1.2/WP-1.6 | Implemented (v1); v1.1 Accepted |
 | [SPEC-0003](SPEC-0003-evaluation-harness.md) | Evaluation and benchmark harness | 1 | WP-1.1, WP-1.2, WP-1.5, WP-1.6, WP-1.8 | Accepted (maintainer pre-approval in /goal) (16/32 implemented) |
 | [SPEC-0004](SPEC-0004-sdc-corpus-and-judgments.md) | Seeky Desktop Corpus and relevance judgments (incl. the visual slice) | 1, 10 | WP-1.3, WP-1.4, WP-10.1 | Accepted (maintainer pre-approval in /goal) (14/27 implemented) |
 | SPEC-0005 | Model manifest (incl. modalities and components), ONNX Runtime adapter, and bake-off toolchain | 2 | WP-2.1, WP-2.2, WP-2.13 | Not written |
@@ -78,7 +78,7 @@ Specs are written just-in-time, as the first task of their phase (see the
 | SPEC-0011 | Snippet engine | 4 | WP-4.10 | Not written |
 | SPEC-0012 | Execution providers and NPU acceleration | 5 | WP-5.1–WP-5.6 | Not written |
 | SPEC-0013 | Provisioning and asset manifest | 6 | WP-6.1–WP-6.5 | Not written |
-| [SPEC-0014](SPEC-0014-desktop-experience.md) | Desktop experience: shell, i18n, themes, progressive UI | 7 | WP-7.1–WP-7.9 (v1: WP-7.1, WP-7.2) | Draft |
+| [SPEC-0014](SPEC-0014-desktop-experience.md) | Desktop experience: shell, i18n, themes, progressive UI | 7 | WP-7.1–WP-7.9 (v1: WP-7.1, WP-7.2) | Accepted (v1) |
 | SPEC-0015 | Release, packaging, and signing | 9 | WP-9.1, WP-9.2 | Not written |
 | SPEC-0016 | Visual retrieval pack: visual units, channels, fusion, image queries ([ADR-0023](../adr/0023-multimodal-ready-engine.md)) | 10 | WP-10.3–WP-10.7 | Not written |
 

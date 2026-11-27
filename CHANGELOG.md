@@ -13,6 +13,17 @@ roadmap (§6), with the date.
 
 ### Added
 
+- The maintainer accepted the SPEC-0002 v1.1 evaluation extension (R17–R25:
+  evaluation depth to 1,000, stage and query-embedding telemetry, exact
+  metadata filters, configuration snapshot) with its §9.7 proposals as
+  written. WP-1.2 (`seeky-bench`) and WP-1.6 may start.
+- The maintainer accepted SPEC-0014 v1 at gate H2: English/Portuguese
+  localization through an in-house module with no production i18n library,
+  one `pt` catalog with `pt-BR` formatting, and light/dark themes. WP-7.1
+  and then WP-7.2 may start.
+- The maintainer approved the `deny.toml` license exceptions (bzip2-1.0.6,
+  Apache-2.0 WITH LLVM-exception, BSL-1.0) and the seven temporary advisory
+  ignores at gate H4; WP-0.4 is Done.
 - Full-scale `sdc-s` was generated and verified: 10,000 rendered files,
   109,689 passages, 112.5 MB, corpus hash `1d65b8ff…`. The tree is generated
   on demand and remains uncommitted.

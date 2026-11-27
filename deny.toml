@@ -29,17 +29,17 @@ allow = [
     "CC-BY-4.0",
 ]
 
-# Needs maintainer approval (H4): bzip2's permissive license, via zip/bzip2.
+# Approved by the maintainer (H4, 2026-11-27): bzip2's permissive license, via zip/bzip2.
 [[licenses.exceptions]]
 crate = "libbz2-rs-sys"
 allow = ["bzip2-1.0.6"]
 
-# Needs maintainer approval (H4): Apache-2.0 with the LLVM exception, via bindgen.
+# Approved by the maintainer (H4, 2026-11-27): Apache-2.0 with the LLVM exception, via bindgen.
 [[licenses.exceptions]]
 crate = "target-lexicon"
 allow = ["Apache-2.0 WITH LLVM-exception"]
 
-# Needs maintainer approval (H4): Boost Software License 1.0, via notify.
+# Approved by the maintainer (H4, 2026-11-27): Boost Software License 1.0, via notify.
 [[licenses.exceptions]]
 crate = "xxhash-rust"
 allow = ["BSL-1.0"]
@@ -51,17 +51,17 @@ unsound = "all"
 yanked = "deny"
 ignore = [
     # Transitive through calamine; no compatible removal is available in WP-0.4.
-    { id = "RUSTSEC-2024-0370", reason = "Needs maintainer approval (H4); remove after `cargo update -p proc-macro-error` (orchestrator, after WP-0.2)" },
+    { id = "RUSTSEC-2024-0370", reason = "Approved by the maintainer (H4, 2026-11-27); remove after `cargo update -p proc-macro-error` (orchestrator, after WP-0.2)" },
     # Transitive through Tauri's GTK 0.18 stack; patched glib requires 0.20.
-    { id = "RUSTSEC-2024-0429", reason = "Needs maintainer approval (H4); remove after `cargo update -p glib` (orchestrator, after WP-0.2)" },
+    { id = "RUSTSEC-2024-0429", reason = "Approved by the maintainer (H4, 2026-11-27); remove after `cargo update -p glib` (orchestrator, after WP-0.2)" },
     # Transitive through tokenizers; upstream still uses the archived crate.
-    { id = "RUSTSEC-2024-0436", reason = "Needs maintainer approval (H4); remove after `cargo update -p paste` (orchestrator, after WP-0.2)" },
+    { id = "RUSTSEC-2024-0436", reason = "Approved by the maintainer (H4, 2026-11-27); remove after `cargo update -p paste` (orchestrator, after WP-0.2)" },
     # Transitive through tauri-plugin-opener's zbus 5 stack; zbus 6 absorbs it.
-    { id = "RUSTSEC-2026-0370", reason = "Needs maintainer approval (H4); remove after `cargo update -p zvariant` (orchestrator, after WP-0.2)" },
-    { id = "RUSTSEC-2026-0371", reason = "Needs maintainer approval (H4); remove after `cargo update -p zbus_names` (orchestrator, after WP-0.2)" },
-    { id = "RUSTSEC-2026-0372", reason = "Needs maintainer approval (H4); remove after `cargo update -p zvariant_derive` (orchestrator, after WP-0.2)" },
+    { id = "RUSTSEC-2026-0370", reason = "Approved by the maintainer (H4, 2026-11-27); remove after `cargo update -p zvariant` (orchestrator, after WP-0.2)" },
+    { id = "RUSTSEC-2026-0371", reason = "Approved by the maintainer (H4, 2026-11-27); remove after `cargo update -p zbus_names` (orchestrator, after WP-0.2)" },
+    { id = "RUSTSEC-2026-0372", reason = "Approved by the maintainer (H4, 2026-11-27); remove after `cargo update -p zvariant_derive` (orchestrator, after WP-0.2)" },
     # Transitive through pdfium-render; replacing chrono requires an upstream update.
-    { id = "RUSTSEC-2026-0543", reason = "Needs maintainer approval (H4); remove after `cargo update -p chrono` (orchestrator, after WP-0.2)" },
+    { id = "RUSTSEC-2026-0543", reason = "Approved by the maintainer (H4, 2026-11-27); remove after `cargo update -p chrono` (orchestrator, after WP-0.2)" },
 ]
 
 [sources]
