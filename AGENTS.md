@@ -194,7 +194,7 @@ npm run test:unit                              # hardware-free frontend unit tes
 npm run tauri dev                              # run the desktop app
 ```
 
-From Phase 1 on: `cargo run -p seeky-bench -- eval --corpus sdc-smoke --split dev`.
+From Phase 1 on: `cargo run -p seeky-bench -- eval --corpus sdc-smoke --split dev --config <config.json> --data-dir <dir> --output <dir>`.
 
 Formatting is enforced: `npm install` enables the versioned pre-commit hook
 (`.githooks/pre-commit`, check-only rustfmt + Prettier) and CI runs the same

@@ -13,7 +13,15 @@ roadmap (§6), with the date.
 
 ### Added
 
-- The maintainer accepted the SPEC-0002 v1.1 evaluation extension (R17–R25:
+- `seeky-bench` implements WP-1.2: `index`, `eval`, `perf` (skeleton),
+  `compare`, and `report`; environment capture and semantic config hashing;
+  atomic, reproducible artifacts; fail-closed depth; test confirmation and an
+  exposure ledger; exact metadata filters with pushdown/post reporting. The
+  engine gains the accepted SPEC-0002 v1.1 evaluation API: depth to 1,000,
+  deterministic order, stage telemetry, an uncached query-embedding probe,
+  structured filters, and a config snapshot, plus an additive lexical-only
+  constructor and `Embedder` identity seam for the harness.
+- The maintainer accepted the SPEC-0002 v1.1 evaluation extension (R17-R25:
   evaluation depth to 1,000, stage and query-embedding telemetry, exact
   metadata filters, configuration snapshot) with its §9.7 proposals as
   written. WP-1.2 (`seeky-bench`) and WP-1.6 may start.
