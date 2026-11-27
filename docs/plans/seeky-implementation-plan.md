@@ -568,7 +568,8 @@ Rules:
 | M0 Runnable PoC | Done | 0.1.0 |
 | M1 Live incremental index | Done | 0.1.0 |
 | Phase 0 | In progress | WP-0.1, WP-0.2, WP-0.3, and WP-0.5 done; WP-0.4 implementation complete and awaiting H4 approval, WP-0.6 open (§15.3). Pre-flight fixes done outside any WP: fmt, clippy `-D warnings`, `hw-tests` feature, HTML fix, Auto is CPU-only until the NPU is validated ([conformance audit](../validation/poc-conformance-audit.md)). SPEC-0001 and SPEC-0002 v1 Implemented; manual Phase 0 app checks remain |
-| Phases 1–9 | Not started | — |
+| Phase 1 | In progress | WP-1.3 generator merged with a synthetic `sdc-smoke`; external sources and R14 judgment commands remain (§15.3) |
+| Phases 2-9 | Not started | - |
 | Phase 10 | Not started | Planned per ADR-0023, accepted 2026-11-27 (optional visual pack; off the 1.0 critical path) |
 
 ### 15.3 Work packages
@@ -583,7 +584,7 @@ Rules:
 | 0.6 | Not started | — | Fed by the OCR Stage 0 paper screen (§16) |
 | 1.1 | Not started | — | — |
 | 1.2 | Not started | — | — |
-| 1.3 | Not started | — | — |
+| 1.3 | In progress | [SPEC-0004](../specs/SPEC-0004-sdc-corpus-and-judgments.md) R1–R13; `tools/sdc-generator/` (stdlib-only Python 3.12+), `bench/corpora/sdc/`, committed `sdc-smoke` with corpus hash `365511dd…`, 80 generator tests and real-engine renderer round trips; [PR #7](https://github.com/bgeneto/seeky/pull/7) | Remaining: R14 judgment subcommands and external public-domain/CC-BY source scope with maintainer license review; `sdc-m` is validated at reduced scale, JPEG scans and four future extractors remain deferred |
 | 1.4 | Not started | — | — |
 | 1.5 | Not started | — | — |
 | 1.6 | Not started | — | — |
