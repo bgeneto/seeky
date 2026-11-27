@@ -546,6 +546,16 @@ pub fn load_smoke_set(paths: &BenchPaths) -> SmokeSetState {
 // The gate
 // ---------------------------------------------------------------------------
 
+/// Validate an ADR identifier (`ADR-NNNN`, four ASCII digits) for intentional
+/// WP-1.8 config re-baselining.
+#[must_use]
+pub fn is_valid_adr_id(value: &str) -> bool {
+    let Some(digits) = value.strip_prefix("ADR-") else {
+        return false;
+    };
+    digits.len() == 4 && digits.bytes().all(|byte| byte.is_ascii_digit())
+}
+
 /// Everything [`evaluate`] reads.
 pub struct GateInputs<'a> {
     /// Baseline at the current `main` SHA.
@@ -558,6 +568,9 @@ pub struct GateInputs<'a> {
     pub baseline_commit: &'a str,
     /// The committed smoke set.
     pub smoke_set: &'a SmokeSetState,
+    /// Optional ADR identifier (`ADR-NNNN`) authorizing a baseline-to-candidate
+    /// `config_hash` change during an intentional default re-baseline.
+    pub allow_config_change: Option<&'a str>,
 }
 
 type Check = std::result::Result<(), (Reason, String)>;
@@ -606,16 +619,20 @@ pub fn evaluate(inputs: &GateInputs<'_>) -> GateResult {
     });
     match evaluate_inner(inputs, &runs, &mut observed) {
         Ok(drop_points) => {
+            let suffix = inputs
+                .allow_config_change
+                .map(|adr| format!(" (re-baseline via {adr})"))
+                .unwrap_or_default();
             if drop_points <= MAX_DROP_POINTS + DROP_TOLERANCE {
                 gate_result(
                     Reason::WithinThreshold,
-                    &format!("drop {drop_points:.6} points is within 1.0"),
+                    &format!("drop {drop_points:.6} points is within 1.0{suffix}"),
                     observed,
                 )
             } else {
                 gate_result(
                     Reason::Regression,
-                    &format!("drop {drop_points:.6} points exceeds 1.0"),
+                    &format!("drop {drop_points:.6} points exceeds 1.0{suffix}"),
                     observed,
                 )
             }
@@ -750,6 +767,15 @@ fn evaluate_inner(
             )?;
         }
     }
+    if let Some(adr) = inputs.allow_config_change
+        && !is_valid_adr_id(adr)
+    {
+        fail(
+            Reason::MissingInput,
+            "allow_config_change must be a valid ADR identifier (ADR-NNNN)",
+        )?;
+    }
+
     for (label, run) in &runs[1..] {
         let left = &baseline.dataset;
         let right = &run.report.dataset;
@@ -763,12 +789,32 @@ fn evaluate_inner(
                 format!("the {label} corpus or query membership differs from the baseline"),
             )?;
         }
-        if baseline.system.config_hash != run.report.system.config_hash {
-            fail(
-                Reason::InputMismatch,
-                format!("the {label} config hash differs from the baseline"),
-            )?;
+    }
+    // The repeat must always use the exact same config as the candidate.
+    if candidate.system.config_hash != repeat.system.config_hash {
+        fail(
+            Reason::InputMismatch,
+            "the repeat config hash differs from the candidate",
+        )?;
+    }
+    let config_changed = baseline.system.config_hash != candidate.system.config_hash;
+    if let Some(adr) = inputs.allow_config_change {
+        if let Value::Object(object) = observed {
+            object.insert(
+                "config_change_override".to_string(),
+                json!({
+                    "adr": adr,
+                    "config_changed": config_changed,
+                    "baseline_config_hash": baseline.system.config_hash,
+                    "candidate_config_hash": candidate.system.config_hash,
+                }),
+            );
         }
+    } else if config_changed {
+        fail(
+            Reason::InputMismatch,
+            "the candidate config hash differs from the baseline",
+        )?;
     }
     // R29: identical OS family/architecture and hardware tier.
     let environment = environment_key(baseline);

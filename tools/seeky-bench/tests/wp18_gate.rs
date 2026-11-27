@@ -884,3 +884,205 @@ fn wp18_ci_configuration_is_lexical_cpu_only() {
     assert!(!config.semantic, "the CI smoke gate never loads a model");
     assert_eq!(config.backend, "cpu");
 }
+
+/// SPEC-0003-R29/R31: intentional default changes re-baseline cleanly when
+/// authorized by an explicit ADR ID while keeping repeat config equality and
+/// the 1.0 nDCG@10 drop ceiling strictly enforced.
+#[test]
+fn wp18_allow_config_change_permits_intentional_rebaseline_with_adr() {
+    let smoke = smoke();
+    let new_hash = "f".repeat(64);
+    let set_new_config = |value: &mut Value| {
+        value["system"]["config_hash"] = json!(new_hash);
+    };
+    let candidate = smoke.variant(&smoke.candidate, "c-rebase", set_new_config, |_| {});
+    let repeat = smoke.variant(&smoke.repeat, "r-rebase", set_new_config, |_| {});
+
+    let out = smoke.fixture.work.join("gate-rebaseline-pass");
+    let result = run_with_paths(
+        &smoke.paths,
+        args(&[
+            "compare",
+            "--baseline",
+            smoke.baseline.join("results.json").to_str().unwrap(),
+            "--candidate",
+            candidate.join("results.json").to_str().unwrap(),
+            "--repeat-candidate",
+            repeat.join("results.json").to_str().unwrap(),
+            "--gate",
+            "wp1.8",
+            "--baseline-commit",
+            &smoke.sha,
+            "--allow-config-change",
+            "ADR-0027",
+            "--output",
+            out.to_str().unwrap(),
+        ]),
+    );
+    assert!(result.is_ok(), "re-baseline gate should pass: {result:?}");
+    let report = read_json(&out.join("results.json"));
+    let gate = &report["gates"][0];
+    assert_eq!(gate["status"], "pass");
+    assert_eq!(gate["observed"]["reason"], "WITHIN_THRESHOLD");
+    assert_eq!(
+        gate["observed"]["config_change_override"]["adr"],
+        "ADR-0027"
+    );
+    assert_eq!(
+        gate["observed"]["config_change_override"]["config_changed"],
+        true
+    );
+    assert_eq!(
+        gate["observed"]["config_change_override"]["candidate_config_hash"],
+        new_hash
+    );
+    assert!(
+        gate["details"]
+            .as_str()
+            .unwrap()
+            .contains("re-baseline via ADR-0027")
+    );
+}
+
+/// SPEC-0003-R29/R31: re-baseline override never weakens repeat config
+/// determinism or the 1.0 point regression ceiling.
+#[test]
+fn wp18_allow_config_change_still_enforces_repeat_config_and_threshold() {
+    let smoke = smoke();
+    let cand_hash = "a".repeat(64);
+    let rep_hash = "b".repeat(64);
+    let candidate = smoke.variant(
+        &smoke.candidate,
+        "c-rep-diff",
+        |v| v["system"]["config_hash"] = json!(cand_hash),
+        |_| {},
+    );
+    let repeat = smoke.variant(
+        &smoke.repeat,
+        "r-rep-diff",
+        |v| v["system"]["config_hash"] = json!(rep_hash),
+        |_| {},
+    );
+
+    let out_repeat = smoke.fixture.work.join("gate-rebaseline-repeat-mismatch");
+    let err = run_with_paths(
+        &smoke.paths,
+        args(&[
+            "compare",
+            "--baseline",
+            smoke.baseline.join("results.json").to_str().unwrap(),
+            "--candidate",
+            candidate.join("results.json").to_str().unwrap(),
+            "--repeat-candidate",
+            repeat.join("results.json").to_str().unwrap(),
+            "--gate",
+            "wp1.8",
+            "--baseline-commit",
+            &smoke.sha,
+            "--allow-config-change",
+            "ADR-0027",
+            "--output",
+            out_repeat.to_str().unwrap(),
+        ]),
+    )
+    .expect_err("repeat config mismatch must still fail");
+    assert_eq!(err.code, 6);
+    let report = read_json(&out_repeat.join("results.json"));
+    assert_eq!(report["gates"][0]["observed"]["reason"], "INPUT_MISMATCH");
+
+    // Regression above 1.0 point still fails under re-baseline override.
+    let baseline = smoke.variant(&smoke.baseline, "b-reg", |v| set_ndcg(v, 0.6), |_| {});
+    let reg_cand = smoke.variant(
+        &smoke.candidate,
+        "c-reg",
+        |v| {
+            v["system"]["config_hash"] = json!(cand_hash);
+            set_ndcg(v, 0.58);
+        },
+        |_| {},
+    );
+    let reg_rep = smoke.variant(
+        &smoke.repeat,
+        "r-reg",
+        |v| {
+            v["system"]["config_hash"] = json!(cand_hash);
+            set_ndcg(v, 0.58);
+        },
+        |_| {},
+    );
+    let out_reg = smoke.fixture.work.join("gate-rebaseline-regression");
+    let err = run_with_paths(
+        &smoke.paths,
+        args(&[
+            "compare",
+            "--baseline",
+            baseline.join("results.json").to_str().unwrap(),
+            "--candidate",
+            reg_cand.join("results.json").to_str().unwrap(),
+            "--repeat-candidate",
+            reg_rep.join("results.json").to_str().unwrap(),
+            "--gate",
+            "wp1.8",
+            "--baseline-commit",
+            &smoke.sha,
+            "--allow-config-change",
+            "ADR-0027",
+            "--output",
+            out_reg.to_str().unwrap(),
+        ]),
+    )
+    .expect_err("regression must still fail under re-baseline");
+    assert_eq!(err.code, 6);
+    let report = read_json(&out_reg.join("results.json"));
+    assert_eq!(report["gates"][0]["observed"]["reason"], "REGRESSION");
+}
+
+/// SPEC-0003-R15/R29: invalid ADR IDs and non-wp1.8 invocations fail before
+/// reading reports.
+#[test]
+fn wp18_allow_config_change_rejects_invalid_adr_or_missing_gate() {
+    let smoke = smoke();
+    for bad in ["", "ADR-27", "adr-0027", "wip", "ADR-0027a"] {
+        let out = smoke.fixture.work.join("gate-bad-adr");
+        let err = run_with_paths(
+            &smoke.paths,
+            args(&[
+                "compare",
+                "--baseline",
+                smoke.baseline.join("results.json").to_str().unwrap(),
+                "--candidate",
+                smoke.candidate.join("results.json").to_str().unwrap(),
+                "--repeat-candidate",
+                smoke.repeat.join("results.json").to_str().unwrap(),
+                "--gate",
+                "wp1.8",
+                "--baseline-commit",
+                &smoke.sha,
+                "--allow-config-change",
+                bad,
+                "--output",
+                out.to_str().unwrap(),
+            ]),
+        )
+        .expect_err("invalid ADR ID must fail");
+        assert_eq!(err.code, 2, "bad ADR {bad:?} should be exit code 2");
+    }
+
+    let out = smoke.fixture.work.join("compare-no-gate-adr");
+    let err = run_with_paths(
+        &smoke.paths,
+        args(&[
+            "compare",
+            "--baseline",
+            smoke.baseline.join("results.json").to_str().unwrap(),
+            "--candidate",
+            smoke.candidate.join("results.json").to_str().unwrap(),
+            "--allow-config-change",
+            "ADR-0027",
+            "--output",
+            out.to_str().unwrap(),
+        ]),
+    )
+    .expect_err("--allow-config-change without --gate wp1.8 must fail");
+    assert_eq!(err.code, 2);
+}

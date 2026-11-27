@@ -6,6 +6,25 @@
 # evaluates the candidate twice from fresh indexes, and runs
 # `compare --gate wp1.8`. The gate fails closed on draft or unverified data.
 #
+# PDFium and OCR on the Linux runner:
+# - A pinned, SHA-256-verified Linux x64 release from bblanchon/pdfium-binaries
+#   (Apache-2.0) is cached and exported via SEEKY_PDFIUM_DLL for both baseline
+#   and candidate runs so text PDFs in sdc-smoke are extracted identically.
+# - OCR is intentionally absent until WP-3.8 (Phase 3); scanned PDF/PNG pages
+#   in sdc-smoke are skipped equally on both sides until an OCR pack lands.
+#
+# Intentional default changes (re-baseline):
+# - Baseline always runs with baseline/$CI_CONFIG and candidate/repeat run with
+#   candidate/$CI_CONFIG. Any unauthorized config_hash change fails closed with
+#   INPUT_MISMATCH.
+# - When a PR intentionally changes a default backed by an ADR, the maintainer
+#   applies the `smoke-rebaseline` label and the PR description includes a line
+#   `smoke-rebaseline: ADR-NNNN` (or triggers workflow_dispatch with
+#   allow_config_change=ADR-NNNN). That passes `--allow-config-change ADR-NNNN`
+#   to `compare --gate wp1.8`, while keeping every R30/R31 invariant, repeat
+#   config equality, and the <= 1.0 nDCG@10 drop ceiling enforced against main.
+#   See docs/benchmarks/smoke-gate-activation.md.
+#
 # Dormant until bench/qrels/sdc/sdc-smoke-v1 is published on main (H6,
 # SPEC-0004 R26): until then the job prints a notice and succeeds without
 # running the gate. It is a separate workflow so that no existing CI job
@@ -15,7 +34,14 @@ name: Smoke gate (WP-1.8)
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened, edited, labeled, unlabeled]
   workflow_dispatch:
+    inputs:
+      allow_config_change:
+        description: "Optional ADR ID (e.g. ADR-0027) authorizing an intentional default re-baseline"
+        required: false
+        default: ""
+        type: string
 
 permissions:
   contents: read
@@ -27,6 +53,11 @@ concurrency:
 env:
   SMOKE_SET: bench/qrels/sdc/sdc-smoke-v1/judgment-set.json
   CI_CONFIG: tools/seeky-bench/configs/ci-smoke-lexical.json
+  # Pinned bblanchon/pdfium-binaries Linux x64 release (Apache-2.0).
+  PDFIUM_TAG: chromium/8179
+  PDFIUM_ARCHIVE: pdfium-linux-x64.tgz
+  PDFIUM_URL: https://github.com/bblanchon/pdfium-binaries/releases/download/chromium/8179/pdfium-linux-x64.tgz
+  PDFIUM_SHA256: b4766a6bf2856efbcc6c3cc7d6ae9022bdc6bb36ddc1acdd92d1f1873f773f4b
 
 jobs:
   smoke-gate:
@@ -42,15 +73,37 @@ jobs:
           lfs: true
           path: candidate
 
-      - name: Resolve the current main SHA and whether sdc-smoke-v1 is published
+      - name: Resolve the current main SHA, smoke-set publication, and re-baseline mode
         id: state
         working-directory: candidate
         shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          DISPATCH_ADR: ${{ inputs.allow_config_change }}
+          HAS_REBASELINE_LABEL: ${{ contains(github.event.pull_request.labels.*.name, 'smoke-rebaseline') }}
+          PR_BODY: ${{ github.event.pull_request.body }}
         run: |
           set -euo pipefail
           git fetch --no-tags origin main
           main_sha="$(git rev-parse FETCH_HEAD)"
           echo "main_sha=${main_sha}" >> "$GITHUB_OUTPUT"
+
+          allow_adr=""
+          if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ -n "$DISPATCH_ADR" ]; then
+            allow_adr="$DISPATCH_ADR"
+          elif [ "$EVENT_NAME" = "pull_request" ] && [ "$HAS_REBASELINE_LABEL" = "true" ]; then
+            allow_adr="$(printf '%s\n' "$PR_BODY" | sed -nE 's/^[[:space:]]*smoke-rebaseline:[[:space:]]*(ADR-[0-9]{4})[[:space:]]*$/\1/p' | head -n 1)"
+            if [ -z "$allow_adr" ]; then
+              echo "::error title=WP-1.8 smoke gate::PR has label 'smoke-rebaseline' but no 'smoke-rebaseline: ADR-NNNN' line in the PR description."
+              exit 1
+            fi
+          fi
+          if [ -n "$allow_adr" ] && ! printf '%s' "$allow_adr" | grep -Eq '^ADR-[0-9]{4}$'; then
+            echo "::error title=WP-1.8 smoke gate::Invalid re-baseline ADR ID '${allow_adr}'; expected ADR-NNNN."
+            exit 1
+          fi
+          echo "allow_config_change=${allow_adr}" >> "$GITHUB_OUTPUT"
+
           if git cat-file -e "${main_sha}:${SMOKE_SET}" 2>/dev/null; then
             echo "published=true" >> "$GITHUB_OUTPUT"
             echo "sdc-smoke-v1 is published on main ${main_sha}; running the gate."
@@ -61,6 +114,9 @@ jobs:
               echo "### WP-1.8 smoke gate: dormant"
               echo
               echo "sdc-smoke-v1 not published (H6). The gate runs once the verified set is on main."
+              echo
+              echo "- Runner PDFium: pinned \`${PDFIUM_TAG}\` Linux x64 (Apache-2.0, SHA-256 verified)"
+              echo "- Runner OCR: absent until WP-3.8 (scanned pages skipped equally on baseline and candidate)"
             } >> "$GITHUB_STEP_SUMMARY"
           fi
 
@@ -71,6 +127,29 @@ jobs:
           ref: ${{ steps.state.outputs.main_sha }}
           lfs: true
           path: baseline
+
+      - name: Cache pinned PDFium Linux x64 runtime
+        if: steps.state.outputs.published == 'true'
+        id: pdfium-cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/pdfium
+          key: pdfium-linux-x64-${{ env.PDFIUM_TAG }}-${{ env.PDFIUM_SHA256 }}
+
+      - name: Fetch and verify pinned PDFium Linux x64 runtime
+        if: steps.state.outputs.published == 'true' && steps.pdfium-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          dest="$RUNNER_TEMP/pdfium"
+          archive="$RUNNER_TEMP/$PDFIUM_ARCHIVE"
+          mkdir -p "$dest"
+          curl --fail --silent --show-error --location --retry 3 \
+            "$PDFIUM_URL" -o "$archive"
+          printf '%s  %s\n' "$PDFIUM_SHA256" "$archive" | sha256sum --check -
+          tar -xzf "$archive" -C "$dest"
+          rm -f "$archive"
+          test -f "$dest/lib/libpdfium.so"
 
       - name: Install Linux build dependencies
         if: steps.state.outputs.published == 'true'
@@ -106,11 +185,12 @@ jobs:
         shell: bash
         env:
           SEEKY_BENCH_ROOT: ${{ github.workspace }}/baseline
+          SEEKY_PDFIUM_DLL: ${{ runner.temp }}/pdfium/lib/libpdfium.so
         run: |
           set -euo pipefail
           out="$RUNNER_TEMP/smoke"
           bin="$GITHUB_WORKSPACE/baseline/target/release/seeky-bench"
-          config="$GITHUB_WORKSPACE/candidate/$CI_CONFIG"
+          config="$GITHUB_WORKSPACE/baseline/$CI_CONFIG"
           "$bin" index --corpus sdc-smoke --data-dir "$out/baseline-data" \
             --config "$config" --output "$out/baseline-index"
           "$bin" eval --corpus sdc-smoke --split dev --config "$config" \
@@ -122,6 +202,7 @@ jobs:
         shell: bash
         env:
           SEEKY_BENCH_ROOT: ${{ github.workspace }}/candidate
+          SEEKY_PDFIUM_DLL: ${{ runner.temp }}/pdfium/lib/libpdfium.so
         run: |
           set -euo pipefail
           out="$RUNNER_TEMP/smoke"
@@ -141,19 +222,29 @@ jobs:
         env:
           SEEKY_BENCH_ROOT: ${{ github.workspace }}/candidate
           MAIN_SHA: ${{ steps.state.outputs.main_sha }}
+          ALLOW_CONFIG_CHANGE: ${{ steps.state.outputs.allow_config_change }}
         run: |
           set -euo pipefail
           out="$RUNNER_TEMP/smoke"
           status=0
+          extra_args=()
+          if [ -n "$ALLOW_CONFIG_CHANGE" ]; then
+            extra_args+=(--allow-config-change "$ALLOW_CONFIG_CHANGE")
+          fi
           "$GITHUB_WORKSPACE/candidate/target/release/seeky-bench" compare \
             --baseline "$out/baseline/results.json" \
             --candidate "$out/candidate/results.json" \
             --repeat-candidate "$out/repeat/results.json" \
             --gate wp1.8 --baseline-commit "$MAIN_SHA" \
+            "${extra_args[@]}" \
             --work-package WP-1.8 --spec SPEC-0003 \
             --output "$out/gate" || status=$?
           if [ -f "$out/gate/summary.md" ]; then
-            cat "$out/gate/summary.md" >> "$GITHUB_STEP_SUMMARY"
+            {
+              cat "$out/gate/summary.md"
+              echo
+              echo "_Runner extractors: PDFium \`${PDFIUM_TAG}\` (Linux x64, SHA-256 verified); OCR absent until WP-3.8._"
+            } >> "$GITHUB_STEP_SUMMARY"
           fi
           exit "$status"
 

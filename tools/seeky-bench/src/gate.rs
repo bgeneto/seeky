@@ -653,6 +653,7 @@ pub fn compare(
     repeat: Option<&Path>,
     gate: Option<&str>,
     baseline_commit: Option<&str>,
+    allow_config_change: Option<&str>,
     output: &Path,
     seed: &str,
     metadata: ReportMetadata,
@@ -668,10 +669,16 @@ pub fn compare(
             candidate_paths,
             repeat,
             baseline_commit,
+            allow_config_change,
             output,
             metadata,
             command,
         );
+    }
+    if allow_config_change.is_some() {
+        return Err(Failure::usage(
+            "--allow-config-change is valid only with --gate wp1.8",
+        ));
     }
     let baseline = read_report(baseline_path)?;
     let mut candidates = Vec::with_capacity(candidate_paths.len());
@@ -823,6 +830,7 @@ fn compare_wp18(
     candidate_paths: &[PathBuf],
     repeat: Option<&Path>,
     baseline_commit: Option<&str>,
+    allow_config_change: Option<&str>,
     output: &Path,
     metadata: ReportMetadata,
     command: &[String],
@@ -855,6 +863,7 @@ fn compare_wp18(
                 repeat: &repeat_run,
                 baseline_commit: commit,
                 smoke_set: &smoke_set,
+                allow_config_change,
             })
         }
         (message, _, _) => smoke_gate::gate_result(

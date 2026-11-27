@@ -656,6 +656,7 @@ fn command_compare(paths: &BenchPaths, args: &[String]) -> Result<()> {
         "--repeat-candidate",
         "--gate",
         "--baseline-commit",
+        "--allow-config-change",
         "--output",
     ];
     common_metadata_allowed(&mut allowed);
@@ -672,6 +673,19 @@ fn command_compare(paths: &BenchPaths, args: &[String]) -> Result<()> {
     let repeat = parsed.value("--repeat-candidate").map(PathBuf::from);
     let gate = parsed.value("--gate").map(str::to_string);
     let baseline_commit = parsed.value("--baseline-commit").map(str::to_string);
+    let allow_config_change = parsed.value("--allow-config-change").map(str::to_string);
+    if let Some(adr) = allow_config_change.as_deref() {
+        if gate.as_deref() != Some("wp1.8") {
+            return Err(Failure::usage(
+                "--allow-config-change is valid only with --gate wp1.8",
+            ));
+        }
+        if !smoke_gate::is_valid_adr_id(adr) {
+            return Err(Failure::usage(
+                "--allow-config-change must name an ADR identifier (for example ADR-0027)",
+            ));
+        }
+    }
     let output = PathBuf::from(parsed.required("--output")?);
     let seed = seed_of(&parsed);
     gate::compare(
@@ -681,6 +695,7 @@ fn command_compare(paths: &BenchPaths, args: &[String]) -> Result<()> {
         repeat.as_deref(),
         gate.as_deref(),
         baseline_commit.as_deref(),
+        allow_config_change.as_deref(),
         &output,
         &seed,
         report_metadata(
