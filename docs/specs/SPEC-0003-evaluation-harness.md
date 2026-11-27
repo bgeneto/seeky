@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Status | Accepted (maintainer pre-approval in /goal) |
-| Version | 0.2 (Phase 1 quality, statistics, reporting, performance, CI smoke) |
+| Version | 0.3 (Phase 1 quality, statistics, reporting, performance, CI smoke) |
 | Owner | Maintainer |
 | Phase / work packages | Phase 1 — WP-1.1, WP-1.2, WP-1.5, WP-1.6, WP-1.8 |
 | Crates touched | `seeky-eval` (new implementation); `tools/seeky-bench` (new workspace tool); `bench/datasets/` and `bench/exposures/` data contracts |
@@ -1579,6 +1579,7 @@ an error, never a quality result.
 
 | Version | Date | Change |
 |---|---|---|
+| 0.3 | 2026-11-27 | WP-1.8 implemented R29-R31: `compare --gate wp1.8` applies the §5.6 rules in order and emits one typed gate row (reason code in `details` and `observed.reason`) in a `smoke_gate` report; R31 run invariants read each `run.trec`; R30 reads provenance from the committed set; `.github/workflows/smoke-gate.yml` is dormant until `sdc-smoke-v1` is published (H6) |
 | 0.2 | 2026-11-27 | WP-1.6 implemented R25-R28: `seeky-bench perf` suites, the §4.10 performance shape (`query_embedding` batch/samples, optional RSS, `warnings`), tier/emulation validation, quiet window, and explicit budget eligibility. Errata approved by the maintainer: §5.8 D disk-per-1k reference corrected from 2,500 to 2,500,000 to match the §4.10 formula; §4.5 now names the interference-ratio bootstrap keys. R29-R31 remain with WP-1.8 |
 | 0.1 | 2026-11-27 | WP-1.2 implemented R15-R22 and R32: `seeky-bench` index, eval, perf skeleton, compare, and report; environment and config hashing; reproducible artifacts; fail-closed depth; test confirmation/exposure; exact filters with pushdown/post reporting. R23-R24 with WP-1.5, R25-R28 with WP-1.6, R29-R31 with WP-1.8 |
 | 0.1 | 2026-11-27 | WP-1.5 implemented R23-R24: offline `dataset-fetch` tooling and four pinned BEIR/MLDR manifests (SciFact, NFCorpus, FiQA, MLDR-pt) with upstream/local hashes, license notices, deterministic transforms, and fingerprints; the mMARCO cross-lingual pair and the largest sources remain unpinned |

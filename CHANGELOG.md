@@ -12,6 +12,14 @@ roadmap (§6), with the date.
 ## Unreleased
 
 ### Added
+- `seeky-bench compare --gate wp1.8` enforces the WP-1.8 smoke gate
+  (SPEC-0003 R29–R31): verified, frozen `sdc-smoke-v1` only; same corpus,
+  judgments, config, and environment; no code results; ranking invariants and
+  repeat determinism; the candidate's macro nDCG@10 over the eight non-code
+  categories may drop at most 1.0 point from `main`. Every outcome is a typed
+  gate reason in a `smoke_gate` report. A new `Smoke gate (WP-1.8)` workflow
+  runs it on pull requests and stays dormant (a passing notice) until
+  `sdc-smoke-v1` is published (H6).
 - Desktop light and dark themes (SPEC-0014 R10–R15, WP-7.2). Seeky follows
   the OS theme by default and live; Settings → Theme overrides it (System
   default / Light / Dark), saved locally. The native window and titlebar
@@ -111,6 +119,10 @@ roadmap (§6), with the date.
 
 ### Changed
 
+- `compare --gate wp1.8` now writes a `smoke_gate` report (candidate quality,
+  gate row, run, and config snapshot) instead of a `comparison` report, and
+  always records a gate row, including for incompatible inputs; paired
+  statistics come from `compare` without `--gate`.
 - The report's `performance` object follows SPEC-0003 §4.10:
   `query_embedding` is `{batch, samples, latency_ms}`, RSS values may be null,
   and `warnings` lists every unavailable or not-budget-eligible value (schema
