@@ -12,6 +12,13 @@ them explicit so that WP-0.2 ("extract crates with no behavior change") freezes
 known behavior deliberately, and so the golden test is captured after the
 pre-flight bug fixes rather than before.
 
+Maintenance: the commit that closes a deviation (§3) or a finding (§4) updates
+its row in the same commit ([`AGENTS.md`](../../AGENTS.md) §4 step 8). In §3,
+"Closed by" becomes `**Closed** (WP-x.y)`; in §4, `Open → WP-x.y` becomes
+`**Fixed** (WP-x.y)` with the test that proves it. No new rows are added: new
+deviations found after Phase 0 go to the plan or a spec. When every row is
+closed, the Status field above becomes `Closed`.
+
 ## 1. Build health
 
 | Check | Before pre-flight | After pre-flight |

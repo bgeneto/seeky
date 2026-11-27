@@ -85,7 +85,7 @@ watch the index update.
 | [`docs/architecture/`](docs/architecture/README.md) | Engine architecture, indexing, retrieval, inference, provisioning |
 | [`docs/adr/`](docs/adr/README.md) | Architecture decision records |
 | [`docs/benchmarks/`](docs/benchmarks/README.md) | Benchmark methodology, budgets, candidates, results |
-| [`docs/specs/`](docs/specs/README.md) | Spec process and planned specs |
+| [`docs/specs/`](docs/specs/README.md) | Spec process and spec index with status |
 | [`docs/README.md`](docs/README.md) | Full documentation map |
 
 ## Repository layout

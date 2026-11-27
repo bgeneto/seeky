@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Status | Active |
-| Version | 2.1 (visual pack track per ADR-0023) |
+| Version | 2.2 (work-package status tracking in §15) |
 | Date | 2026-11-27 |
 | Supersedes | Plan v1.1 (2026-11-26) and the archived Python-era plans |
 | Current release | 0.1.0 PoC (milestones M0 "runnable PoC" and M1 "live incremental index" complete) |
@@ -68,7 +68,8 @@ provisional until locked by ADR at the end of Phase 1.
 5. Build:  implement the smallest change that passes; keep crates within boundaries.
 6. Check:  fmt, clippy -D warnings, tests, cargo-deny, TS build, smoke eval.
 7. Prove:  run seeky-bench when the WP touches quality/perf; write the report.
-8. Record: update ADR (if a default changed), spec status, CHANGELOG, this plan's status table.
+8. Record: in the same commit, the WP's row in §15.3, spec requirement status, ADR (if a
+          default changed), audit rows, CHANGELOG (checklist: AGENTS.md §4 step 8).
 ```
 
 ### 3.2 Roles
@@ -182,8 +183,8 @@ engine before anything is built on it (priority zero).
 | 0.1 | Cargo workspace skeleton; shared lints (`clippy` pedantic subset, `unsafe_code = "deny"` outside audited modules), profiles, toolchain pin; rename `apps/seeky` → `apps/desktop` (update paths in `.githooks/pre-commit` and `.github/workflows/ci.yml`) | SPEC-0001 | — | `Cargo.toml` workspace, `rust-toolchain.toml`, crate stubs |
 | 0.2 | Extract engine crates from the PoC (`core`, `extract`, `infer`, `store`, `search`, `engine`) with **no behavior change**; add a golden search test (fixed corpus → identical ranked output) | SPEC-0001, SPEC-0002 v1 | 0.1 | Crates; PoC tests pass in new locations; golden test |
 | 0.3 | Tauri shell becomes a thin adapter over the `Engine` API; no SQLite/model/filesystem access from the shell; files are opened by document ID, never by a path supplied by the webview (audit A8) | SPEC-0002 v1 | 0.2 | `apps/desktop/src-tauri` reduced to commands + wiring |
-| 0.4 | CI: format checks (rustfmt + Prettier: **done**, `format` job and pre-commit hook), clippy `-D warnings`, hardware-free tests, `cargo-deny` (licenses/advisories/bans), TypeScript typecheck + build; compile check on Windows, Linux, macOS; hardware tests behind a feature flag | — | 0.1 | CI workflow; green on `main` |
-| 0.5 | Process scaffolding: AGENTS.md, ADR/spec/report templates, PR template | — | — | **Done in this reorganization** |
+| 0.4 | CI: format checks (rustfmt + Prettier, `format` job and pre-commit hook), clippy `-D warnings`, hardware-free tests, `cargo-deny` (licenses/advisories/bans), TypeScript typecheck + build; compile check on Windows, Linux, macOS; hardware tests behind a feature flag | — | 0.1 | CI workflow; green on `main` |
+| 0.5 | Process scaffolding: AGENTS.md, ADR/spec/report templates, PR template | — | — | `AGENTS.md`, `CLAUDE.md`, templates, PR template |
 | 0.6 | **[human: T1 access or T1-emulated profile] Priority zero — ORT validation gate:** first version of `tools/model-export`; one representative model per role (two embedders, a reranker, a PP-OCR-class pipeline, a ~1B transcription VLM as split graphs) exported to ONNX in fp32/int8/int4 variants; parity; speed, RSS, load time, and runtime size on T1 CPU-only; Intel NPU through the OpenVINO EP; kill criteria K1–K4 ([methodology §8.7](../benchmarks/methodology.md)) | report | — | Gate report in `docs/benchmarks/results/`; ADR-0019 stands, or WP-2.3 is triggered for the failing role |
 
 **Exit evidence:** golden test identical before/after; app runs from
@@ -455,7 +456,7 @@ Runtime candidate by the predeclared new-engine margin
 | Vector-space drift on model change | Wrong results | Index generations; never mix vectors; blue/green promotion |
 | SQLite ↔ index-file inconsistency after crash | Corrupt results | Generation markers; idempotent rebuild from SQLite + cache |
 | R2 outage | First-run semantic delay | Lexical-first; cached manifest; offline bundle |
-| Agent drift from contracts | Rework | Accepted specs only; requirement IDs in tests; reviewer checklist; this plan's status table |
+| Agent drift from contracts | Rework | Accepted specs only; requirement IDs in tests; reviewer checklist; per-WP status with evidence (§15) |
 | A multimodal model is chosen for its image support at the expense of text | Core quality or latency regression | WP-2.6 judges text merit only; image capability is a tie-breaker inside the CI and the text budgets (ADR-0023, methodology §7) |
 | Visual pack slows indexing or pollutes text results | Worse core experience | Lowest-priority visual lane; budgets V1, V2, V4; Q8 (b) re-runs every text category with the pack on; rank-based fusion; pack off until the user enables it |
 
@@ -518,22 +519,151 @@ Options discussed in earlier documents that this plan deliberately drops:
 - ADR written/updated when a default or architectural rule changes.
 - User-facing strings localized (en/pt) from Phase 7 on; both themes work.
 - No document content, personal paths, or secrets in code, logs, or docs.
-- `CHANGELOG.md`, the spec status, and the status table below are updated.
+- Recorded in the same commit (AGENTS.md §4 step 8): the WP's row in §15.3
+  with its evidence, the spec's requirement status, the ADR index, the
+  conformance audit rows it closes, and `CHANGELOG.md`.
 
 ## 15. Status
+
+This section is the only place that says what is done. Agents read §15.3 to
+pick a work package whose dependencies are done (§3.1 step 1), and the commit
+that changes a WP's state updates its row in the same commit (§3.1 step 8;
+checklist in [AGENTS.md §4](../../AGENTS.md#4-how-to-work-the-sdd--bmdd-loop)
+step 8). The §7 tables define work packages and never carry status.
+
+### 15.1 Status values
+
+| Status | Meaning | Required in Evidence / Notes |
+|---|---|---|
+| Not started | Nothing merged on `main` | — |
+| In progress | Some deliverables merged on `main`, others open | Notes: what is done and what remains, precise enough for the next session to resume |
+| Blocked | Cannot proceed | Notes: the blocker and who removes it (maintainer, hardware, another WP) |
+| Done | Every deliverable merged and the WP's evidence committed | Evidence: spec and version, test or report paths, ADR. Commits are found with `git log --grep "WP-x.y"` (commit trailer, AGENTS.md §9) |
+| Not triggered | Conditional WP whose condition did not occur (for example WP-2.3) | Evidence: the report or ADR showing the condition did not fire |
+| Dropped | Removed from scope | Evidence: the ADR or plan revision that removed it |
+
+Rules:
+
+1. A WP is **Done** only when all its deliverables (§7) are merged; partial
+   delivery is **In progress** with the remainder in Notes.
+2. A phase is **Done** when every WP is Done, Not triggered, or Dropped and
+   the phase's exit evidence (§7) is committed; the phase row in §15.2 then
+   links that evidence.
+3. Adding, splitting, or removing a WP in §7 adds, splits, or removes its row
+   in §15.3 in the same commit.
+4. Changes outside any WP (bug fixes, refactors, docs, tooling) get no row;
+   they are recorded in `CHANGELOG.md` and, when they close a finding, in the
+   [conformance audit](../validation/poc-conformance-audit.md).
+
+### 15.2 Milestones and phases
 
 | Phase | Status | Notes |
 |---|---|---|
 | M0 Runnable PoC | Done | 0.1.0 |
 | M1 Live incremental index | Done | 0.1.0 |
-| Phase 0 | In progress | WP-0.5 done (repository reorganization, AGENTS.md, templates); pre-flight done (fmt, clippy `-D warnings`, `hw-tests` feature, HTML fix, Auto never selects CUDA; [conformance audit](../validation/poc-conformance-audit.md)); WP-0.4 format gate done (rustfmt + Prettier in CI and a pre-commit hook) |
+| Phase 0 | In progress | WP-0.4 in progress, WP-0.5 done (§15.3). Pre-flight fixes done outside any WP: fmt, clippy `-D warnings`, `hw-tests` feature, HTML fix, Auto never selects CUDA ([conformance audit](../validation/poc-conformance-audit.md)) |
 | Phases 1–9 | Not started | — |
 | Phase 10 | Not started | Planned per ADR-0023, accepted 2026-11-27 (optional visual pack; off the 1.0 critical path) |
 
+### 15.3 Work packages
+
+| WP | Status | Evidence | Notes |
+|---|---|---|---|
+| 0.1 | Not started | — | — |
+| 0.2 | Not started | — | — |
+| 0.3 | Not started | — | — |
+| 0.4 | In progress | `.github/workflows/ci.yml` (`format` job), `.githooks/pre-commit` | Done: rustfmt + Prettier in CI and a check-only pre-commit hook; hardware tests behind the `hw-tests` feature (pre-flight). Remaining CI jobs: clippy `-D warnings`, hardware-free tests, `cargo-deny`, TypeScript typecheck + build, Windows/Linux/macOS compile |
+| 0.5 | Done | `AGENTS.md`, `CLAUDE.md`, `docs/adr/_template.md`, `docs/specs/_template.md`, `docs/benchmarks/_report-template.md`, `.github/pull_request_template.md` | Repository reorganization |
+| 0.6 | Not started | — | Fed by the OCR Stage 0 paper screen (§16) |
+| 1.1 | Not started | — | — |
+| 1.2 | Not started | — | — |
+| 1.3 | Not started | — | — |
+| 1.4 | Not started | — | — |
+| 1.5 | Not started | — | — |
+| 1.6 | Not started | — | — |
+| 1.7 | Not started | — | — |
+| 1.8 | Not started | — | — |
+| 2.1 | Not started | — | — |
+| 2.2 | Not started | — | — |
+| 2.3 | Not started | — | Conditional on a WP-0.6 kill criterion |
+| 2.4 | Not started | — | — |
+| 2.5 | Not started | — | — |
+| 2.6 | Not started | — | — |
+| 2.7 | Not started | — | — |
+| 2.8 | Not started | — | — |
+| 2.9 | Not started | — | — |
+| 2.10 | Not started | — | — |
+| 2.11 | Not started | — | — |
+| 2.12 | Not started | — | — |
+| 2.13 | Not started | — | — |
+| 3.1 | Not started | — | — |
+| 3.2 | Not started | — | — |
+| 3.3 | Not started | — | — |
+| 3.4 | Not started | — | — |
+| 3.5 | Not started | — | — |
+| 3.6 | Not started | — | — |
+| 3.7 | Not started | — | — |
+| 3.8 | Not started | — | — |
+| 3.9 | Not started | — | — |
+| 4.1 | Not started | — | — |
+| 4.2 | Not started | — | — |
+| 4.3 | Not started | — | — |
+| 4.4 | Not started | — | — |
+| 4.5 | Not started | — | — |
+| 4.6 | Not started | — | — |
+| 4.7 | Not started | — | — |
+| 4.8 | Not started | — | — |
+| 4.9 | Not started | — | — |
+| 4.10 | Not started | — | — |
+| 4.11 | Not started | — | Gated |
+| 4.12 | Not started | — | — |
+| 5.1 | Not started | — | — |
+| 5.2 | Not started | — | — |
+| 5.3 | Not started | — | — |
+| 5.4 | Not started | — | — |
+| 5.5 | Not started | — | — |
+| 5.6 | Not started | — | — |
+| 5.7 | Not started | — | — |
+| 6.1 | Not started | — | — |
+| 6.2 | Not started | — | — |
+| 6.3 | Not started | — | — |
+| 6.4 | Not started | — | — |
+| 6.5 | Not started | — | — |
+| 6.6 | Not started | — | — |
+| 7.1 | Not started | — | — |
+| 7.2 | Not started | — | — |
+| 7.3 | Not started | — | — |
+| 7.4 | Not started | — | — |
+| 7.5 | Not started | — | — |
+| 7.6 | Not started | — | — |
+| 7.7 | Not started | — | — |
+| 7.8 | Not started | — | — |
+| 7.9 | Not started | — | — |
+| 8.1 | Not started | — | — |
+| 8.2 | Not started | — | — |
+| 8.3 | Not started | — | — |
+| 8.4 | Not started | — | — |
+| 8.5 | Not started | — | — |
+| 9.1 | Not started | — | — |
+| 9.2 | Not started | — | — |
+| 9.3 | Not started | — | — |
+| 9.4 | Not started | — | — |
+| 10.1 | Not started | — | — |
+| 10.2 | Not started | — | — |
+| 10.3 | Not started | — | — |
+| 10.4 | Not started | — | — |
+| 10.5 | Not started | — | — |
+| 10.6 | Not started | — | — |
+| 10.7 | Not started | — | — |
+| 10.8 | Not started | — | — |
+
 ## 16. Immediate next actions
 
-1. Maintainer reviews and accepts this plan, the [vision](../product/vision.md),
-   and ADR-0015 to ADR-0023.
+Kept current by the commit that completes or changes an action: remove
+finished items and add the next ones, so this list never points at done work.
+
+1. Maintainer reviews and accepts this plan (the
+   [vision](../product/vision.md) and ADR-0015 to ADR-0023 are Accepted).
 2. Write and accept **SPEC-0001** (workspace and crate boundaries) and
    **SPEC-0002 v1** (engine API).
 3. Execute WP-0.1 → WP-0.2 → WP-0.3 and WP-0.4 in parallel with WP-0.2; run

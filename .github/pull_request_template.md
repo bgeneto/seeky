@@ -7,6 +7,8 @@
 - Work package: WP-x.y
 - Spec: SPEC-NNNN (requirement IDs: R…)
 - ADRs touched/added:
+- WP status after this change (plan §15.3): Not started / In progress / Done
+- Commits carry the `Refs: WP-x.y, SPEC-NNNN` trailer
 
 ## Gates
 
@@ -25,4 +27,4 @@
 - [ ] No hardcoded model dimensions/paths/prompts (ADR-0019)
 - [ ] UI strings localized (en/pt) and both themes checked (if UI changed)
 - [ ] No document content, personal paths, or secrets in code, logs, or docs
-- [ ] `CHANGELOG.md`, spec status, and plan status table updated
+- [ ] Recorded in the same commit (AGENTS.md §4 step 8): plan §15.3 row with evidence (and §15.2, §16), spec requirement status and index, ADR index, conformance audit rows, `CHANGELOG.md`; AGENTS.md §3/§5 and `CONTRIBUTING.md` if paths or commands changed

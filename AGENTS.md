@@ -94,8 +94,34 @@ Target layout after Phase 0 (do not create ahead of its work package):
    the methodology and write a report from
    [`docs/benchmarks/_report-template.md`](docs/benchmarks/_report-template.md).
    Never hand-edit numbers. Never tune on the `test` split.
-8. **Record it.** New/changed default or rule → ADR. Update spec status,
-   `CHANGELOG.md` (user-visible changes), and the plan's status table.
+8. **Record it — in the same commit as the work**, so `main` never claims more
+   or less than it contains. Check every item; skip only those that do not
+   apply:
+   - **Plan** [§15.3](docs/plans/seeky-implementation-plan.md#153-work-packages):
+     set the WP's status using the values in §15.1. **Done** lists the
+     evidence (spec and version, test or report paths, ADR). **In progress**
+     says what is done and what remains, precisely enough for the next session
+     to resume. Update the phase row (§15.2) and remove finished items from
+     the next actions (§16).
+   - **Spec**: set each requirement you implemented to `Implemented` in the
+     spec's §3 Status column; when all are, move the spec header and the
+     [specs index](docs/specs/README.md#index) to Implemented (Verified once
+     its benchmark gates pass with a linked report); add a spec changelog row.
+   - **ADR**: a new or changed default or rule gets an ADR; keep the
+     [ADR index](docs/adr/README.md) status in step.
+   - **Audit**: mark any deviation or finding the change closes in
+     [`docs/validation/poc-conformance-audit.md`](docs/validation/poc-conformance-audit.md)
+     as Closed/Fixed with the WP and the proving test.
+   - **`CHANGELOG.md`**: an entry under `Unreleased` for anything a user,
+     contributor, or agent would notice (behavior, defaults, formats, product
+     decisions, process rules); pure internal refactors need none.
+   - **This file and `CONTRIBUTING.md`**: if the change moves directories,
+     renames apps or crates, or changes a command, update §3 and §5 here and
+     the setup and checks in `CONTRIBUTING.md`.
+   - **Commit message**: end with a `Refs: WP-x.y, SPEC-NNNN` trailer (§9).
+
+   Changes outside any WP (bug fixes, refactors, docs, tooling) have no plan
+   row; they still record `CHANGELOG.md` and the audit when those apply.
 
 Stop and ask the maintainer when: a spec is ambiguous, documents conflict, a
 budget cannot be met, a dependency or model license is unclear, or a change
@@ -229,7 +255,8 @@ touch.
 - Benchmark report attached when quality/performance can change; budgets hold.
 - ADR added/updated when a default or rule changes.
 - Strings localized (en/pt) and both themes verified for UI changes.
-- `CHANGELOG.md`, spec status, and the plan status table updated.
+- Recorded in the same commit per §4 step 8: plan §15.3 row with evidence,
+  spec requirement status and index, ADR index, audit rows, `CHANGELOG.md`.
 - No content, personal data, or secrets anywhere in the diff.
 
 ## 9. Commits and pull requests
@@ -239,8 +266,18 @@ touch.
   `perf(store): binary first-pass vector scan`,
   `bench(embed): bake-off report for 2026-12 candidates`,
   `docs(adr): 0023 lock budgets v1`.
+- Every commit that belongs to a work package or spec ends with a trailer
+  (before any `Co-Authored-By` line), so `git log --grep "WP-0.2"` finds the
+  whole history of a WP:
+
+  ```text
+  Refs: WP-0.2, SPEC-0001
+  ```
+
 - One work package per PR where possible; reference `WP-x.y` and `SPEC-NNNN`.
 - Fill in [`.github/pull_request_template.md`](.github/pull_request_template.md).
+  Committing directly to `main` skips nothing: run through §8 and that
+  template's checklist before each commit.
 - Docs are written in English; UI strings ship in English and Portuguese.
 
 ## 10. Glossary

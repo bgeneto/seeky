@@ -18,9 +18,9 @@ corrected:
 |---|---|---|
 | [`product/`](product/vision.md) | Product constitution | Yes |
 | [`adr/`](adr/README.md) | One decision per file, MADR-style | Yes (Accepted) |
-| [`specs/`](specs/README.md) | Spec process, template, planned specs | Yes (Accepted) |
+| [`specs/`](specs/README.md) | Spec process, template, spec index with status | Yes (Accepted) |
 | [`architecture/`](architecture/README.md) | Overview, indexing, retrieval engine, inference and models, provisioning | Yes |
-| [`plans/`](plans/README.md) | The single active implementation plan | Yes |
+| [`plans/`](plans/README.md) | The single active implementation plan and work-package status (§15) | Yes |
 | [`benchmarks/`](benchmarks/README.md) | Methodology, candidate registry, report template, results | Yes (protocol); results are evidence |
 | [`validation/`](validation/seeky-poc-validation.md) | As-built PoC runtime evidence; [conformance audit](validation/poc-conformance-audit.md) against the ADRs | Evidence |
 | [`glossary.md`](glossary.md) | Terminology | Reference |

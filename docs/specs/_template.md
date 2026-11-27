@@ -22,12 +22,17 @@ what "done" looks like for the user and for the engine.
 
 ## 3. Requirements (EARS)
 
-| ID | Requirement | Verification |
-|---|---|---|
-| SPEC-NNNN-R1 | The engine shall … | unit test `crate::module::tests::name` |
-| SPEC-NNNN-R2 | When …, the engine shall … | integration test |
-| SPEC-NNNN-R3 | If …, then the engine shall … | fault-injection test |
-| SPEC-NNNN-R4 | While indexing, the engine shall keep P2 within budget | benchmark gate P5 |
+| ID | Requirement | Verification | Status |
+|---|---|---|---|
+| SPEC-NNNN-R1 | The engine shall … | unit test `crate::module::tests::name` | Open |
+| SPEC-NNNN-R2 | When …, the engine shall … | integration test | Open |
+| SPEC-NNNN-R3 | If …, then the engine shall … | fault-injection test | Open |
+| SPEC-NNNN-R4 | While indexing, the engine shall keep P2 within budget | benchmark gate P5 | Open |
+
+Status: `Open` → `Implemented` (code and its test merged; the WP is named, for
+example `Implemented (WP-3.2)`) → `Verified` (benchmark gate passed; report
+linked). The commit that implements or verifies a requirement updates its row;
+the header status and the [specs index](README.md#index) follow (README rule 6).
 
 ## 4. Interfaces
 

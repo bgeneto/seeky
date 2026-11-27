@@ -16,8 +16,13 @@ Seeky uses **Spec-Driven Development** plus **Benchmark-Driven Development
 4. Attach a benchmark report when quality or performance can change
    ([methodology](docs/benchmarks/methodology.md)).
 5. Record decisions as ADRs in [`docs/adr/`](docs/adr/README.md).
+6. Record progress in the same commit as the work: the work package's row in
+   the plan's [§15.3](docs/plans/seeky-implementation-plan.md#153-work-packages),
+   the spec's requirement status, and `CHANGELOG.md` (full checklist:
+   [`AGENTS.md`](AGENTS.md#4-how-to-work-the-sdd--bmdd-loop) §4 step 8).
 
-Bug fixes, behavior-preserving refactors, docs, and tooling do not need a spec.
+Bug fixes, behavior-preserving refactors, docs, and tooling do not need a spec
+or a plan row, but still get a `CHANGELOG.md` entry when someone would notice.
 
 ## Setup (PoC)
 
@@ -69,6 +74,10 @@ perf(search): binary first-pass vector scan
 bench(rerank): bake-off report for multilingual cross-encoders
 docs(adr): 0023 lock budgets v1
 ```
+
+Commits that belong to a work package or spec end with a trailer such as
+`Refs: WP-0.2, SPEC-0001`, so `git log --grep "WP-0.2"` lists the whole
+work package ([`AGENTS.md`](AGENTS.md) §9).
 
 ## Licensing
 

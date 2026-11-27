@@ -2,6 +2,13 @@
 
 All notable changes to Seeky are recorded here.
 
+Entries go under **Unreleased** in the same commit as the change
+([`AGENTS.md`](AGENTS.md) §4 step 8): anything a user, contributor, or agent
+would notice, including product decisions and process rules; pure internal
+refactors need none. When a phase's exit evidence is committed, the maintainer
+moves the Unreleased entries under that phase's version from the plan's
+roadmap (§6), with the date.
+
 ## Unreleased
 
 ### Fixed
@@ -88,6 +95,12 @@ All notable changes to Seeky are recorded here.
 - Moved Gety reverse-engineering research, audits, and SQL references under
   `docs/research/gety/`; removed duplicated READMEs; normalized personal paths.
 - Added a pull request template.
+- Progress tracking made explicit (plan v2.2): one status row per work
+  package with fixed status values and evidence (plan §15), per-requirement
+  status in specs and a status column in the specs index, a "record it"
+  checklist in `AGENTS.md` §4 step 8 applied in the same commit as the work,
+  a `Refs: WP-x.y, SPEC-NNNN` commit trailer, a maintenance rule for the PoC
+  conformance audit, and the scope and release cut of this changelog.
 
 ## 0.1.0 — 2026-11-26
 
