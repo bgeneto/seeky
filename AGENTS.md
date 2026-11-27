@@ -63,7 +63,7 @@ docs/
   specs/                  SDD specs + template (written just-in-time per phase)
   architecture/           overview, indexing, retrieval-engine, inference-and-models, provisioning
   benchmarks/             methodology, candidates, report template, results/
-  plans/                  the implementation plan (single active plan)
+  plans/                  the implementation plan (single active plan) + agent briefs for the current waves
   validation/             as-built PoC runtime evidence and conformance audit
   research/               non-binding research (gety/ = reverse-engineering notes)
   archive/                superseded documents
@@ -167,6 +167,10 @@ they win for workers.
      paths, a new dependency, or a failing check the worker did not cause;
    - the report it returns: what changed, test evidence, open questions, and
      the proposed records.
+
+   Ready-made briefs for the current waves, the orchestrator prompt, and the
+   maintainer gates are in [`docs/plans/agent-briefs.md`](docs/plans/agent-briefs.md)
+   (operational, not binding; this file and the plan win).
 
 ## 5. Commands
 

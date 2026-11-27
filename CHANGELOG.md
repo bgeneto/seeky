@@ -24,6 +24,9 @@ roadmap (§6), with the date.
   (`cargo test --workspace`). The executable is still `seeky.exe`, now built
   into `<repo>/target/`; the app identity and data folder are unchanged.
 - Crate boundaries are checked with `cargo deny check bans` (`deny.toml`).
+- Agent briefs for the parallel waves after WP-0.1 (orchestrator prompt,
+  worker preamble, one brief per lane, maintainer gates) are in
+  `docs/plans/agent-briefs.md`.
 - Auto backend selection uses the CPU only: ADR-0016 allows automatic
   NPU use only once the NPU path is validated (WP-5.1/WP-5.2). NPU and CUDA
   remain available when chosen explicitly.
