@@ -2,8 +2,8 @@
 
 | Field | Value |
 |---|---|
-| Status | Implemented (v1); v1.1 evaluation extension Accepted (2026-11-27) |
-| Version | 0.4 (API v1; v1.1 evaluation extension Accepted; API v2 adds progressive search in WP-4.3) |
+| Status | Implemented (v1, v1.1 evaluation extension) |
+| Version | 0.5 (API v1; v1.1 evaluation extension implemented by WP-1.2; API v2 adds progressive search in WP-4.3) |
 | Owner | Maintainer |
 | Phase / work packages | Phase 0 — WP-0.2, WP-0.3; Phase 1 — prerequisite for WP-1.2, WP-1.6, and B0 (SPEC-0003 H1) |
 | Crates touched | `seeky-core`, `seeky-extract`, `seeky-infer`, `seeky-store`, `seeky-search`, `seeky-engine`, `seeky-desktop`; v1.1 adds no crate and no shell change |
@@ -62,9 +62,9 @@ PoC; and the shell has no SQLite, model, or filesystem access of its own.
 | SPEC-0002-R15 | Every PoC test shall exist and pass in its new crate, and the hardware-free suite shall need no Tauri runtime. | `cargo test --workspace`; `cargo test --workspace --features hw-tests -- --test-threads=1` | Implemented (WP-0.2) |
 | SPEC-0002-R16 | When the engine opens, it shall resolve the database, model, NPU IR, and PDFium locations exactly as the PoC did, given the app-data directory and resource directory passed by the shell. | integration test on `EngineConfig::resolve`; the app opens an existing index | Implemented (WP-0.2; manual existing-index check pending) |
 
-v1.1 adds SPEC-0002-R17–R25 in §9.3. Those rows are **Accepted** and do not
-change, supersede, or renumber R1–R16. The maintainer accepted the extension
-on 2026-11-27; its requirements are `Open` until implemented.
+v1.1 adds SPEC-0002-R17–R25 in §9.3. Those rows are **Implemented (WP-1.2)**
+and do not change, supersede, or renumber R1–R16. The maintainer accepted the
+extension on 2026-11-27, and WP-1.2 implemented it.
 
 ## 4. Interfaces
 
@@ -284,13 +284,14 @@ behavior. Index and search timings must not be claimed better or worse.
 | 0.2 | 2026-11-27 | WP-0.3 implemented R1 and R5-R8: the shell calls only Engine, accepts document IDs instead of paths, opens only the §5.4 allowlist, and reveals source/unknown types. All v1 requirements are implemented |
 | 0.3 | 2026-11-27 | Draft v1.1 evaluation extension (R17–R25): depth to 1,000 with deterministic ordering, in-process stage telemetry, an uncached query-embedding probe, exact extension/date/folder/size filters with push-down/post reporting and typed unavailable-metadata errors, and a canonical configuration snapshot for hashing. Not accepted; no v1 requirement changed |
 | 0.4 | 2026-11-27 | Maintainer accepted the v1.1 evaluation extension with the §9.7 proposals as written; R17–R25 move from Draft to Open. Unblocks WP-1.2 and WP-1.6; no v1 requirement changed |
+| 0.5 | 2026-11-27 | WP-1.2 implemented R17–R25: evaluation depth, deterministic order, telemetry, uncached query-embedding probe, structured filters with pushdown/post reporting, and the config snapshot. v1 search and payloads are unchanged |
 
-## 9. API v1.1 evaluation extension (Accepted)
+## 9. API v1.1 evaluation extension (Implemented)
 
-> **Status: Accepted 2026-11-27 by the maintainer, not yet implemented.** This
-> section is the behavior-preserving extension requested by SPEC-0003 H1
-> questions 1–3. It adds evaluation-only capability. §1–§8 remain the accepted
-> v1 contract and are not changed. The §9.7 proposals are accepted as written.
+> **Status: Accepted 2026-11-27 and implemented by WP-1.2.** This section is
+> the behavior-preserving extension requested by SPEC-0003 H1 questions 1–3. It
+> adds evaluation-only capability. §1–§8 remain the accepted v1 contract and are
+> not changed. The §9.7 proposals are accepted as written.
 
 ### 9.1 Problem and goal
 
