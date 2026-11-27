@@ -12,6 +12,12 @@ roadmap (§6), with the date.
 ## Unreleased
 
 ### Added
+- Desktop light and dark themes (SPEC-0014 R10–R15, WP-7.2). Seeky follows
+  the OS theme by default and live; Settings → Theme overrides it (System
+  default / Light / Dark), saved locally. The native window and titlebar
+  match, and the window stays hidden until the theme is applied, so there is
+  no startup flash. All colors come from two semantic token sets checked for
+  WCAG 2.2 AA contrast by the new `npm run theme:check`, which CI runs.
 - `seeky-bench perf` measures warm-idle and warm-indexing search latency
   (p50/p95/p99 with fixed-seed bootstrap CIs), batch-1 query-embedding
   latency, bulk indexing throughput, lexical/semantic time-to-searchable, the

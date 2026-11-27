@@ -78,7 +78,7 @@ Specs are written just-in-time, as the first task of their phase (see the
 | SPEC-0011 | Snippet engine | 4 | WP-4.10 | Not written |
 | SPEC-0012 | Execution providers and NPU acceleration | 5 | WP-5.1–WP-5.6 | Not written |
 | SPEC-0013 | Provisioning and asset manifest | 6 | WP-6.1–WP-6.5 | Not written |
-| [SPEC-0014](SPEC-0014-desktop-experience.md) | Desktop experience: shell, i18n, themes, progressive UI | 7 | WP-7.1–WP-7.9 (v1: WP-7.1, WP-7.2) | Accepted (v1) |
+| [SPEC-0014](SPEC-0014-desktop-experience.md) | Desktop experience: shell, i18n, themes, progressive UI | 7 | WP-7.1–WP-7.9 (v1: WP-7.1, WP-7.2) | Implemented (v1) |
 | SPEC-0015 | Release, packaging, and signing | 9 | WP-9.1, WP-9.2 | Not written |
 | SPEC-0016 | Visual retrieval pack: visual units, channels, fusion, image queries ([ADR-0023](../adr/0023-multimodal-ready-engine.md)) | 10 | WP-10.3–WP-10.7 | Not written |
 

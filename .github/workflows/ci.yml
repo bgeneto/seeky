@@ -149,6 +149,10 @@ jobs:
         working-directory: apps/desktop
         run: npm run i18n:check
 
+      - name: Theme contrast check (SPEC-0014 R10, R14, R15)
+        working-directory: apps/desktop
+        run: npm run theme:check
+
       - name: Frontend unit tests
         working-directory: apps/desktop
         run: npm run test:unit
