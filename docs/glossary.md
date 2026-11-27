@@ -24,7 +24,7 @@
 | **Modality gap** | Systematic offset between text–text and text–image similarity scores, even inside one shared space; the reason raw scores are never compared across modalities |
 | **Two-speed indexing** | Fast lane (metadata, filename, lexical) within seconds; semantic lane (embeddings) in the background |
 | **Semantic coverage** | Fraction of a root's passages that have embeddings in the active generation |
-| **Index generation** | All derived indexes built with one recipe (embedding model + revision + dimension + tokenizer + chunker); swapped blue/green; one lineage per embedding channel |
+| **Index generation** | All derived indexes built with one recipe (embedding model + revision + dimension + parity group + tokenizer + chunker + index backends); swapped blue/green; one lineage per embedding channel; components with equal build keys are shared between generations (SPEC-0006) |
 | **Embedding input recipe** | Exactly what text is embedded for a passage (heading path + passage text; never the filename) |
 | **Embedding cache** | Content-addressed store `hash(recipe output) → vector`, so copies, renames, and unchanged passages are never re-embedded |
 | **Reconcile** | Startup/resume comparison of the filesystem with stored signatures to catch offline changes |

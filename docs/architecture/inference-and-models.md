@@ -172,8 +172,9 @@ token_budget = 280                    # visual soft tokens, for models that feed
 - NPU: provider-supported precision (int8/QDQ, fp16 where supported).
 - Vector storage quantization (int8, binary) is a separate decision owned by
   the vector-store bake-off, measured end-to-end with rescoring.
-- Quantization variant is part of the asset ID; the embedding precision used at
-  index time is part of the generation recipe.
+- Quantization variant is part of the asset ID; the generation recipe records
+  the variant's parity group, so variants that pass vector parity share a
+  generation (ADR-0019 decision 7; SPEC-0006 §4.3).
 
 ## 7. Index compatibility
 

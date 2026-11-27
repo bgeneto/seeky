@@ -122,9 +122,9 @@ length statistics. After commit, the file is lexically searchable.
 
 ### 2.6 Semantic lane
 
-- **Content-addressed embedding cache:** key = `blake3(embedding input recipe
-  output)` + generation. Identical passages across copies, versions, and renames
-  are embedded once.
+- **Content-addressed embedding cache:** key = embedding space key +
+  `blake3(embedding input recipe output)`. Identical passages across copies,
+  versions, renames, and generations of the same space are embedded once.
 - **Dynamic batching** by token length to minimize padding; batch size tuned per
   execution provider (CPU vs NPU static-shape buckets).
 - **Resource governor:** background thread priority; CPU share cap; preemption
@@ -141,15 +141,25 @@ length statistics. After commit, the file is lexically searchable.
 ## 3. Index generations (blue/green)
 
 An index generation is identified by its **recipe**: embedding model ID +
-revision + dimension/precision, tokenizer revision, chunker version, embedding
-input recipe version.
+revision + dimension + parity group, tokenizer revision, chunker version,
+embedding input recipe version, and the lexical, filename, and vector backend
+choices. Precision variants that pass vector parity share one parity group and
+hence one generation (ADR-0019 decision 7). Each index component has a build
+key; generations with equal build keys share the instance
+([SPEC-0006](../specs/SPEC-0006-storage-index-backends-and-generations.md) §4.1,
+§4.3).
 
 - Changing any recipe element creates a new generation built in the background
   while the current generation keeps serving.
-- The embedding cache is keyed per generation; passages unchanged under a new
-  chunker version still reuse lexical data.
-- When the new generation reaches full coverage (and passes integrity checks),
-  it is atomically promoted; the old one is garbage-collected later.
+- The embedding cache is keyed by embedding space, so a new generation of the
+  same space reuses every cached vector; components whose build key is
+  unchanged (for example the lexical index on a model swap) are shared, not
+  rebuilt.
+- When the new generation has caught up, passes integrity checks, and covers
+  at least as much as the active one per component, it is atomically
+  promoted; the old one is garbage-collected later. In the steady state this
+  means full coverage; after a lexical-only start, the first model is promoted
+  at once and semantic coverage grows in place (ADR-0018).
 - Vectors from different generations are never compared.
 - **One lineage per embedding channel**
   ([ADR-0023](../adr/0023-multimodal-ready-engine.md)). The text channel's

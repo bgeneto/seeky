@@ -56,7 +56,7 @@ Before you start:
 | H4 | Approve the license exceptions and advisory ignores that lane B lists, if any | WP-0.4 Done |
 | H5 | Decide the WP-0.6 outcome: ADR-0019 stands, or WP-2.3 starts for the failing role | Phase 0 exit; SPEC-0005 |
 | H6 | Verify the LLM-drafted queries and judgments (lane J) | WP-1.4, then WP-1.7 (B0 on T1, also yours) |
-| H7 | Accept SPEC-0005 and SPEC-0006 (lane N drafts) | Phase 2 briefs (next revision of this file) |
+| H7 | Accept SPEC-0005 and SPEC-0006 (lane N drafts). SPEC-0006 v0.2 Accepted 2026-11-27; SPEC-0005 pending | Phase 2 briefs (next revision of this file) |
 | — | Manual checks the agents cannot do: the app opens an existing index (SPEC-0001-R10, SPEC-0002-R16); a PDF result opens and a `.py` result is revealed in Explorer (SPEC-0002-R7) | Phase 0 exit evidence |
 
 ## 1. Orchestrator prompt

@@ -2,8 +2,8 @@
 
 | Field | Value |
 |---|---|
-| Status | Draft |
-| Version | 0.1 |
+| Status | Accepted (2026-11-27, gate H7) |
+| Version | 0.2 |
 | Owner | Maintainer |
 | Phase / work packages | Phase 2 — WP-2.4, WP-2.5, WP-2.13 (storage side; SPEC-0005 owns the manifest and `Embedder` side); Phase 3 — WP-3.7 |
 | Crates touched | `seeky-core` (IDs, index traits, generation and channel types, `IndexError`), `seeky-store` (schema, migrations, writer actor, reader pool, as-built backends, generations, embedding-cache table), `seeky-search` (retrieval through the traits; fusion over N rankings), `seeky-engine` (generation manager, wiring) |
@@ -135,7 +135,7 @@ heading row so an implementer can pick the rows of one WP.
 | SPEC-0006-R32 | The writer shall reject a vector whose `space_key` or `parity_group` differs from the target instance's with `IndexError::SpaceMismatch`, and the embedding cache shall be keyed by `(space_key, embed_key)`, so vectors from different spaces are never stored in, read from, or compared within one instance. | unit `foreign_space_vector_is_rejected`; unit `cache_lookup_is_scoped_by_space` | Open |
 | SPEC-0006-R33 | If a query vector's `space_key` differs from the active vector instance's, then the dense retriever shall return `IndexError::SpaceMismatch` and the search shall continue with the other retrievers, never silently skipping by length. | unit `query_in_foreign_space_is_typed_error`; integration `lexical_results_survive_space_mismatch` | Open |
 | SPEC-0006-R34 | While a channel has a `building` generation, the active generation shall serve every search of that channel, and the writer shall apply each committed file, passage, and deletion change to every live chunking and to every live instance of both generations. | integration `active_serves_during_build`; integration `changes_during_build_reach_both_generations` | Open |
-| SPEC-0006-R35 | When the engine requests promotion, the store shall promote the building generation only if its instances have applied every change up to the current `commit_seq`, its integrity checks pass, and its unit count per component is at least the active generation's; it shall make the switch in one SQLite transaction and publish the new `GenerationSnapshot` atomically, so every snapshot sees either the old or the new generation for all components, never a mix. | unit `promotion_refused_until_caught_up`; unit `promotion_refused_below_active_coverage`; concurrency test `readers_never_observe_mixed_generations` (many reader threads, barrier-driven promotion) | Open |
+| SPEC-0006-R35 | When the engine requests promotion, the store shall promote the building generation only if its instances have applied every change up to the current `commit_seq`, its integrity checks pass, and its unit count per component is at least the active generation's, counted over the same `commit_seq` (so deletions never count as coverage); a vector instance shall also have a parity group (R32); it shall make the switch in one SQLite transaction and publish the new `GenerationSnapshot` atomically, so every snapshot sees either the old or the new generation for all components, never a mix. | unit `promotion_refused_until_caught_up`; unit `promotion_refused_below_active_coverage`; concurrency test `readers_never_observe_mixed_generations` (many reader threads, barrier-driven promotion) | Open |
 | SPEC-0006-R36 | While a generation is being built or promoted, no search shall fail, block on generation work, or return results from a retired generation after its snapshot was released; interference shall stay within S5. | integration `search_continues_through_model_swap` (fake `Embedder` gated by barriers); benchmark gate S5 during rebuild | Open |
 | SPEC-0006-R37 | After promotion, the store shall mark the previous generation `retired` and garbage-collect it once no live snapshot references it: delete its exclusive instances and directories, its outbox rows, and the embedding-cache entries of any space no longer referenced by a non-collected or retained generation; garbage collection shall be resumable after a crash, shall delete only inside `index/` and `cache/`, and shall never touch a `retained` generation. | unit `gc_waits_for_snapshot_release`; crash test `gc_resumes_after_kill`; unit `gc_keeps_shared_and_retained_components` | Open |
 | SPEC-0006-R38 | When the engine restarts with a `building` generation, it shall resume the build without re-embedding units whose vectors are committed or cached; when the engine requests a different recipe for the same channel, the store shall mark the current building generation `abandoned` and collect it. | integration `build_resumes_after_restart_without_reembedding` (counting fake `Embedder`); unit `new_request_abandons_building_generation` | Open |
@@ -159,11 +159,10 @@ dependency limit (SPEC-0001-R14): only `serde` and `thiserror`.
 <data-dir>/                          passed in StoreConfig by seeky-engine (PoC location kept, SPEC-0002-R16)
   seeky.db, seeky.db-wal, seeky.db-shm
   index/
-    gen-<generation-id>/             components built by this generation
-      lexical/                       present only for a non-SQLite lexical backend
-      filename/                      present only for a non-SQLite filename backend
-      vectors-<modality>/            present only for a non-SQLite vector backend
-      GENERATION.json                written last; see below
+    components/
+      <build-key>/                   one external component instance (lexical, filename, or vectors-<modality>)
+    gen-<generation-id>/
+      GENERATION.json                written last; references component instances; see below
   cache/
     embeddings/                      only if WP-2.9 moves the cache out of SQLite
   quarantine/
@@ -173,17 +172,20 @@ dependency limit (SPEC-0001-R14): only `serde` and `thiserror`.
 - As-built backends store everything inside `seeky.db` (location `sqlite`);
   such a generation still gets a `GENERATION.json` (with no component
   directories) so that layout and recovery have one code path.
-- **Shared components.** Two generations whose components have equal build
-  keys share one instance; the instance lives in the directory of the
-  generation that built it, and the other generation's `GENERATION.json`
-  references it (`"built_by": "gen-3"`). Ownership stays logical per
-  generation (glossary, ADR-0023); the physical instance is collected when no
-  live generation references it (R37). See §7 Q3.
+- **Shared components (content-addressed).** A component instance is stored
+  under `index/components/<build-key>/`, never inside a generation directory.
+  Two generations whose components have equal build keys reference the same
+  instance; a generation directory holds only its `GENERATION.json`.
+  Ownership stays logical per generation (glossary, ADR-0023); an instance is
+  collected when no live or retained generation references it (R37), so
+  retiring one generation never deletes part of another. Decided at H7 (§7
+  Q3).
 - `GENERATION.json`: `{ "format": 1, "generation_id", "channel", "recipe_key",
   "space_key", "components": [{ "kind", "modality", "backend",
-  "backend_version", "build_key", "built_by", "applied_through", "files":
-  [{ "name", "bytes", "blake3" }] }] }` — names are relative to the generation
-  directory; no absolute path, no user path, no content. It is written to a
+  "backend_version", "build_key", "location", "applied_through", "files":
+  [{ "name", "bytes", "blake3" }] }] }` — `location` is `sqlite` or
+  `components/<build-key>` relative to `index/`, and file names are relative
+  to that location; no absolute path, no user path, no content. It is written to a
   temporary name, flushed, and renamed after the component files are flushed.
 
 ### 4.2 Schema v2 (SQLite DDL)
@@ -284,7 +286,7 @@ CREATE TABLE index_instances (
   backend TEXT NOT NULL, backend_version INTEGER NOT NULL,
   build_key TEXT NOT NULL UNIQUE,
   space_key TEXT, parity_group TEXT, dimension INTEGER, encoding TEXT, metric TEXT, -- vector only
-  location TEXT NOT NULL,                 -- 'sqlite' or 'index/gen-<id>/<dir>' (relative)
+  location TEXT NOT NULL,                 -- 'sqlite' or 'index/components/<build-key>' (relative)
   state TEXT NOT NULL,                    -- 'building' | 'ready' | 'invalid'
   applied_through INTEGER NOT NULL DEFAULT 0,
   units INTEGER NOT NULL DEFAULT 0
@@ -630,13 +632,18 @@ the conditions that produced a PoC error still produce an error.
   the active text generation is lexical-only (first model after install or
   after PoC migration) the candidate shares the lexical and filename instances
   and its vector coverage starts at 0 ≥ 0, so it is promoted at once and
-  semantic coverage grows in place, as ADR-0018 requires. See §7 Q2.
+  semantic coverage grows in place, as ADR-0018 requires. Coverage is
+  compared over the same `commit_seq`, so deleted files never count as
+  coverage, and a vector instance without a parity group is never promoted
+  (R32). Decided at H7 (§7 Q2); this refines indexing.md §3.
 - Promotion: one transaction sets old `active` → `retired`, new → `active`,
   `promoted_at`; after commit the writer publishes the new snapshot pointer.
   Readers holding the old `Arc` finish on the old generation.
 - GC (R37) runs as a writer command when the retired generation's
   `Arc` strong count reaches one (only the registry's): it marks rows, deletes
-  directories under `index/` (path checked to be inside it), deletes
+  the generation's `index/gen-<id>/` directory and every
+  `index/components/<build-key>/` directory no live or retained generation
+  references (paths checked to be inside `index/`), deletes
   `vector_entries`, FTS tables, and outbox rows of exclusive instances, then
   deletes cache rows whose `space_key` no live or retained generation uses.
   Every step is idempotent; on open, the store finishes any generation in
@@ -669,7 +676,8 @@ the conditions that produced a PoC error still produce an error.
 3. Replay outbox entries above each external instance's `applied_through`
    (R17), then prune.
 4. Finish interrupted GC (R37). Delete `index/gen-*` directories that no
-   generation row references (only names matching the pattern, only inside
+   generation row references and `index/components/*` directories that no
+   instance row references (only names matching the patterns, only inside
    `index/`).
 5. Publish snapshots. The engine schedules rebuilds of invalid instances and
    resumes `building` generations (R38).
@@ -790,24 +798,26 @@ PoC database (no budget; §7 Q11).
 
 | # | Question or risk | Proposed default in this draft | Who decides / when | Blocking acceptance? |
 |---|---|---|---|---|
-| Q1 | PoC vectors on migration: drop them (R5) or import them into a `poc-legacy` generation when every vector has one length? Import cannot rule out the mixed-backend problem (A5). | Drop; re-embed in the background; lexical search works immediately | Maintainer, at H7 | Yes |
-| Q2 | Promotion rule "coverage ≥ active per component" refines indexing.md §3 "full coverage" so the first model after a lexical-only start activates progressively (ADR-0018). Accept the refinement, or require full coverage always and treat the lexical-only case as a special in-place attach? | Coverage ≥ active (§5.3) | Maintainer, at H7 | Yes |
-| Q3 | Physical sharing of instances across generations by build key, with `GENERATION.json` references (§4.1), versus strictly separate `gen-<id>/` contents per generation (overview §5). Sharing avoids rebuilding FTS5 on every model swap. | Share | Maintainer, at H7 | Yes |
-| Q4 | Doc conflict: overview §5 and indexing.md §2.6 key the embedding cache by "(unit hash, generation)", while indexing.md §3, ADR-0023 decision 1.2, and the glossary require reuse across generations of one space. This draft keys by `(space_key, embed_key)`. | Correct overview §5 and indexing.md §2.6 in a docs commit | Orchestrator (docs fix) | No |
-| Q5 | Default `store.disk.min_free_bytes` and the build-estimate formula. | Provisional 1 GiB or 5 % of the volume, whichever is smaller; measured in WP-3.7 | Maintainer; WP-3.7 report | No |
-| Q6 | Keep embedding-cache entries of a retired space for a while (fast rollback) or delete at GC (disk, R4)? | Delete at GC unless `retained` | Maintainer, WP-3.7 | No |
-| Q7 | Chunking depends on the embedding model's tokenizer (indexing.md §2.4). A lexical-only generation has no model tokenizer, so the first model may change the chunking key and force a full re-chunk and lexical rebuild. | Raise with SPEC-0008 / WP-2.10 (a model-independent chunking key would avoid it) | SPEC-0008 author | No |
-| Q8 | Full document text (`file_contents`) doubles passage text on disk; compression would need a new dependency (ADR-0022 review). | Keep uncompressed in WP-2.4; measure in the R4 report | Maintainer; WP-2.9/WP-8.1 | No |
-| Q9 | Public API for model selection, rebuild progress, and generation status (needed by WP-7.6 diagnostics) belongs to SPEC-0002 v2; WP-3.7 tests use the engine-internal generation manager. | Defer to SPEC-0002 v2 (WP-4.3) | Maintainer | No |
-| Q10 | After `quarantine_and_recreate`, roots are lost unless they can be read from the corrupt file. Keep a small roots sidecar (`roots.json`, paths only, local) or ask the user to re-add folders? | Ask the user (SPEC-0014 flow); no sidecar | Maintainer | No |
-| Q11 | PoC → v2 migration time on a large PoC database (FTS5 rebuild) is unbudgeted and runs at open. | Report it in WP-2.4; show progress if > R5 | Maintainer | No |
-| Q12 | The `jobs` and `models` tables are skeletons; SPEC-0007 and SPEC-0005 may change them through later migrations. | Accept skeletons | Spec authors | No |
-| Q13 | Lexical analyzer changes (WP-3.9 language analyzers) create a new text generation because the lexical build key changes, even with the same model. | Accept; vectors are shared by build key, so only the lexical instance is rebuilt | Maintainer | No |
-| Q14 | `synchronous=NORMAL` (as built) versus `FULL`: NORMAL may lose the last transactions on power loss (never corrupts). | Keep NORMAL; durable jobs replay | Maintainer; WP-8.2 crash tests | No |
+| Q1 | PoC vectors on migration: drop them (R5) or import them into a `poc-legacy` generation when every vector has one length? Import cannot rule out the mixed-backend problem (A5). | Drop; re-embed in the background; lexical search works immediately | **Decided at H7 (2026-11-27): drop** (R5) | Resolved |
+| Q2 | Promotion rule "coverage ≥ active per component" refines indexing.md §3 "full coverage" so the first model after a lexical-only start activates progressively (ADR-0018). Accept the refinement, or require full coverage always and treat the lexical-only case as a special in-place attach? | Coverage ≥ active (§5.3) | **Decided at H7: coverage ≥ active**, over the same `commit_seq` and only with a parity group (R35, §5.3) | Resolved |
+| Q3 | Physical sharing of instances across generations by build key, with `GENERATION.json` references (§4.1), versus strictly separate `gen-<id>/` contents per generation (overview §5). Sharing avoids rebuilding FTS5 on every model swap. | Share | **Decided at H7: share**, content-addressed under `index/components/<build-key>/` so GC is a per-instance reference count (§4.1) | Resolved |
+| Q4 | Doc conflict: overview §5 and indexing.md §2.6 key the embedding cache by "(unit hash, generation)", while indexing.md §3, ADR-0023 decision 1.2, and the glossary require reuse across generations of one space. This draft keys by `(space_key, embed_key)`. | Correct overview §5 and indexing.md §2.6 in a docs commit | Default accepted at H7; fixed with this acceptance | Resolved |
+| Q5 | Default `store.disk.min_free_bytes` and the build-estimate formula. | Provisional 1 GiB or 5 % of the volume, whichever is smaller; measured in WP-3.7 | Maintainer; WP-3.7 report | Default accepted at H7 |
+| Q6 | Keep embedding-cache entries of a retired space for a while (fast rollback) or delete at GC (disk, R4)? | Delete at GC unless `retained` | Maintainer, WP-3.7 | Default accepted at H7 |
+| Q7 | Chunking depends on the embedding model's tokenizer (indexing.md §2.4). A lexical-only generation has no model tokenizer, so the first model may change the chunking key and force a full re-chunk and lexical rebuild. | Raise with SPEC-0008 / WP-2.10 (a model-independent chunking key would avoid it) | SPEC-0008 author | Default accepted at H7 |
+| Q8 | Full document text (`file_contents`) doubles passage text on disk; compression would need a new dependency (ADR-0022 review). | Keep uncompressed in WP-2.4; measure in the R4 report | Maintainer; WP-2.9/WP-8.1 | Default accepted at H7 |
+| Q9 | Public API for model selection, rebuild progress, and generation status (needed by WP-7.6 diagnostics) belongs to SPEC-0002 v2; WP-3.7 tests use the engine-internal generation manager. | Defer to SPEC-0002 v2 (WP-4.3) | Maintainer | Default accepted at H7 |
+| Q10 | After `quarantine_and_recreate`, roots are lost unless they can be read from the corrupt file. Keep a small roots sidecar (`roots.json`, paths only, local) or ask the user to re-add folders? | Ask the user (SPEC-0014 flow); no sidecar | Maintainer | Default accepted at H7 |
+| Q11 | PoC → v2 migration time on a large PoC database (FTS5 rebuild) is unbudgeted and runs at open. | Report it in WP-2.4; show progress if > R5 | Maintainer | Default accepted at H7 |
+| Q12 | The `jobs` and `models` tables are skeletons; SPEC-0007 and SPEC-0005 may change them through later migrations. | Accept skeletons | Spec authors | Default accepted at H7 |
+| Q13 | Lexical analyzer changes (WP-3.9 language analyzers) create a new text generation because the lexical build key changes, even with the same model. | Accept; vectors are shared by build key, so only the lexical instance is rebuilt | Maintainer | Default accepted at H7 |
+| Q14 | `synchronous=NORMAL` (as built) versus `FULL`: NORMAL may lose the last transactions on power loss (never corrupts). | Keep NORMAL; durable jobs replay | Maintainer; WP-8.2 crash tests | Default accepted at H7 |
 | R-a | Two embedders resident during a model swap (old for queries, new for indexing) may exceed R3 on `sdc-m`. | Measure in WP-3.7; the governor's memory ceiling (SPEC-0007) may serialize | WP-3.7 | No |
 | R-b | External backends (Tantivy, USearch) chosen by WP-2.7/2.9 must implement `applied_through` and idempotent replay; a backend that cannot is ineligible. | Add to the bake-off eligibility checklist | WP-2.7, WP-2.9 owners | No |
 
-Document conflicts found while drafting (none blocks a coherent draft):
+Document conflicts found while drafting, all resolved at acceptance (v0.2) by
+correcting overview §5, indexing.md §2.6 and §3, inference-and-models §6, and
+the glossary to this spec:
 Q4 (cache key); indexing.md §3 and inference-and-models §6 list embedding
 precision in the recipe, while ADR-0019 decision 7 lets parity-passing
 variants share a generation — this draft follows the ADR (`parity_group`,
@@ -821,4 +831,5 @@ progressive activation (Q2).
 
 | Version | Date | Change |
 |---|---|---|
+| 0.2 | 2026-11-27 | Accepted at gate H7: Q1 drop PoC vectors; Q2 coverage ≥ active over the same `commit_seq` and only with a parity group (R35); Q3 shared, content-addressed component instances under `index/components/<build-key>/` (§4.1, §5.3, §5.5); Q4–Q14 defaults accepted; architecture docs corrected |
 | 0.1 | 2026-11-27 | Initial draft (Lane N): storage layout and schema v2, PoC migration, writer actor and WAL readers, typed errors and privacy, backend traits and as-built adapters, embedding channels and modality, index generations with promotion and GC |

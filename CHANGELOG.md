@@ -12,6 +12,14 @@ roadmap (§6), with the date.
 ## Unreleased
 
 ### Added
+- The maintainer accepted SPEC-0006 v0.2 (storage, index backends,
+  generations, embedding channels) at gate H7. PoC vectors are dropped on
+  migration and re-embedded. A generation is promoted once its coverage
+  matches the active one, so the first model turns semantic search on
+  progressively. Index components with equal build keys are shared
+  between generations under `index/components/<build-key>/`. The Q4–Q14
+  defaults stand, and the architecture docs and glossary now match the
+  spec.
 
 - The maintainer accepted the SPEC-0002 v1.1 evaluation extension (R17–R25:
   evaluation depth to 1,000, stage and query-embedding telemetry, exact
