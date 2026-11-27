@@ -8,7 +8,7 @@ from typing import Any
 
 import numpy as np
 
-from .artifacts import sha256_file, write_json
+from .artifacts import failure_reason, sha256_file, write_json
 from .deadline import Deadline, GateTimeout, bounded_gate
 from .frozen import embedding_view, load_frozen
 from .metrics import mean_cosine
@@ -152,7 +152,6 @@ def run_npu_gate(
         provider_options = {
             "device_type": "NPU",
             "cache_dir": str(workspace / "cache" / "openvino-npu"),
-            "enable_npu_fast_compile": "False",
             "num_of_threads": str(selected_profile.ort_threads),
         }
         results.update(
@@ -181,7 +180,7 @@ def run_npu_gate(
             except Exception as error:
                 results["attempts"][variant] = {
                     "reached": False,
-                    "error": type(error).__name__,
+                    "error": failure_reason(error),
                 }
                 continue
             cold_load = time.perf_counter() - started
@@ -197,7 +196,7 @@ def run_npu_gate(
                 except Exception as error:
                     results["attempts"][variant] = {
                         "reached": False,
-                        "error": type(error).__name__,
+                        "error": failure_reason(error),
                         "cold_load_seconds": cold_load,
                     }
                     break
