@@ -557,6 +557,7 @@ fn command_perf(paths: &BenchPaths, args: &[String]) -> Result<()> {
         "--stage",
         "--repetitions",
         "--queries",
+        "--queries-file",
         "--tier",
         "--cpus",
         "--memory-limit",
@@ -574,6 +575,7 @@ fn command_perf(paths: &BenchPaths, args: &[String]) -> Result<()> {
     let data_dir = PathBuf::from(parsed.required("--data-dir")?);
     let output = PathBuf::from(parsed.required("--output")?);
     let code_enabled = parsed.flag("--code-enabled");
+    let queries_file = parsed.value("--queries-file").map(PathBuf::from);
 
     // Every flag is validated before any dataset or engine work.
     let suites = perf::Suites::parse(parsed.value("--suite").unwrap_or("all"))?;
@@ -610,11 +612,14 @@ fn command_perf(paths: &BenchPaths, args: &[String]) -> Result<()> {
     let config = environment::load_run_config(&config_path)?;
     let corpus = corpus::resolve(paths, &corpus_id, code_enabled)?;
     let evaluation_configuration = corpus.evaluation_configuration(code_enabled);
-    let dataset = corpus::load_dataset(&corpus, Split::Dev, evaluation_configuration, None)
-        .map_err(|error| Failure::dataset(error.to_string()))?;
-    if dataset.split != Split::Dev {
-        return Err(Failure::dataset("perf only measures the dev split"));
-    }
+    let dataset = match queries_file.as_deref() {
+        Some(path) => corpus::load_perf_queries_file(&corpus, path, evaluation_configuration)?,
+        None => {
+            let loaded = corpus::load_dataset(&corpus, Split::Dev, evaluation_configuration, None)
+                .map_err(|error| Failure::dataset(error.to_string()))?;
+            corpus::PerfDataset::from_dataset(&loaded, &corpus.visibility)?
+        }
+    };
     let options = perf::PerfOptions {
         suites,
         stage,

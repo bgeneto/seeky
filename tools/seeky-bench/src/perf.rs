@@ -16,7 +16,7 @@ pub mod startup;
 pub mod stats;
 pub mod suites;
 
-use crate::corpus::{BenchPaths, Corpus};
+use crate::corpus::{BenchPaths, Corpus, PerfDataset};
 use crate::engine::{self, EngineAdapter};
 use crate::environment::{self, EvaluationSettings};
 use crate::{Failure, Result};
@@ -26,9 +26,9 @@ use seeky_engine::{
     SearchOptions, SearchRequest,
 };
 use seeky_eval::{
-    Artifacts, CommitInfo, Dataset, Decision, DecisionStatus, PerformanceReport,
-    QueryEmbeddingMetrics, Report, ReportKind, ReportMetadata, ResourceMetrics, SCHEMA_VERSION,
-    SearchMeasurement, SearchableLatency, Split, TimeToSearchable, ToolInfo,
+    Artifacts, CommitInfo, Decision, DecisionStatus, PerformanceReport, QueryEmbeddingMetrics,
+    Report, ReportKind, ReportMetadata, ResourceMetrics, SCHEMA_VERSION, SearchMeasurement,
+    SearchableLatency, Split, TimeToSearchable, ToolInfo,
 };
 use serde_json::{Value, json};
 use std::path::{Path, PathBuf};
@@ -244,7 +244,7 @@ impl Collected {
 pub(crate) fn run(
     paths: &BenchPaths,
     corpus: &Corpus,
-    dataset: &Dataset,
+    dataset: &PerfDataset,
     config: &environment::RunConfig,
     data_dir: &Path,
     output: &Path,
@@ -273,7 +273,7 @@ pub(crate) fn run(
         adapter.engine(),
         &sidecar,
         corpus,
-        &dataset.corpus_hash,
+        &dataset.info.corpus_hash,
         corpus.code_enabled,
     )?;
     let snapshot_json = adapter
@@ -283,7 +283,7 @@ pub(crate) fn run(
         .canonical_json();
     let settings = EvaluationSettings {
         split: Split::Dev,
-        configuration: dataset.configuration,
+        configuration: dataset.info.configuration,
         limit: crate::DEFAULT_LIMIT,
         metrics: crate::metric_ids(),
         seed: options.seed.clone(),
@@ -293,17 +293,12 @@ pub(crate) fn run(
     let system_id: String = config_hash.chars().take(8).collect();
     let commit = crate::commit_info(&paths.root)?;
     let system = crate::system_info(&snapshot_json, &config_hash, &system_id);
-    let dataset_info = crate::dataset_info(dataset, &corpus.visibility);
+    let dataset_info = dataset.info.clone();
 
     // Perf only ever reads dev queries (the dataset was loaded with Split::Dev).
     let limit = options.queries.unwrap_or(MAX_QUERIES).min(MAX_QUERIES);
     let plan = QueryPlan {
-        queries: dataset
-            .queries()
-            .iter()
-            .take(limit)
-            .map(|query| query.text.clone())
-            .collect(),
+        queries: dataset.queries.iter().take(limit).cloned().collect(),
         repetitions: options.repetitions,
     };
 
