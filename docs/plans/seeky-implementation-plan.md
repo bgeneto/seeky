@@ -200,13 +200,19 @@ before this phase exits.
 | WP | Work package | Spec | Depends | Deliverables |
 |---|---|---|---|---|
 | 1.1 | `seeky-eval`: BEIR-layout + SDC loaders, graded qrels, nDCG/MRR/Recall/Success, duplicate and diversity metrics, paired randomization/bootstrap, JSON + Markdown report writer | SPEC-0003 | 0.2 | Crate with unit-tested metrics (checked against reference values) |
-| 1.2 | `tools/seeky-bench`: `index`, `eval`, `perf`, `compare`, `report` over the `Engine` API; environment capture; config hashing | SPEC-0003 | 1.1 | CLI; reproducible runs |
+| 1.2 | `tools/seeky-bench`: `index`, `eval`, `perf`, `compare`, `report` over the `Engine` API; environment capture; config hashing | SPEC-0003 | 1.1, SPEC-0002 v1.1 evaluation extension (accepted) | CLI; reproducible runs |
 | 1.3 | SDC generator v1 from pinned, redistributable sources; format renderers (incl. scanned variants); duplicate/version/boilerplate injection; `sdc-smoke` committed, `sdc-s` generated | SPEC-0004 | 0.2 | `bench/corpora/sdc/` |
 | 1.4 | **[human]** Queries and graded document/passage judgments v1 (≥ 600 queries, 9 categories, dev/test split); LLM-drafted items human-verified | SPEC-0004 | 1.3 | `bench/qrels/` |
 | 1.5 | Public dataset scripts (MLDR, MIRACL, mMARCO-pt with constructed pt↔en pairs, Quati after license check, BEIR subsets) | SPEC-0003 | 1.1 | `bench/datasets/` manifests + scripts |
-| 1.6 | Perf harness: per-stage latency, query-embedding latency, throughput, time-to-searchable, interference, RSS, disk, startup | SPEC-0003 | 1.2 | `seeky-bench perf` |
+| 1.6 | Perf harness: per-stage latency, query-embedding latency, throughput, time-to-searchable, interference, RSS, disk, startup | SPEC-0003 | 1.2 | `seeky-bench perf`; inherits the SPEC-0002 v1.1 evaluation extension |
 | 1.7 | **[human: T1 access]** **B0 report**: PoC pipeline vs BM25-only, dense-only, filename-only, Gety-style 0.2/0.8 reference; all budgets measured; then **lock budgets** by ADR | — | 1.3–1.6 | `docs/benchmarks/results/<date>-baseline-b0/`, ADR "Locked budgets v1" |
 | 1.8 | CI smoke gate: `sdc-smoke` nDCG@10 over the eight non-code categories (≤ 1.0 drop vs `main`) + ranking invariants; code-enabled results reported separately | SPEC-0003 | 1.2, 1.3, 1.4 (`sdc-smoke-v1` verified) | CI job |
+
+**Pre-WP-1.2 evaluation API extension:** before WP-1.2, WP-1.6, or B0 claims
+results, accept a behavior-preserving SPEC-0002 v1.1 extension providing
+evaluation result depth ≥100 (recommended ≤1,000), read-only stage and
+query-embedding telemetry, and structured metadata filters. Default single-stage
+search and all product behavior remain unchanged until progressive API v2.
 
 **Exit evidence:** B0 report committed; budgets locked; CI smoke gate active.
 
@@ -668,10 +674,10 @@ finished items and add the next ones, so this list never points at done work.
    alongside — it needs no corpus or judgments, only T1 (or T1-emulated) time.
    WP-0.4 awaits maintainer approval of its disclosed license exceptions and
    advisory ignores (H4).
-3. Review and accept **SPEC-0003** (harness,
-   [Draft](../specs/SPEC-0003-evaluation-harness.md)); secure access to a T1
-   reference laptop (or define the T1-emulated profile). SPEC-0004 is Accepted
-   with maintainer pre-approval in /goal.
+3. Draft and accept the **SPEC-0002 v1.1 evaluation extension** required by
+   WP-1.2/WP-1.6; secure access to a T1 reference laptop (or define the
+   T1-emulated profile). SPEC-0003 and SPEC-0004 are Accepted with maintainer
+   pre-approval in /goal.
 4. Start WP-1.3 (corpus generator) when WP-0.2 merges (SPEC-0004 is Accepted);
    schedule human time for WP-1.4 judgments, including the `sdc-smoke-v1`
    subset required by WP-1.8.

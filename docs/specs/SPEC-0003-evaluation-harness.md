@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Status | Draft |
+| Status | Accepted (maintainer pre-approval in /goal) |
 | Version | 0.1 (Phase 1 quality, statistics, reporting, performance, CI smoke) |
 | Owner | Maintainer |
 | Phase / work packages | Phase 1 — WP-1.1, WP-1.2, WP-1.5, WP-1.6, WP-1.8 |
@@ -57,8 +57,7 @@ specs; their optional report fields must not block this version.
 
 ## 3. Requirements (EARS)
 
-All requirements are open. The WP column names the implementation owner; no
-row authorizes implementation before maintainer acceptance (H1).
+All requirements are open. The WP column names the implementation owner.
 
 | ID | WP | Requirement | Verification | Status |
 |---|---|---|---|---|
@@ -1097,8 +1096,8 @@ filtering leaves fewer hits than the largest metric cutoff, the filtered list
 might have omitted matching lower-ranked hits and the invocation fails
 `INSUFFICIENT_DEPTH` rather than reporting a starved ranking as quality.
 When the Engine supports pushdown, the same query is sent with filters and
-`filter_mode = "pushdown"`. The current v1 capability gap is a blocking question
-in §7.
+`filter_mode = "pushdown"`. The current v1 capability gap and its resolved prerequisite are recorded in
+§7.
 
 For passage runs, a `SearchHit` carries chunk `start`/`end` character offsets,
 a page when present, and a document ID/path. The adapter converts character
@@ -1543,7 +1542,15 @@ from a T2 or undersampled run.
 
 ## 7. Risks and open questions
 
-### Blocking questions (must be resolved before this Draft can be Accepted)
+### Resolved blocking questions (H1)
+
+Questions 1–3 are resolved by maintainer pre-approval in /goal. The
+recommendations below are accepted: a behavior-preserving SPEC-0002 v1.1
+evaluation extension is a prerequisite for WP-1.2, WP-1.6, and B0, but not for
+WP-1.1 or WP-1.3. Until that extension is accepted, no depth-limited or
+unsupported metric may be reported and the affected commands fail closed.
+Post-filtering is acceptable only while depth remains sufficient; starvation is
+an error, never a quality result.
 
 | # | Question and conflict | Recommendation | Decides | By when |
 |---|---|---|---|---|
@@ -1567,4 +1574,5 @@ from a T2 or undersampled run.
 
 | Version | Date | Change |
 |---|---|---|
+| 0.1 | 2026-11-27 | Accepted (maintainer pre-approval in /goal); resolved H1 questions 1–3 with the draft recommendations: a SPEC-0002 v1.1 evaluation extension for result depth, telemetry, and filters is required before WP-1.2/WP-1.6; fail closed until then |
 | 0.1 | 2026-11-27 | Initial Draft for WP-1.1, WP-1.2, WP-1.5, WP-1.6, WP-1.8: evaluator API, BEIR/SDC loaders, TREC runs, graded metrics with reference fixtures, fixed-seed paired statistics, report JSON/Markdown, environment/config hashing, test confirmation/exposure, performance metrics, and the eight-category WP-1.8 smoke gate |

@@ -549,7 +549,7 @@ Governed by [ADR-0023](../adr/0023-multimodal-ready-engine.md); candidates in
 
 | Where | What | Authority |
 |---|---|---|
-| CI (every PR) | `sdc-smoke` quality (nDCG@10 drop ≤ 1.0 vs `main`), invariant tests, microbenchmarks (advisory thresholds) | Blocks merges on quality regressions and broken invariants |
+| CI (every PR) | `sdc-smoke` quality (equal-weight macro nDCG@10 over the eight non-code categories; drop ≤ 1.0 vs `main`), invariant tests, microbenchmarks (advisory thresholds) | Blocks merges on quality regressions and broken invariants |
 | Reference hardware (per milestone and per bake-off) | Full SDC-s/m + public sets, all budgets | Decides defaults, locks budgets, gates milestones |
 
 ## 11. Reporting rules

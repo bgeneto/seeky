@@ -160,7 +160,7 @@ E  OCR Stage 0 → WP-0.6 ─H3─► (continues) ─H5─────► N SPEC
 | A2 | WP-0.3 thin shell | this workstation | A merged, B merged | `wp/0.3-thin-shell` |
 | F | WP-1.1 `seeky-eval` | anywhere | A merged, H1 | `wp/1.1-eval` |
 | G | WP-1.3 SDC generator | anywhere | A merged, H1 | `wp/1.3-sdc` |
-| H | WP-1.2 `seeky-bench` | this workstation | F merged | `wp/1.2-bench` |
+| H | WP-1.2 `seeky-bench` | this workstation | F merged; SPEC-0002 v1.1 evaluation extension accepted | `wp/1.2-bench` |
 | I | WP-1.5 public dataset scripts | anywhere | F merged | `wp/1.5-datasets` |
 | J | WP-1.4 drafted queries and judgments | anywhere | G merged | `wp/1.4-judgments-draft` |
 | K | WP-7.1 then WP-7.2 | this workstation | A2 merged, H2 | `wp/7.1-i18n`, `wp/7.2-themes` |
@@ -559,7 +559,7 @@ file before launching the lane.
 
 | Lane | Brief |
 |---|---|
-| H, WP-1.2 | `tools/seeky-bench` per SPEC-0003: index, eval, perf (skeleton), compare, report over the `Engine` API; environment capture and config hashing. Owns `tools/seeky-bench/`, root `Cargo.toml` (`members` and dependencies: wave-4 owner), `Cargo.lock`. Internal tool that never ships (ADR-0008). Runs on this workstation. Done when `cargo run -p seeky-bench -- eval --corpus sdc-smoke --split dev` produces a report that a second run reproduces |
+| H, WP-1.2 | `tools/seeky-bench` per SPEC-0003 after the SPEC-0002 v1.1 evaluation extension is accepted: index, eval, perf (skeleton), compare, report over the `Engine` API; environment capture and config hashing. Owns `tools/seeky-bench/`, root `Cargo.toml` (`members` and dependencies: wave-4 owner), `Cargo.lock`. Internal tool that never ships (ADR-0008). Runs on this workstation. Done when `cargo run -p seeky-bench -- eval --corpus sdc-smoke --split dev` produces a report that a second run reproduces |
 | I, WP-1.5 | Public dataset manifests in `bench/datasets/` and download scripts (Python under `tools/` only): MLDR, MIRACL, mMARCO-pt with constructed pt↔en pairs, BEIR subsets; Quati only after its license check. Scripts download from the original sources and never redistribute. Owns `bench/datasets/` and its `tools/` script directory |
 | J, WP-1.4 (draft) | LLM-drafted queries and graded judgments per SPEC-0004 on `sdc-s` (at least 600 queries, 9 categories, dev/test split), every item with `drafted_by` set and `verified_by` empty. Owns `bench/qrels/` drafts only. Gate H6: the maintainer verifies; nothing unverified enters `test` |
 | K, WP-7.1 then WP-7.2 | Per SPEC-0014 v1. Owns `apps/desktop/src/`, `apps/desktop/package.json` and its lockfile (an i18n library only if the spec chose one), `tauri.conf.json` (window theme and background only), and the CI catalog-parity job in `.github/workflows/` (owner at that time). Both themes and both locales checked by hand until WP-7.8 adds component tests |

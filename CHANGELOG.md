@@ -90,9 +90,11 @@ roadmap (§6), with the date.
 
 ### Documentation and process
 
-- Added Draft SPEC-0003 defining the evaluation and benchmark harness:
-  loaders, metrics and fixed-seed statistics, report writers, test-split
-  protection, performance measurement, and the WP-1.8 smoke gate.
+- Added SPEC-0003 defining the evaluation and benchmark harness: loaders,
+  metrics and fixed-seed statistics, report writers, test-split protection,
+  performance measurement, and the WP-1.8 smoke gate. Accepted with maintainer
+  pre-approval in /goal; depth/telemetry/filter API needs are a prerequisite
+  for WP-1.2, WP-1.6, and B0 only.
 - Added SPEC-0004 defining deterministic Seeky Desktop Corpus generation,
   query splits, and human-verified graded relevance judgments. Accepted with
   maintainer pre-approval in /goal: default benchmarks exclude source code,
