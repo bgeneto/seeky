@@ -11,6 +11,15 @@ roadmap (§6), with the date.
 
 ## Unreleased
 
+### Added
+
+- `seeky-eval` implements the SPEC-0003 evaluation harness for WP-1.1: BEIR and
+  SDC loaders, graded document and passage judgments, document and passage
+  nDCG/MRR/Recall/Success, duplicate and diversity metrics, seeded paired
+  randomization and bootstrap statistics with Holm adjustment, and versioned
+  JSON and Markdown reports. It depends on no engine, UI, Tauri, or hardware
+  code.
+
 ### Fixed
 
 - HTML and HTM files are extracted again; extraction previously failed for every

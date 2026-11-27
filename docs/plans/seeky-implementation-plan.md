@@ -568,7 +568,7 @@ Rules:
 | M0 Runnable PoC | Done | 0.1.0 |
 | M1 Live incremental index | Done | 0.1.0 |
 | Phase 0 | In progress | WP-0.1, WP-0.2, WP-0.3, and WP-0.5 done; WP-0.4 implementation complete and awaiting H4 approval, WP-0.6 open (§15.3). Pre-flight fixes done outside any WP: fmt, clippy `-D warnings`, `hw-tests` feature, HTML fix, Auto is CPU-only until the NPU is validated ([conformance audit](../validation/poc-conformance-audit.md)). SPEC-0001 and SPEC-0002 v1 Implemented; manual Phase 0 app checks remain |
-| Phase 1 | In progress | WP-1.3 generator merged with a synthetic `sdc-smoke`; external sources and R14 judgment commands remain (§15.3) |
+| Phase 1 | In progress | WP-1.1 `seeky-eval` merged (SPEC-0003 R1–R14); WP-1.3 generator merged with a synthetic `sdc-smoke`; external sources and R14 judgment commands remain (§15.3) |
 | Phases 2-9 | Not started | - |
 | Phase 10 | Not started | Planned per ADR-0023, accepted 2026-11-27 (optional visual pack; off the 1.0 critical path) |
 
@@ -582,7 +582,7 @@ Rules:
 | 0.4 | In progress | `.github/workflows/ci.yml` (`format`, `lint`, `test`, `deny`, `web`, `compile`), `.githooks/pre-commit`, `deny.toml`; [PR #1](https://github.com/bgeneto/seeky/pull/1) CI and local AGENTS §5 checks | Done: rustfmt + Prettier, clippy `-D warnings` with and without `hw-tests`, hardware-free tests on Windows/Linux, cargo-deny bans/licenses/advisories/sources, TypeScript build, and Windows/Linux/macOS compile jobs. Remaining: maintainer approval of the disclosed license exceptions and advisory ignores (H4), then mark Done |
 | 0.5 | Done | `AGENTS.md`, `CLAUDE.md`, `docs/adr/_template.md`, `docs/specs/_template.md`, `docs/benchmarks/_report-template.md`, `.github/pull_request_template.md` | Repository reorganization |
 | 0.6 | Not started | — | Fed by the OCR Stage 0 paper screen (§16) |
-| 1.1 | Not started | — | — |
+| 1.1 | Done | [SPEC-0003](../specs/SPEC-0003-evaluation-harness.md) v0.1 (R1–R14); `crates/seeky-eval/` (BEIR and SDC loaders, graded judgments, document and passage nDCG/MRR/Recall/Success, duplicate and diversity metrics, seeded paired randomization/bootstrap with Holm adjustment, versioned JSON and Markdown reports); reference fixtures `crates/seeky-eval/tests/fixtures/`; [PR #8](https://github.com/bgeneto/seeky/pull/8); commits: `git log --grep "WP-1.1"` | R15–R22, R32 remain with WP-1.2; R23–R24 with WP-1.5; R25–R28 with WP-1.6; R29–R31 with WP-1.8 |
 | 1.2 | Not started | — | — |
 | 1.3 | In progress | [SPEC-0004](../specs/SPEC-0004-sdc-corpus-and-judgments.md) R1–R13; `tools/sdc-generator/` (stdlib-only Python 3.12+), `bench/corpora/sdc/`, committed `sdc-smoke` with corpus hash `365511dd…`, 80 generator tests and real-engine renderer round trips; [PR #7](https://github.com/bgeneto/seeky/pull/7) | Remaining: R14 judgment subcommands and external public-domain/CC-BY source scope with maintainer license review; `sdc-m` is validated at reduced scale, JPEG scans and four future extractors remain deferred |
 | 1.4 | Not started | — | — |
@@ -678,9 +678,12 @@ finished items and add the next ones, so this list never points at done work.
    WP-1.2/WP-1.6; secure access to a T1 reference laptop (or define the
    T1-emulated profile). SPEC-0003 and SPEC-0004 are Accepted with maintainer
    pre-approval in /goal.
-4. Start WP-1.1 (`seeky-eval`, SPEC-0003 is Accepted) and WP-1.3 (corpus
-   generator, SPEC-0004 is Accepted); schedule human time for WP-1.4 judgments,
-   including the `sdc-smoke-v1` subset required by WP-1.8.
+4. WP-1.1 (`seeky-eval`) is Done. Continue WP-1.3 with the remaining R14
+   judgment subcommands and the external-source licensing review; start WP-1.5
+   (public dataset scripts, SPEC-0003 R23–R24) and schedule human time for
+   WP-1.4 judgments, including the `sdc-smoke-v1` subset required by WP-1.8.
+   WP-1.2 (and its R15–R22, R32) and WP-1.6 wait for the accepted SPEC-0002
+   v1.1 evaluation extension.
 5. In parallel (UX track): WP-7.1 and WP-7.2 on the existing UI after Phase 0.
 6. Start the OCR **Stage 0 paper screen now** (no code needed,
    [candidates §5](../benchmarks/candidates.md)): confirm the OCRia variant
