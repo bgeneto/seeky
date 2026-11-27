@@ -693,6 +693,69 @@ needs a license review, or if a change would touch a path outside the list
 above; report instead of guessing.
 ```
 
+### Lane J: WP-1.4 draft queries and judgments (offline tool + local LLM)
+
+```text
+WORK PACKAGE: WP-1.4 draft data only, SPEC-0004 R15-R27. BRANCH:
+wp/1.4-judgments-draft. STARTS AFTER: WP-1.3 merged, SPEC-0004 0.2 accepted
+(tool-draft provenance), and sdc-s verified (hash 1d65b8ff...).
+OWNED PATHS: tools/qrels-drafter/ (new, Python 3.12, development tooling that
+never ships) and bench/qrels/sdc/drafts/sdc-v1/. Do not touch the plan or its
+indexes, CHANGELOG.md, specs, ADRs, the audit, tools/sdc-generator/, any crate,
+or any verified/frozen judgment set; propose records in the PR.
+INPUT: build sdc-s in the worktree with the committed generator and seed
+`sdc-s-v1`; require 10,000 rendered files, 109,689 passages, and corpus hash
+1d65b8ff04091850b8deefa34f5658bee0b87ec4ff29667f002f6cec88ac2ef0 before
+drafting.
+PROVENANCE: every item stays `state: "draft"` with `verified_by: []`. Tool
+records use `drafted_by: "tool:qrels-drafter@<version>"` and a canonical
+`tool_config_sha256`; LLM records use `drafted_by:
+"llm:<model>@<immutable-revision>"` and `llm_prompt_sha256`. A tool or LLM
+grade is candidate data only and has no authority; H6 verifies every item.
+CATEGORY SPLIT (do not blur it): templates handle only the categories where
+copying is faithful: known_item, exact_identifier, needle_in_haystack,
+mixed_semantic_metadata, filename_partial, code_search. Semantic paraphrase and
+translation use a local open-weight instruct model running fully offline:
+conceptual, exploratory, cross_language. Do not let a template draft a
+semantic paraphrase or a pt<->en pair, and reject an LLM query that copies a
+long verbatim span from its target (for example a shared 8-token shingle); that
+would favour BM25.
+LOCAL MODEL: choose a permissively licensed open-weight instruct model, pin an
+immutable revision and the weight-file SHA-256, and record the license in
+tools/qrels-drafter/NOTICE.md. Recommendation: Qwen2.5-1.5B-Instruct
+(Apache-2.0), Q4_K_M GGUF through llama.cpp/llama-cpp-python (MIT), temperature
+0 with a fixed seed. Model weights and the cache live outside the repository.
+A separate explicit fetch command may use the network; `draft` must work with
+networking disabled and no corpus text may leave the machine.
+SCALE: at least 600 distinct draft queries, at least 30 per category per split
+(300 each split), at least 100 Portuguese and 100 English monolingual overall
+and 40 of each per split, at least 30 cross-language per split, at least 20 each
+of Spanish, French, and German overall, and at least 10 non-Latin
+non-regression queries. Assign splits by the exact SPEC-0004 5.4 stratified
+procedure; every nonempty (category, language_slice, configuration) stratum is
+even. Code-search queries are code_enabled and separate; the other categories
+are default.
+JUDGMENTS: every draft query gets candidate document and passage judgments with
+integer grades 0-3, target hashes, and evidence passages for grades 2/3; all are
+draft. Do not pool systems yet; pools may be empty. The judgment-set manifest is
+state draft, id sdc-v1, split_seed sdc-v1-split-v1, compatible_corpus_hashes
+[sdc-s hash], empty frozen hashes, and test_exposure unexposed.
+TESTS FIRST: deterministic tool output for the same corpus/config; category,
+split, language, and stratum minima; tool vs LLM provenance per category;
+prompt/model hashes; draft-only state; the no-long-copy guard; no network in
+`draft`; no personal paths or secrets. The full draft must pass:
+python -m sdc_generator judgments validate --allow-draft --set
+bench/qrels/sdc/drafts/sdc-v1 --corpus bench/corpora/sdc/sdc-s
+GREEN: AGENTS 5 plus the generator and drafter test suites.
+DONE: the 600+ draft queries and candidate qrels committed under the draft
+directory, validation passing, a README with the exact model/config and
+reproduction commands, and H6 still entirely open. Open a PR with PROPOSED
+RECORDS; keep WP-1.4 In progress. Never mark an item verified.
+STOP: if the model license is unclear, the offline run cannot be made
+hermetic, the minima cannot be met without copying text, or a change would
+touch a path outside the list above; report instead of guessing.
+```
+
 ## 7. Where the unattended run ends
 
 With the gates answered as they come up, the run can reach:

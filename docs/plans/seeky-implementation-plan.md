@@ -681,10 +681,12 @@ finished items and add the next ones, so this list never points at done work.
    SPEC-0004 are Accepted with maintainer pre-approval in /goal.
 4. WP-1.1 (`seeky-eval`) and WP-1.3 are Done. WP-1.5 is in progress with four
    pinned datasets; its cross-lingual pair and the largest sources are blocked
-   on size or missing test qrels. Lane J drafts WP-1.4 queries and judgments
-   offline with a deterministic tool; the maintainer verifies them (H6),
-   including the `sdc-smoke-v1` subset required by WP-1.8. WP-1.2 (and its
-   R15–R22, R32) and WP-1.6 are unblocked (item 3).
+   on size or missing test qrels. WP-1.2 is in progress. Lane J drafts WP-1.4
+   queries and judgments offline: a deterministic tool for the template-faithful
+   categories and a local open-weight model for semantic paraphrase and
+   pt<->en pairs; every item remains a candidate and the maintainer verifies it
+   (H6), including the `sdc-smoke-v1` subset required by WP-1.8. WP-1.6 is
+   unblocked after WP-1.2.
 5. In parallel (UX track): SPEC-0014 v1 is Accepted (H2, 2026-11-27); WP-7.1
    and WP-7.2 run on the existing UI after Phase 0.
 6. Start the OCR **Stage 0 paper screen now** (no code needed,
