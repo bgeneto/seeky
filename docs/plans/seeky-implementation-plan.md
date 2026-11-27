@@ -148,7 +148,7 @@ Details: [overview](../architecture/overview.md) ·
 | 4 | Ranking engine v2: hierarchical and progressive | 0.5.0 | Engine | 2 (3 for dedupe signatures) |
 | 5 | NPU acceleration | 0.5.x | Acceleration | WP-2.1 |
 | 6 | Slim provisioning and distribution | 0.6.0 | Distribution | WP-2.1 (6.1–6.3), WP-2.6 (6.4) |
-| 7 | Desktop experience | 0.7.0 | UX | Phase 0 (7.1, 7.2), WP-4.3 (7.3) |
+| 7 | Desktop experience | 0.7.0 | UX | WP-0.3 (7.1, 7.2), WP-4.3 (7.3) |
 | 8 | Scale, hardening, cross-platform (beta) | 0.9.0 | All | 3, 4, 5, 6, 7 |
 | 9 | Release 1.0 | 1.0.0 | All | 8 |
 | 10 | Visual retrieval (optional pack) | 1.1.0, or 1.0 if pulled in | Visual (optional) | WP-2.13; 3, 4, 6 (10.1–10.2 can start after WP-1.3 and WP-2.2) |
@@ -320,8 +320,8 @@ contains user data (verified by traffic capture).
 
 | WP | Work package | Spec | Depends | Deliverables |
 |---|---|---|---|---|
-| 7.1 | i18n: en/pt catalogs, OS-locale detection, English fallback, CI catalog-parity check | SPEC-0014 | Phase 0 | No hardcoded strings |
-| 7.2 | Light/dark themes, OS default, override, contrast checks | SPEC-0014 | Phase 0 | Themes |
+| 7.1 | i18n: en/pt catalogs, OS-locale detection, English fallback, CI catalog-parity check | SPEC-0014 | 0.3 | No hardcoded strings |
+| 7.2 | Light/dark themes, OS default, override, contrast checks | SPEC-0014 | 7.1 | Themes |
 | 7.3 | Progressive results UI over Tauri channels; stable reordering between stages; keyboard-first navigation; instant cancellation | SPEC-0014 | 4.3 | Search view v2 |
 | 7.4 | Folders view: lexical/semantic coverage, health, pause/resume, exclusions | SPEC-0014 | 3.2, 6.3 | Folders view |
 | 7.5 | Filters UI (folder, type, date, size) pushed into retrieval | SPEC-0014 | 4.2 | Filters |
@@ -637,7 +637,7 @@ Rules:
 | 6.4 | Not started | — | — |
 | 6.5 | Not started | — | — |
 | 6.6 | Not started | — | — |
-| 7.1 | Not started | — | — |
+| 7.1 | In progress | Unmerged branch `wp/7.1-i18n`: SPEC-0014 v1 R1–R9, R16 | Dependency moved from Phase 0 to WP-0.3 by the maintainer on 2026-11-27: the UI needs only the thin shell, not the WP-0.6 ORT gate |
 | 7.2 | Not started | — | — |
 | 7.3 | Not started | — | — |
 | 7.4 | Not started | — | — |
@@ -688,7 +688,8 @@ finished items and add the next ones, so this list never points at done work.
    (H6), including the `sdc-smoke-v1` subset required by WP-1.8. WP-1.6 is
    unblocked after WP-1.2.
 5. In parallel (UX track): SPEC-0014 v1 is Accepted (H2, 2026-11-27); WP-7.1
-   and WP-7.2 run on the existing UI after Phase 0.
+   is in progress on `wp/7.1-i18n`, then WP-7.2; both depend on WP-0.3, not
+   on the whole of Phase 0 (maintainer, 2026-11-27).
 6. Start the OCR **Stage 0 paper screen now** (no code needed,
    [candidates §5](../benchmarks/candidates.md)): confirm the OCRia variant
    name, open-weight availability, each candidate's ONNX export path, and the
