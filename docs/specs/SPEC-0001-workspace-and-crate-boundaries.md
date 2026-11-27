@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Status | Accepted |
+| Status | Implemented |
 | Version | 0.1 |
 | Owner | Maintainer |
 | Phase / work packages | Phase 0 — WP-0.1 (boundaries also bind WP-0.2 and WP-0.3) |
@@ -265,3 +265,4 @@ measured in Phase 0 beyond the golden test.
 | 0.1 | 2026-11-27 | Initial draft |
 | 0.1 | 2026-11-27 | Accepted by the maintainer |
 | 0.1 | 2026-11-27 | WP-0.1 implemented R1–R12 and R14–R17. §4.4: `walkdir` ownership is checked in review instead of `cargo-deny` (Tauri build crates depend on it). R13 stays open until the shell drops the PoC's heavy dependencies |
+| 0.1 | 2026-11-27 | WP-0.2 implemented R13 and R18; §5.3 names `crates/seeky-infer/src/inference.rs` as the audited unsafe location. All requirements are implemented |

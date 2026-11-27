@@ -276,3 +276,4 @@ behavior. Index and search timings must not be claimed better or worse.
 |---|---|---|
 | 0.1 | 2026-11-27 | Initial draft of API v1 |
 | 0.2 | 2026-11-27 | Accepted; open allowlist decided: source files are never opened directly (ADR-0024) |
+| 0.2 | 2026-11-27 | WP-0.2 implemented R2–R4, the engine halves of R1/R6, and R9–R16; R5, R7, R8, and the shell halves of R1/R6 remain for WP-0.3 |

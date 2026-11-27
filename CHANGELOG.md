@@ -18,6 +18,12 @@ roadmap (§6), with the date.
 
 ### Changed
 
+- The PoC engine is extracted into `seeky-core`, `seeky-extract`,
+  `seeky-infer`, `seeky-store`, `seeky-search`, and `seeky-engine` behind the
+  `Engine` API (SPEC-0002). The Tauri crate now only resolves paths, forwards
+  events, and maps commands. Ranking is unchanged (golden lexical and CPU
+  hybrid runs); library error messages shown in the UI may differ because
+  libraries now use `thiserror`.
 - CI now enforces clippy `-D warnings` (including `hw-tests` code),
   hardware-free tests on Windows and Linux, cargo-deny bans, licenses,
   advisories, and sources, the TypeScript build, and compilation on Windows,
