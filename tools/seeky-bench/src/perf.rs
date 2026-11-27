@@ -745,6 +745,27 @@ fn searchable_latency(values: &mut [f64]) -> SearchableLatency {
     }
 }
 
+/// Unique search token of time-to-searchable probe `sample`.
+#[must_use]
+pub fn tts_probe_token(sample: usize) -> String {
+    format!("seekyperfprobe{sample:04}")
+}
+
+/// Contents of time-to-searchable probe `sample`.
+///
+/// The engine treats a file whose size and modification time are unchanged
+/// as unchanged. Within the filesystem timestamp resolution (notably on
+/// Windows) consecutive rewrites can keep the same mtime, so every sample has
+/// a distinct byte length: the rewrite is always detected as a change.
+#[must_use]
+pub fn tts_probe_contents(sample: usize) -> String {
+    format!(
+        "{}\nSynthetic time-to-searchable probe document number {sample}.\n{}\n",
+        tts_probe_token(sample),
+        "x".repeat(sample + 1)
+    )
+}
+
 fn time_to_searchable_suite(
     collected: &mut Collected,
     clock: &dyn Clock,
@@ -758,13 +779,10 @@ fn time_to_searchable_suite(
     let file_name = "seeky-perf-probe.txt";
     let (mut lexical, mut dense) = (Vec::new(), Vec::new());
     for sample in 0..TTS_SAMPLES {
-        let token = format!("seekyperfprobe{sample:04}");
+        let token = tts_probe_token(sample);
         let start = clock.now_ns();
-        std::fs::write(
-            probe_root.join(file_name),
-            format!("{token}\nSynthetic time-to-searchable probe document number {sample}.\n"),
-        )
-        .map_err(io_failure)?;
+        std::fs::write(probe_root.join(file_name), tts_probe_contents(sample))
+            .map_err(io_failure)?;
         engine.index_path(&probe_root).map_err(engine_failure)?;
         let mut poll = || probe_matches(engine, &token, file_name, "bm25");
         if let Some(value) = suites::time_to_searchable(clock, start, TTS_MAX_POLLS, &mut poll)? {
