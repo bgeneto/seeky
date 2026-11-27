@@ -55,7 +55,7 @@ Default profile `qwen3-0.6b` (chosen by the bake-off below):
 | Weight SHA-256 | `9465e63a22add5354d9bb4b99e90117043c7124007664907259bd16d043bb031` |
 | Mode | non-thinking (`/no_think`, thinking blocks stripped defensively) |
 | Decode | temperature 0.7, top-p 0.8, top-k 20, presence penalty 1.5, seed 42, 200 tokens, 8 threads |
-| Runtime | llama.cpp `b12815` CPU x64, `llama-completion.exe` |
+| Runtime | llama.cpp `b12815`; the CPU x64 build produced the bake-off numbers, the optional CUDA 12.4 build (`--gpu-layers 99`) drafted the committed set |
 | Prompt version | `qrels-drafter-prompts-v1` (hashed per record) |
 | Seeds | draft `sdc-v1-draft-v1`, split `sdc-v1-split-v1` |
 
@@ -99,6 +99,21 @@ categories; it did pass, so the committed draft uses Qwen3 throughout.
 The template categories are unaffected: they are tool-drafted in both profiles,
 and `tool_config_sha256` does not depend on the model.
 
+## Development acceleration (optional, not shipped)
+
+Drafting is CPU-capable by design (`--gpu-layers 0`, the default). On a
+development workstation with a discrete GPU, pass `--gpu-layers 99` and point
+`--llama-cli` at the CUDA build of the same llama.cpp release to shorten the
+run; the pinned model, prompts, and provenance are identical either way. The
+bake-off latency table above was measured on the CPU build; the committed
+`sdc-v1` draft was generated with the CUDA build (one gate-passing query measured
+1.67 s per call end to end, including model load and GPU initialization).
+
+Neither build is a product component and neither is used to claim a product
+budget: ADR-0019 and the S*/I*/R* budgets stay CPU-only, and the acceleration
+choices are recorded here only so the draft is reproducible. No binary is
+committed.
+
 ## Setup (network used only by the explicit fetch)
 
 ```powershell
@@ -138,6 +153,7 @@ python -m qrels_drafter draft `
   --output bench/qrels/sdc/drafts/sdc-v1 `
   --profile qwen3-0.6b `
   --llama-cli "$env:LOCALAPPDATA\seeky-dev\llm\llama.cpp-b12815\llama-completion.exe"
+# Optional development acceleration: --gpu-layers 99 with the CUDA build.
 
 python -m qrels_drafter audit --set bench/qrels/sdc/drafts/sdc-v1 `
   --corpus bench/corpora/sdc/sdc-s
