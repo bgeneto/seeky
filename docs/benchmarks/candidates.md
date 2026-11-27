@@ -30,8 +30,8 @@ cannot is priced under the ADR-0019 runtime-cost rule.
 | Candidate | Size | Dims | License | Role | Notes |
 |---|---|---|---|---|---|
 | `gety-embed-v0` | 118M (e5-small finetune) | 384 | MIT | baseline | PoC model; CPU/NPU artifacts exist |
-| `intfloat/multilingual-e5-small` | 118M | 384 | MIT | baseline | Prefix-sensitive (`query:`/`passage:`) |
-| `ibm-granite/granite-embedding-97m-multilingual-r2` | 97M | 384 | Apache-2.0 | challenger | ModernBERT, 32k context, released 2026-04; vendor-reported strong multilingual retrieval |
+| `intfloat/multilingual-e5-small` | 118M (471 MB fp32) | 384 | MIT | baseline; **WP-0.6 proxy** | Prefix-sensitive (`query:`/`passage:`); official ONNX fp32/O4/int8 files verified at revision `614241f` on 2026-11-27 |
+| `ibm-granite/granite-embedding-97m-multilingual-r2` | 97M (195 MB BF16) | 384 | Apache-2.0 | challenger; **WP-0.6 ModernBERT proxy** | ModernBERT, 32k context, released 2026-04; official ONNX fp32/int8 and OpenVINO exports verified at revision `835ad14` on 2026-11-27; pt explicitly supported |
 | `hotchpotch/bekko-embedding-v1-a25m` | ~25M active | 384 (MRL 256/128/64) | MIT | challenger | 2026; ultra-compact; architecture and ONNX export *(verify)* |
 | `hotchpotch/bekko-embedding-v1-a8m` | ~8M active | 384 (MRL) | MIT | challenger | T0-tier candidate; language coverage for pt *(verify)* |
 | `Snowflake/snowflake-arctic-embed-m-v2.0` | 305M | 768 (MRL 256) | Apache-2.0 | challenger | Strong multilingual retrieval; heavier on CPU |
@@ -55,7 +55,7 @@ cannot is priced under the ADR-0019 runtime-cost rule.
 | Candidate | Size | License | Role | Notes |
 |---|---|---|---|---|
 | `cross-encoder/mmarco-mMiniLMv2-L12-H384-v1` | 118M | Apache-2.0 weights; trained on mMARCO | baseline | Fast multilingual baseline; **training-data license review** |
-| `Alibaba-NLP/gte-multilingual-reranker-base` | 306M | Apache-2.0 | challenger | Primary CPU candidate *(verify export)* |
+| `Alibaba-NLP/gte-multilingual-reranker-base` | 306M (612 MB fp16) | Apache-2.0 | challenger; **WP-0.6 proxy** | Native `transformers>=5.18` sequence-classification export path verified at revision `9ba3cad` on 2026-11-27; no official ONNX file, so Optimum/`torch.onnx.export` required; pt explicitly supported |
 | `agentic-in/elephant-rerank-v1-text-small` | small (ModernBERT) | Apache-2.0 | challenger | 2026; custom heads/loader — export risk *(verify)* |
 | `BAAI/bge-reranker-v2-m3` | 568M | Apache-2.0 | challenger (NPU) / ceiling | Likely NPU-only on budget; community int8 ONNX exists |
 | `mixedbread-ai/mxbai-rerank-base-v2` | 0.5B | Apache-2.0 | ceiling | Decoder-based |
@@ -109,19 +109,46 @@ available only in GGUF, priced under the runtime-cost rule.
 
 | Candidate | Type | Size | License | Tier / role | Formats and engine paths | Notes |
 |---|---|---|---|---|---|---|
-| PP-OCRv5 / PP-OCRv6 mobile via `oar-ocr` | det + rec | small *(verify)* | Apache-2.0 | CPU: baseline | ONNX; already runs on ONNX Runtime via `oar-ocr` | Latin incl. pt; expected speed leader |
+| PP-OCRv5 mobile det + rec / PP-OCRv6 rec via `oar-ocr` | det + rec | v5 det 4.7 MB + Latin rec 14 MB; v6 rec tiny/small/medium 4.4/20.4/73.3 MB | Apache-2.0 (verified) | CPU: baseline; **WP-0.6 proxy** | Official Paddle inference → `paddle2onnx` / ONNX; `oar-ocr` 0.11 runs PP-OCRv4–v6 on ONNX Runtime | Latin incl. pt; sizes and export path verified on 2026-11-27 |
 | Windows.Media.Ocr | OS-native | 0 MB | OS component | CPU: challenger | OS API (no engine to ship) | Windows only; language packs |
 | Apple Vision text recognition | OS-native | 0 MB | OS component | CPU: challenger | OS API (no engine to ship) | macOS only |
 | Tesseract 5 | det + rec (LSTM) | small | Apache-2.0 | CPU: challenger | Own engine (C/C++ library); priced under the runtime-cost rule | Broad languages |
 | `ocrs` | det + rec | small | MIT / Apache-2.0 | CPU: challenger | Own pure-Rust engine (RTen); priced under the runtime-cost rule | Latin scripts |
-| LlamaIndex **OCRia** family | transcription VLM | OCRia-1: 4B (Qwen3.5-4B base); OCRia-1.5: 4B and 2B (released 2026-11-18) | *(verify: open weights and license)* | CPU: challenger if a variant meets O1 after quantization; else GPU pack | ONNX export path *(verify)*; otherwise priced only | Maintainer-requested as a possible CPU default. "OCRia-nano-1" was not found in public sources on 2026-11-27: **confirm exact name and revision** at Stage 0 |
-| OpenBMB **MiniCPM-OCR 1.0** | transcription VLM | 1.3B | Apache-2.0 per third-party listings *(verify LICENSE file)* | GPU pack: challenger; CPU: int4 probe | ONNX export path *(verify)*; GGUF q4/q8 published (priced only) | Released 2026-10 |
-| SoMark **OXR-1.0** | document parser VLM (Markdown/JSON + layout) | 1.3B | *(verify; possibly restrictive)* | GPU pack: challenger | ONNX export path *(verify)* | Released 2026-10-20; pluggable layout module; vendor serving guide recommends a ≥ 48 GB GPU *(verify inference-only needs)*; claims self-reported |
-| PaddleOCR-VL | transcription VLM | ~0.9B *(verify)* | Apache-2.0 *(verify)* | GPU pack: challenger; CPU: int4 probe | Paddle → ONNX export path *(verify)* | Small VLM; strong multilingual document parsing claims |
-| Florence-2 base / large | encoder-decoder | 0.23B / 0.77B | MIT *(verify)* | CPU: challenger | ONNX exports exist *(verify)* | OCR task; pt diacritics coverage *(verify)* |
-| DeepSeek-OCR, dots.ocr | VLM | ~3B class *(verify)* | *(verify)* | ceiling | Reference runtime | Quality reference on GPU |
-| olmOCR | VLM | 7B | Apache-2.0 *(verify)* | ceiling | Reference runtime | GPU-class; offline reference only |
+| LlamaIndex **OCRia-1 / OCRia-nano-1** | transcription VLM / det + rec + layout | OCRia-1: 5.175B checkpoint (vendor calls it 4B), 10.35 GB BF16; nano: 8.1M, 48.3 MB ONNX | Custom OCRia Model and Code License — **ineligible** | **excluded** (research evaluation only) | OCRia-1: BF16 + GGUF, no official ONNX found; nano: published split ONNX | Exact names and revisions verified on 2026-11-27; **no public OCRia-1.5 weight repository found**. Revenue/funding limits and the competing OCR/product restriction are incompatible with ADR-0022 |
+| OpenBMB **MiniCPM-OCR 1.0** | transcription VLM | 1.300B; 2.60 GB BF16 | Apache-2.0 (verified model card + source LICENSE) | GPU pack: challenger; CPU: int4 probe | BF16; official GGUF/AWQ/GPTQ; no official ONNX found, so split export is unverified | Revision `883ca36`, checked 2026-11-27; card declares en/zh, so pt coverage remains an eligibility check |
+| SoMark **OXR-1.0** | document parser VLM (Markdown/JSON + layout) | 1.534B checkpoint (vendor calls it 1.3B); 3.07 GB BF16 + 78.8 MB layout | OXR License (Apache-2.0 + commercial/use restrictions) — **ineligible** | **excluded** | BF16 + custom vLLM plugin; no official ONNX export found | Revision `c708407`, checked 2026-11-27; guide requires 24 GB VRAM to start and recommends ≥48 GB; license has revenue/funding and competing hosted-API restrictions |
+| PaddleOCR-VL / 1.5 | transcription VLM | 0.959B; 1.917 GB BF16 (both v1 and v1.5) | Apache-2.0 (verified LICENSE) | GPU pack: challenger; CPU: int4 probe | Paddle/safetensors + Transformers; community split-graph ONNX with int4 exists for 1.5; official ONNX not found | Revisions `dae2996` / `1e52160`, checked 2026-11-27; 109-language claim includes multilingual coverage; export parity still requires measurement |
+| Florence-2 base / large | encoder-decoder transcription VLM | 0.232B / 0.777B | MIT (verified LICENSE) | CPU: challenger; **large is WP-0.6 ~1B-class proxy** | Official safetensors; `onnx-community` split graphs for base/large (fp32/fp16/int8/q4) verified | Revisions `5ca5edf` / `21a599d`, checked 2026-11-27; OCR task only under ADR-0021; card does not declare pt, so diacritic coverage remains an eligibility check |
+| DeepSeek-OCR, dots.ocr | VLM | DeepSeek: 3.336B / 6.67 GB BF16; dots: 3.039B / 6.08 GB BF16 | DeepSeek: MIT (verified LICENSE); dots: MIT + supplemental use policy — **review** | ceiling | Custom Transformers/vLLM reference runtimes; no official ONNX found; split export unverified | Revisions `9f30c71` / `c0111ce`, checked 2026-11-27; GPU quality reference; dots is not license-Allowed for the WP-0.6 portfolio |
+| olmOCR-7B-0825 | VLM | 8.292B checkpoint (product name 7B); 16.58 GB BF16 | Apache-2.0 (model card; responsible-use guidance linked) | ceiling | Qwen2.5-VL safetensors via olmOCR/sglang; no official ONNX found | Revision `f146341`, checked 2026-11-27; English card; GPU-class offline reference only |
 | `gety-ocr-v0` | — | — | proprietary, encrypted | excluded | — | Not usable or redistributable |
+
+Stage 0 primary-source evidence, checked 2026-11-27 (sizes use decimal MB/GB;
+parameter counts and file bytes come from the linked repositories and Hugging
+Face `?blobs=true` metadata):
+
+- PP-OCR: [official model list](https://github.com/PaddlePaddle/PaddleOCR/blob/main/docs/version3.x/model_list.md),
+  [Paddle2ONNX deployment guide](https://github.com/PaddlePaddle/PaddleOCR/blob/main/deploy/paddle2onnx/readme.md),
+  [Apache-2.0 LICENSE](https://github.com/PaddlePaddle/PaddleOCR/blob/main/LICENSE),
+  and [`oar-ocr` supported families](https://docs.rs/crate/oar-ocr/latest).
+- OCRia: [OCRia-1 card and LICENSE](https://huggingface.co/llamaindex/OCRia-1),
+  [OCRia-nano-1 card and LICENSE](https://huggingface.co/llamaindex/OCRia-nano-1),
+  and the [LlamaIndex public model listing](https://huggingface.co/api/models?author=llamaindex&search=OCRia&limit=100).
+- MiniCPM-OCR: [weight repository/card](https://huggingface.co/openbmb/MiniCPM-OCR-1.0)
+  and [source LICENSE](https://github.com/OpenBMB/MiniCPM-OCR/blob/main/LICENSE).
+- OXR: [weight repository/card](https://huggingface.co/SoMarkAI/OXR-1.0) and its
+  [custom LICENSE](https://huggingface.co/SoMarkAI/OXR-1.0/blob/main/LICENSE).
+- PaddleOCR-VL: [v1 card/LICENSE](https://huggingface.co/PaddlePaddle/PaddleOCR-VL),
+  [v1.5 card/LICENSE](https://huggingface.co/PaddlePaddle/PaddleOCR-VL-1.5), and the
+  [community 1.5 split ONNX conversion](https://huggingface.co/lbm364dl/PaddleOCR-VL-1.5-ONNX).
+- Florence-2: [base](https://huggingface.co/microsoft/Florence-2-base),
+  [large](https://huggingface.co/microsoft/Florence-2-large), and their
+  [base](https://huggingface.co/onnx-community/Florence-2-base) /
+  [large](https://huggingface.co/onnx-community/Florence-2-large) ONNX conversions.
+- DeepSeek-OCR: [card and MIT LICENSE](https://huggingface.co/deepseek-ai/DeepSeek-OCR);
+  dots.ocr: [card](https://huggingface.co/dots-studio/dots.ocr) and
+  [supplemental agreement](https://huggingface.co/dots-studio/dots.ocr/blob/main/dots.ocr%20LICENSE%20AGREEMENT);
+  olmOCR: [7B-0825 card and license statement](https://huggingface.co/allenai/olmOCR-7B-0825).
 
 ## 6. Extractors
 
