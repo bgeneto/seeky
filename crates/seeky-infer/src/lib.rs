@@ -50,7 +50,8 @@ macro_rules! error {
 mod inference;
 
 pub use inference::{
-    DIM, Engine, available_backends, find_gety_model_root, gety_data_dir, gety_openvino_dir,
-    gety_ort_dll, prepare_cuda_paths, prepare_openvino_path, resolve_npu_dir,
+    ActiveModel, DIM, Embedder, Engine, MODEL_ID, MODEL_PREPROCESSING, MODEL_REVISION,
+    available_backends, describe_active_model, find_gety_model_root, gety_data_dir,
+    gety_openvino_dir, gety_ort_dll, prepare_cuda_paths, prepare_openvino_path, resolve_npu_dir,
 };
-pub use seeky_core::{Backend, EngineInfo};
+pub use seeky_core::{Backend, EngineInfo, ModelIdentity};

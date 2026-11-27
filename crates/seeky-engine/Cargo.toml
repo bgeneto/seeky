@@ -19,6 +19,8 @@ seeky-extract = { path = "../seeky-extract" }
 seeky-infer = { path = "../seeky-infer" }
 seeky-search = { path = "../seeky-search" }
 seeky-store = { path = "../seeky-store" }
+serde_json.workspace = true
+sha2.workspace = true
 thiserror.workspace = true
 tracing.workspace = true
 walkdir.workspace = true
