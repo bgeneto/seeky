@@ -1,0 +1,18 @@
+{
+  "compatible_corpus_hashes": [
+    "1d65b8ff04091850b8deefa34f5658bee0b87ec4ff29667f002f6cec88ac2ef0"
+  ],
+  "file_sha256": {},
+  "judgment_set_id": "sdc-v1",
+  "query_counts": {
+    "dev": 366,
+    "test": 366
+  },
+  "query_file_sha256": {},
+  "schema_version": 1,
+  "split_seed": "sdc-v1-split-v1",
+  "state": "draft",
+  "supersedes": null,
+  "test_exposure": "unexposed",
+  "test_pool_system_ids": []
+}
