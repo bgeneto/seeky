@@ -12,6 +12,14 @@ roadmap (§6), with the date.
 ## Unreleased
 
 ### Added
+- WP-1.5 public evaluation datasets complete (SPEC-0003 R23–R24): pinned
+  `beir-trec-covid`, `mldr-en`, `mmarco-pt`, `mmarco-pt-en`, `mmarco-en-pt`,
+  `miracl-es`, and `quati-pt` (CC-BY-4.0) with real upstream/local SHA-256
+  digests in `files_root: null` Stage A mode (~2–4 KB manifests) and
+  deterministic 50/50 SHA-256 carve-outs for single-split sources, bringing
+  `bench/datasets/` to 11 offline-verified public datasets alongside new
+  `miracl` and `quati` recipes and streaming `corpus.jsonl` hashing in
+  `tools/dataset-fetch/`.
 - `seeky-bench compare --gate wp1.8` enforces the WP-1.8 smoke gate
   (SPEC-0003 R29–R31): verified, frozen `sdc-smoke-v1` only; same corpus,
   judgments, config, and environment; no code results; ranking invariants and
