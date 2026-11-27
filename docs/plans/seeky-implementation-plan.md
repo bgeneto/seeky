@@ -561,7 +561,7 @@ Rules:
 |---|---|---|
 | M0 Runnable PoC | Done | 0.1.0 |
 | M1 Live incremental index | Done | 0.1.0 |
-| Phase 0 | In progress | WP-0.4 in progress, WP-0.5 done (§15.3). Pre-flight fixes done outside any WP: fmt, clippy `-D warnings`, `hw-tests` feature, HTML fix, Auto is CPU-only until the NPU is validated ([conformance audit](../validation/poc-conformance-audit.md)) |
+| Phase 0 | In progress | WP-0.4 in progress, WP-0.5 done (§15.3). Pre-flight fixes done outside any WP: fmt, clippy `-D warnings`, `hw-tests` feature, HTML fix, Auto is CPU-only until the NPU is validated ([conformance audit](../validation/poc-conformance-audit.md)). SPEC-0001 and SPEC-0002 v1 Accepted |
 | Phases 1–9 | Not started | — |
 | Phase 10 | Not started | Planned per ADR-0023, accepted 2026-11-27 (optional visual pack; off the 1.0 critical path) |
 
@@ -664,18 +664,16 @@ finished items and add the next ones, so this list never points at done work.
 
 1. Maintainer reviews and accepts this plan (the
    [vision](../product/vision.md) and ADR-0015 to ADR-0023 are Accepted).
-2. Write and accept **SPEC-0001** (workspace and crate boundaries) and
-   **SPEC-0002 v1** (engine API).
-3. Execute WP-0.1 → WP-0.2 → WP-0.3 and WP-0.4 in parallel with WP-0.2; run
+2. Execute WP-0.1 → WP-0.2 → WP-0.3 and WP-0.4 in parallel with WP-0.2; run
    **WP-0.6 (ORT validation gate, priority zero)** alongside — it needs no
    corpus or judgments, only T1 (or T1-emulated) time.
-4. Write **SPEC-0003** (harness) and **SPEC-0004** (SDC + judgments) while
+3. Write **SPEC-0003** (harness) and **SPEC-0004** (SDC + judgments) while
    Phase 0 lands; secure access to a T1 reference laptop (or define the
    T1-emulated profile).
-5. Start WP-1.3 (corpus generator) as soon as WP-0.2 merges; schedule human
+4. Start WP-1.3 (corpus generator) as soon as WP-0.2 merges; schedule human
    time for WP-1.4 judgments.
-6. In parallel (UX track): WP-7.1 and WP-7.2 on the existing UI after Phase 0.
-7. Start the OCR **Stage 0 paper screen now** (no code needed,
+5. In parallel (UX track): WP-7.1 and WP-7.2 on the existing UI after Phase 0.
+6. Start the OCR **Stage 0 paper screen now** (no code needed,
    [candidates §5](../benchmarks/candidates.md)): confirm the OCRia variant
    name, open-weight availability, each candidate's ONNX export path, and the
    OXR-1.0 and MiniCPM-OCR licenses; its findings choose the VLM for WP-0.6.

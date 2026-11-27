@@ -76,6 +76,9 @@ roadmap (§6), with the date.
 
 ### Documentation and process
 
+- Accepted SPEC-0001 (workspace and crate boundaries) and SPEC-0002 v1
+  (headless engine API, golden test, opening files by document ID) for
+  Phase 0.
 - Added `AGENTS.md` (agent operating manual) and `CLAUDE.md`.
 - Adopted Spec-Driven + Benchmark-Driven Development (ADR-0017): spec process
   and template (`docs/specs/`), benchmark methodology, budgets, candidate
