@@ -12,6 +12,14 @@ roadmap (§6), with the date.
 ## Unreleased
 
 ### Added
+- `tools/qrels-drafter` drafts the `sdc-v1` query set offline from templates for
+  the six template-faithful categories and the pinned Qwen3-0.6B model for
+  `conceptual`, `exploratory`, and `cross_language`. The committed
+  `bench/qrels/sdc/drafts/sdc-v1/` holds 732 queries (366 dev / 366 test) and
+  2,572 document plus 2,572 passage judgments; every record is an unverified
+  draft (`verified_by: []`, `test_exposure: unexposed`), and human verification
+  (gate H6) is required before any benchmark-eligible split (WP-1.4,
+  SPEC-0004 R15–R22, R25).
 - `seeky-bench perf` measures warm-idle and warm-indexing search latency
   (p50/p95/p99 with fixed-seed bootstrap CIs), batch-1 query-embedding
   latency, bulk indexing throughput, lexical/semantic time-to-searchable, the
