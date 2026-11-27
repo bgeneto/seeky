@@ -164,9 +164,11 @@ export function createThemeController(options: {
       preference = parseThemePreference(next);
       store.write(THEME_STORAGE_KEY, preference);
       if (preference === "system") {
-        // The last OS value seen applies at once. While an override was
-        // active the webview may have reported the override, so after
-        // native OS tracking is restored the OS value is read again.
+        // The last OS value seen applies at once. While an override is
+        // active the webview reports the override, not the OS: on Windows,
+        // tauri-runtime-wry copies every window ThemeChanged into WebView2
+        // PreferredColorScheme. So after setTheme(null) restores OS tracking,
+        // the window theme is asked first and the media query second.
         native("native theme", () => adapter.setNativeTheme(null));
         native("native theme query", async () => {
           if (preference !== "system") return;
