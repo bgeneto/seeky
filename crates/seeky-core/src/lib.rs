@@ -4,6 +4,14 @@
 //! Responsibilities and allowed dependencies:
 //! `docs/specs/SPEC-0001-workspace-and-crate-boundaries.md` (sections 4.2 and 4.4).
 
+mod evaluation;
+pub use evaluation::{
+    CandidateDepths, DeliveryStage, DepthReport, DocumentMetadata, FilterApplication, FilterKind,
+    FilterMode, FilterReport, FilterSupport, FilterValidationError, FolderFilter, MetadataFilter,
+    ModelIdentity, QueryEmbeddingProbe, QueryEmbeddingTiming, ResolvedFilter, SearchMode,
+    SearchOptions, SearchOutcome, SearchStage, SearchTelemetry, StageTiming, document_matches,
+};
+
 use serde::Serialize;
 use std::time::{SystemTime, UNIX_EPOCH};
 
