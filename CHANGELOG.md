@@ -13,6 +13,11 @@ roadmap (§6), with the date.
 
 ### Added
 
+- `tools/model-export` implements the WP-0.6 ORT validation gate with
+  per-gate bounded timeouts (default 1800 s), timeout artifacts that cannot
+  produce K1-K4 verdicts, parity/quantization/NPU/OCR/VLM probes, and
+  preregistered kill criteria. The e5/granite fp32 and reranker fp32 proxies
+  fired K1; the final K1-K4 report remains pending.
 - `seeky-bench` implements WP-1.2: `index`, `eval`, `perf` (skeleton),
   `compare`, and `report`; environment capture and semantic config hashing;
   atomic, reproducible artifacts; fail-closed depth; test confirmation and an
