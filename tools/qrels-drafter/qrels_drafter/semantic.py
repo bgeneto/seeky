@@ -83,6 +83,23 @@ def _looks_like_identifier(text: str, anchor_id: str) -> bool:
     return anchor_id.casefold() in folded or folded.startswith("doc-") or "doc-" in folded
 
 
+def copies_a_judged_target(text: str, grades: dict[str, int], corpus: Corpus) -> bool:
+    """True when a query copies any document it is about to grade 3.
+
+    The audit checks the guard against every grade-3 row, so the draft must pass
+    the same rule before it is accepted; otherwise a query can copy a relevant
+    document that is not the anchor.
+    """
+
+    for document_id, grade in grades.items():
+        if grade != 3:
+            continue
+        target = corpus.documents[document_id]
+        if guard_violation(text, [target.title, target.text], config.GUARD) is not None:
+            return True
+    return False
+
+
 def slug_label(text: str, fallback: str = "general") -> str:
     """ASCII snake_case subtopic label (SPEC-0004 4.6)."""
 
@@ -354,6 +371,10 @@ class LlmDrafter:
             except DraftError:
                 continue
             if not any(grade >= 2 for grade in grades.values()):
+                continue
+            # The audit checks the guard against every grade-3 target, so enforce
+            # the same rule here: a query may not copy any document it grades 3.
+            if copies_a_judged_target(text, grades, self.corpus):
                 continue
             used.add(text.casefold())
             drafts.append(
