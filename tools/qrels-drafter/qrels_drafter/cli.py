@@ -40,7 +40,27 @@ def _sha256(path: Path) -> str:
 
 def _cmd_draft(args: argparse.Namespace) -> int:
     profile = config.PROFILES[args.profile]
+    plan = None
+    if args.only_category or args.max_queries:
+        selected = set(args.only_category or config.CATEGORIES)
+        plan = {}
+        for category, slices in config.PLAN.items():
+            if category not in selected:
+                continue
+            plan[category] = {
+                name: min(count, args.max_queries) if args.max_queries else count
+                for name, count in slices.items()
+            }
+        for category, slices in plan.items():
+            for name, count in slices.items():
+                if count % 2:
+                    print(
+                        f"{category}/{name}: --max-queries must keep the stratum even",
+                        file=sys.stderr,
+                    )
+                    return 2
     runner = None
+    progress = (lambda line: print(line, file=sys.stderr, flush=True)) if args.progress else None
     if args.llm_command:
         runner = command_runner(args.llm_command, profile)
     elif not args.templates_only:
@@ -57,10 +77,34 @@ def _cmd_draft(args: argparse.Namespace) -> int:
                 file=sys.stderr,
             )
             return 2
-        runner = llama_cpp_runner(args.llama_cli, str(model), profile, args.threads, args.gpu_layers)
-    summary = run_draft(Path(args.corpus), Path(args.output), runner)
+        deadline = None
+        if args.max_seconds:
+            import time
+
+            deadline = time.monotonic() + args.max_seconds
+        on_call = (lambda seconds: progress(f"  model call {seconds:.2f}s")) if progress else None
+        runner = llama_cpp_runner(
+            args.llama_cli,
+            str(model),
+            profile,
+            args.threads,
+            args.gpu_layers,
+            timeout=args.llm_timeout,
+            deadline=deadline,
+            on_call=on_call,
+            cache_dir=Path(args.llm_cache) if args.llm_cache else None,
+        )
+    summary = run_draft(
+        Path(args.corpus),
+        Path(args.output),
+        runner,
+        plan=plan,
+        check_minima=plan is None,
+        progress=progress,
+    )
     if runner is not None:
         summary["model_calls"] = runner.calls
+        summary["cache_hits"] = runner.cache_hits
     print(json.dumps(summary, sort_keys=True, separators=(",", ":")))
     return 0
 
@@ -216,6 +260,37 @@ def build_parser() -> argparse.ArgumentParser:
     )
     draft.add_argument("--llm-command", nargs="+", default=None)
     draft.add_argument("--templates-only", action="store_true")
+    draft.add_argument("--progress", action="store_true", help="log stage progress to stderr")
+    draft.add_argument(
+        "--only-category",
+        action="append",
+        default=None,
+        choices=list(config.CATEGORIES),
+        help="diagnostic: draft only these categories",
+    )
+    draft.add_argument(
+        "--max-queries",
+        type=int,
+        default=None,
+        help="diagnostic: cap each stratum (must stay even)",
+    )
+    draft.add_argument(
+        "--llm-timeout",
+        type=float,
+        default=240.0,
+        help="per model call timeout in seconds",
+    )
+    draft.add_argument(
+        "--max-seconds",
+        type=float,
+        default=1800.0,
+        help="supervisor deadline for the whole draft; 0 disables it",
+    )
+    draft.add_argument(
+        "--llm-cache",
+        default=None,
+        help="optional directory for prompt-keyed responses (dev replay, outside the repo)",
+    )
     draft.set_defaults(handler=_cmd_draft)
 
     audit = commands.add_parser("audit", help="audit a quarantined draft directory")

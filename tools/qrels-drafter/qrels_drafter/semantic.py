@@ -397,7 +397,12 @@ class LlmDrafter:
         return drafts
 
 
-def build_all_llm(corpus: Corpus, runner: Runner, plan: dict | None = None) -> list[Draft]:
+def build_all_llm(
+    corpus: Corpus,
+    runner: Runner,
+    plan: dict | None = None,
+    progress=None,
+) -> list[Draft]:
     plan = plan or config.PLAN
     drafter = LlmDrafter(corpus, runner, runner.model)
     drafts: list[Draft] = []
@@ -405,4 +410,6 @@ def build_all_llm(corpus: Corpus, runner: Runner, plan: dict | None = None) -> l
     for category in config.LLM_CATEGORIES:
         for slice_name, count in plan.get(category, {}).items():
             drafts.extend(drafter.build(category, slice_name, count, used))
+            if progress is not None:
+                progress(f"{category}/{slice_name}: {count} queries ready")
     return drafts
