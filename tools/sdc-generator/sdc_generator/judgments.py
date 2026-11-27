@@ -128,6 +128,7 @@ DRAFT_FILES = (
     "qrels.draft.passages.jsonl",
     "pools.draft.jsonl",
 )
+DRAFT_ROOT_SUFFIX = ("bench", "qrels", "sdc", "drafts")
 _BCP47 = re.compile(r"^[A-Za-z]{2,8}(?:-[A-Za-z0-9]{1,8})*$")
 _HUMAN = re.compile(r"^human:\S+$")
 _LLM = re.compile(r"^llm:[^@\s]+@\S+$")
@@ -226,7 +227,8 @@ def _is_smoke(manifest: dict[str, Any]) -> bool:
 
 
 def _is_under_drafts(root: Path) -> bool:
-    return "drafts" in root.resolve().parts
+    parent_parts = root.resolve().parent.parts
+    return tuple(parent_parts[-len(DRAFT_ROOT_SUFFIX) :]) == DRAFT_ROOT_SUFFIX
 
 
 def _read_rows(path: Path, name: str, *, required: bool) -> list[_Row]:

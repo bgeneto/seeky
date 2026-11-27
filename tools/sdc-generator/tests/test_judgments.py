@@ -386,11 +386,23 @@ class JudgmentTestCase(unittest.TestCase):
         self.assertEqual(summary["queries"], 45)
 
     def test_allow_draft_is_rejected_outside_the_draft_area(self) -> None:
-        root = self.tmp / "bench" / "qrels" / "sdc" / "published"
-        _write_smoke_draft(root, corpus_root=self.corpus)
-        with self.assertRaises(SdcError) as caught:
-            validate_judgment_set(root, self.corpus, allow_draft=True)
-        self.assertEqual(caught.exception.code, "SCHEMA_INVALID")
+        # SPEC-0004 sections 4.1 and 4.7: only bench/qrels/sdc/drafts qualifies.
+        bad_roots = (
+            self.tmp / "drafts" / "x",
+            self.tmp / "bench" / "qrels" / "drafts" / "x",
+            self.tmp / "bench" / "qrels" / "sdc" / "published",
+        )
+        for index, bad_root in enumerate(bad_roots):
+            with self.subTest(index=index):
+                _write_smoke_draft(bad_root, corpus_root=self.corpus)
+                with self.assertRaises(SdcError) as caught:
+                    validate_judgment_set(bad_root, self.corpus, allow_draft=True)
+                self.assertEqual(caught.exception.code, "SCHEMA_INVALID")
+
+        canonical = _draft_root(self.tmp, "canonical")
+        _write_smoke_draft(canonical, corpus_root=self.corpus)
+        summary = validate_judgment_set(canonical, self.corpus, allow_draft=True)
+        self.assertEqual(summary["state"], "draft")
 
     def test_freeze_split_records_query_hashes_and_smoke_minima(self) -> None:
         # SPEC-0004-R14, R26, section 5.4.
