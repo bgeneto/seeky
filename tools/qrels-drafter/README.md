@@ -23,9 +23,25 @@ paraphrase and pt↔en translation need the model, because a copied phrase would
 favour lexical retrieval. The generator's `judgments validate` enforces the same
 boundary.
 
-LLM queries pass an anti-copy guard: no shared 8-token shingle with the target,
-no copied 5-token verbatim span, and at most 60 % content-token reuse
-(`config.GUARD`). Rejected drafts are replaced by the next deterministic anchor.
+Every accepted LLM query passes three hard gates before it enters the draft:
+
+1. it parses to a query (JSON, or one quoted line);
+2. it is in the expected language, detected with a word-set built from the
+   corpus itself (a keyword query has no function words to lean on);
+3. it shares no 8-token shingle and copies no 5-token verbatim span of its
+   target.
+
+A failing attempt stays on the same target with a specific correction
+instruction ("write the query only in Portuguese (Brazil)", "rewrite it with
+different words…"), up to five attempts. When the budget is exhausted the
+target is excluded and the deterministic anchor order backfills from another
+target; the gates never relax. If a stratum cannot reach its planned count, the
+run stops with an error instead of writing a short or defective draft.
+
+`audit --set … --corpus …` re-checks every LLM query from disk and reports the
+expected language, the detected language, the guard result, and failure totals;
+it exits nonzero if any query is wrong-language or copying. `draft` runs the
+same audit before writing, so a bad file is never produced.
 
 ## Exact model and configuration
 
@@ -71,11 +87,14 @@ the smaller, faster model.
 **Decision: `qwen3-0.6b`.** Both pass every gate. Qwen3 is 6 of 24 ahead on
 language correctness — Qwen2.5-1.5B answered Portuguese prompts in English and
 reversed the translation direction on several `cross_language` prompts, which
-would corrupt the slice this category exists to measure. Qwen3's two extra
-copy rejections are replaced deterministically by the next anchor and cost
-latency, not quality. Qwen3 is the slower of the two here (2.7 s vs 2.12 s per
-call including a cold model load) because it writes longer queries; quality
-outranks that difference under the stated rule.
+would corrupt the slice this category exists to measure. The trade-off is
+explicit: Qwen3 is **slower** per call (2.70 s vs 2.12 s median, including a cold
+model load) and **slightly worse on no-copy** (21/24 vs 23/24). Its copy
+rejections are caught by the drafting gate, retried with a correction, and
+otherwise backfilled from the next anchor, so they cost latency rather than
+quality. If Qwen3 could not pass the language and copy gates after its retry
+budget, the fallback is the `qwen2.5-1.5b-instruct` profile for the affected
+categories; it did pass, so the committed draft uses Qwen3 throughout.
 
 The template categories are unaffected: they are tool-drafted in both profiles,
 and `tool_config_sha256` does not depend on the model.
@@ -120,7 +139,8 @@ python -m qrels_drafter draft `
   --profile qwen3-0.6b `
   --llama-cli "$env:LOCALAPPDATA\seeky-dev\llm\llama.cpp-b12815\llama-completion.exe"
 
-python -m qrels_drafter audit --set bench/qrels/sdc/drafts/sdc-v1
+python -m qrels_drafter audit --set bench/qrels/sdc/drafts/sdc-v1 `
+  --corpus bench/corpora/sdc/sdc-s
 
 $env:PYTHONPATH = "tools/sdc-generator"
 python -m sdc_generator judgments validate --allow-draft `

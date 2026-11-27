@@ -9,6 +9,8 @@ from qrels_drafter import config
 from qrels_drafter.audit import audit_directory
 from qrels_drafter.jsonio import load_json, read_jsonl
 
+SDC_S = support.REPO_ROOT / "bench" / "corpora" / "sdc" / "sdc-s"
+
 
 @unittest.skipUnless(
     (support.COMMITTED / "judgment-set.json").is_file(), "the committed draft is absent"
@@ -70,6 +72,14 @@ class CommittedDraft(unittest.TestCase):
             self.assertEqual(row["provenance"]["state"], "draft")
             self.assertEqual(row["provenance"]["verified_by"], [])
             self.assertIsNone(row["provenance"]["adjudicated_by"])
+
+    @unittest.skipUnless(SDC_S.is_dir(), "sdc-s is not materialized locally")
+    def test_committed_queries_pass_the_language_and_copy_gates(self):
+        summary = audit_directory(support.COMMITTED, corpus_root=SDC_S)
+        language = summary["language_copy"]
+        self.assertEqual(language["language_failures"], 0)
+        self.assertEqual(language["copy_failures"], 0)
+        self.assertEqual(language["checked"], summary["llm_drafted"])
 
     def test_readme_pins_the_model_and_tool(self):
         notice = (support.TOOL_ROOT / "NOTICE.md").read_text(encoding="utf-8")

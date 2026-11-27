@@ -1,7 +1,8 @@
 """Deterministic stand-in for the local instruct model in hermetic tests.
 
-Reads the prompt from stdin exactly like the real llama.cpp runner and answers
-with valid JSON. It never copies target wording, so the anti-copy guard passes.
+Reads the prompt on stdin exactly like the real runner, answers in the language
+the prompt asks for, and never copies target wording, so the language gate and
+the anti-copy guard both pass.
 """
 
 import hashlib
@@ -18,8 +19,14 @@ if "TASK: grade" in prompt:
 else:
     category = re.search(r"^TASK: (\w+)$", prompt, re.MULTILINE)
     anchor = re.search(r"^ANCHOR: (\S+)$", prompt, re.MULTILINE)
-    if not category or not anchor:
+    language = re.search(r"^LANGUAGE: (\S+)$", prompt, re.MULTILINE)
+    if not category or not anchor or not language:
         print("{}")
         sys.exit(0)
     token = hashlib.sha256(anchor.group(1).encode("utf-8")).hexdigest()[:10]
-    print(json.dumps({"query": f"{category.group(1)} paraphrase zq{token} harbour lantern"}))
+    words = {
+        "pt": "consulta manutenção preventiva trimestral",
+        "en": "maintenance schedule evaluation quarterly",
+    }
+    root = language.group(1).split("-")[0]
+    print(json.dumps({"query": f"{words.get(root, words['en'])} zq{token}"}))

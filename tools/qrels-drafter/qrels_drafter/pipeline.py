@@ -33,7 +33,7 @@ def run_draft(
     judgments = build_judgments(corpus, [draft for _, draft in identified])
     queries, documents, passages = build_rows(corpus, identified, judgments, splits)
     # Refuse to write a draft that cannot pass the WP-1.4 minima and scope rules.
-    summary = audit_rows(queries, documents, passages, [], check_minima=check_minima)
+    summary = audit_rows(queries, documents, passages, [], check_minima=check_minima, corpus=corpus)
     write_set(output, corpus.corpus_hash, splits, queries, documents, passages)
     summary["output"] = str(output)
     return summary
