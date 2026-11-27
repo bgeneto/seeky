@@ -1,0 +1,62 @@
+# Contributing
+
+## Setup
+
+Install Node.js 20+, Rust stable with the MSVC toolchain, Visual Studio Build
+Tools, WebView2, Git LFS, and a local Gety installation for model/runtime files.
+
+```powershell
+git lfs install
+cd apps\seeky
+npm install
+```
+
+## Development
+
+```powershell
+cd apps\seeky
+npm run tauri dev
+```
+
+## Checks
+
+```powershell
+cd apps\seeky
+npm run build
+
+cd src-tauri
+cargo test --lib -- --test-threads=1
+cargo check
+```
+
+Inference tests require the local Gety models and the appropriate hardware.
+Frontend build and pure Rust tests must pass without optional hardware.
+
+## Architecture rules
+
+- Backend logic stays in Rust inside the Tauri process.
+- Do not add a sidecar service, local HTTP API, or a second backend runtime.
+- Keep the webview capability surface minimal; add explicit Rust commands for
+  filesystem actions.
+- Do not add telemetry or outbound network calls.
+- Keep CPU/CUDA/NPU embeddings compatible; a backend switch must not require
+  reindexing.
+- Update `docs/plans/seeky-implementation-plan.md` when a milestone or contract
+  changes.
+- Add runtime evidence under `docs/validation/` or `docs/audits/`.
+- Update `CHANGELOG.md` for user-visible changes.
+
+## Commit style
+
+Use short imperative subjects, for example:
+
+```text
+feat(indexer): add watcher debounce and per-folder pause
+fix(search): include filename matches in RRF
+docs(plan): define reranker evaluation gate
+```
+
+## Screenshots
+
+Keep current Seeky captures under `docs/assets/screenshots/seeky/`. Redact local
+paths before adding Gety captures under `docs/assets/screenshots/gety/`.
