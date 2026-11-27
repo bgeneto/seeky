@@ -1014,6 +1014,7 @@ corrections they name landed in the same commit.
 
 | Version | Date | Change |
 |---|---|---|
+| 0.3 | 2026-11-27 | Added `qrels_drafter draft --smoke` and drafted `bench/qrels/sdc/drafts/sdc-smoke-v1/`: 45 dev-only queries (5 per category), 144 document and 144 passage judgments, no test split, `test_exposure: not-applicable`, and a smoke-specific tool config hash. R26 stays open until H6 verifies the set |
 | 0.3 | 2026-11-27 | WP-1.4 implemented R15–R22 and R25 as draft tooling and data: `tools/qrels-drafter/` and `bench/qrels/sdc/drafts/sdc-v1/` (732 queries, 2,572 document and 2,572 passage judgments, 0 pools), 41 tool tests, a zero-failure language/copy audit, and `judgments validate --allow-draft` on `sdc-s`. Every record stays `state: draft` with `verified_by: []`, `test_exposure: unexposed`; R23, R24, R26, R27 remain open, and H6 human verification is still required before any benchmark-eligible split |
 | 0.3 | 2026-11-27 | Second condition of the same maintainer approval: tool drafts are limited to the template-faithful categories in §4.6 and never a `cross_lingual` slice; semantic paraphrase and translation need `human:` or `llm:` provenance (R20, test `tool_draft_is_limited_to_template_faithful_categories`) |
 | 0.2 | 2026-11-27 | Accepted (maintainer approval 2026-11-27): added `tool:<tool-id>@<version>` and `tool_config_sha256` provenance for offline deterministic drafters; tool drafts are candidate data with no grade authority and every item still requires human verification (H6) |

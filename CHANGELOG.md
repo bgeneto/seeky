@@ -26,6 +26,11 @@ roadmap (§6), with the date.
   draft (`verified_by: []`, `test_exposure: unexposed`), and human verification
   (gate H6) is required before any benchmark-eligible split (WP-1.4,
   SPEC-0004 R15–R22, R25).
+- `qrels_drafter draft --smoke` drafts the dev-only `sdc-smoke-v1` set over the
+  committed smoke corpus: 45 queries, five per category, 144 document and 144
+  passage judgments, no `test` split, and a smoke-specific tool config hash.
+  It is the H6 subset that unblocks WP-1.8 and WP-1.2; every record is still an
+  unverified draft (SPEC-0004 R26 remains open).
 - `seeky-bench perf` measures warm-idle and warm-indexing search latency
   (p50/p95/p99 with fixed-seed bootstrap CIs), batch-1 query-embedding
   latency, bulk indexing throughput, lexical/semantic time-to-searchable, the
