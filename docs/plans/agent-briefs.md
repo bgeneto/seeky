@@ -144,7 +144,7 @@ Wave 2 (now)            Wave 3                       Wave 4                    W
 A  WP-0.2 ───────────►  A2 WP-0.3 (needs B merged)
 B  WP-0.4 ─────────────────┘
 C  SPEC-0003/0004 ─H1─► F  WP-1.1 (needs A) ───────► H WP-1.2 ─────────────► L WP-1.6
-                        G  WP-1.3 (needs A) ──┬────► I WP-1.5 (needs F)     M WP-1.8 (needs H, G)
+                        G  WP-1.3 (needs A) ──┬────► I WP-1.5 (needs F)     M WP-1.8 (needs H, G, H6)
                                               └────► J WP-1.4 draft ─H6─► (WP-1.7 B0: maintainer, T1)
 D  SPEC-0014 v1 ──H2───────────────────────────────► K WP-7.1 → WP-7.2 (needs A2)
 E  OCR Stage 0 → WP-0.6 ─H3─► (continues) ─H5─────► N SPEC-0005/0006 drafts
@@ -165,7 +165,7 @@ E  OCR Stage 0 → WP-0.6 ─H3─► (continues) ─H5─────► N SPEC
 | J | WP-1.4 drafted queries and judgments | anywhere | G merged | `wp/1.4-judgments-draft` |
 | K | WP-7.1 then WP-7.2 | this workstation | A2 merged, H2 | `wp/7.1-i18n`, `wp/7.2-themes` |
 | L | WP-1.6 perf harness | this workstation | H merged | `wp/1.6-perf` |
-| M | WP-1.8 CI smoke gate | anywhere | H and G merged | `wp/1.8-smoke-gate` |
+| M | WP-1.8 CI smoke gate | anywhere | H and G merged; `sdc-smoke-v1` human-verified (H6) | `wp/1.8-smoke-gate` |
 | N | SPEC-0005 and SPEC-0006 drafts | anywhere | E report merged (SPEC-0005) | `spec/0005-manifest`, `spec/0006-storage` |
 
 Shared files that need a single owner at a time:
@@ -564,7 +564,7 @@ file before launching the lane.
 | J, WP-1.4 (draft) | LLM-drafted queries and graded judgments per SPEC-0004 on `sdc-s` (at least 600 queries, 9 categories, dev/test split), every item with `drafted_by` set and `verified_by` empty. Owns `bench/qrels/` drafts only. Gate H6: the maintainer verifies; nothing unverified enters `test` |
 | K, WP-7.1 then WP-7.2 | Per SPEC-0014 v1. Owns `apps/desktop/src/`, `apps/desktop/package.json` and its lockfile (an i18n library only if the spec chose one), `tauri.conf.json` (window theme and background only), and the CI catalog-parity job in `.github/workflows/` (owner at that time). Both themes and both locales checked by hand until WP-7.8 adds component tests |
 | L, WP-1.6 | `seeky-bench perf` per SPEC-0003: per-stage latency, query-embedding latency, throughput, time-to-searchable, interference, RSS, disk, startup. Owns the perf modules in `tools/seeky-bench/`. Runs on this workstation under the quiet-window rule (lane E) |
-| M, WP-1.8 | CI smoke gate: `sdc-smoke` nDCG@10 (at most 1.0 drop versus `main`) plus the ranking invariants, through `seeky-bench compare`. Owns `.github/workflows/` (owner at that time). Must stay hardware-free (lexical, or a CI-safe CPU model if the spec allows one) |
+| M, WP-1.8 | CI smoke gate: `sdc-smoke` nDCG@10 over the eight non-code categories (at most 1.0 drop versus `main`) plus the ranking invariants, through `seeky-bench compare`; code-enabled results are separate. Owns `.github/workflows/` (owner at that time). Must stay hardware-free (lexical, or a CI-safe CPU model if the spec allows one) and starts only after `sdc-smoke-v1` is human-verified (H6) |
 | N, specs | SPEC-0005 (model manifest, ORT adapter, bake-off toolchain: WP-2.1, WP-2.2, WP-2.13) once the WP-0.6 report is merged and gate H5 is decided; SPEC-0006 (storage, index backends, generations, embedding channels: WP-2.4, WP-2.5, WP-2.13, WP-3.7). Drafts only; one PR each; gate H7 |
 
 ## 7. Where the unattended run ends

@@ -206,7 +206,7 @@ before this phase exits.
 | 1.5 | Public dataset scripts (MLDR, MIRACL, mMARCO-pt with constructed pt↔en pairs, Quati after license check, BEIR subsets) | SPEC-0003 | 1.1 | `bench/datasets/` manifests + scripts |
 | 1.6 | Perf harness: per-stage latency, query-embedding latency, throughput, time-to-searchable, interference, RSS, disk, startup | SPEC-0003 | 1.2 | `seeky-bench perf` |
 | 1.7 | **[human: T1 access]** **B0 report**: PoC pipeline vs BM25-only, dense-only, filename-only, Gety-style 0.2/0.8 reference; all budgets measured; then **lock budgets** by ADR | — | 1.3–1.6 | `docs/benchmarks/results/<date>-baseline-b0/`, ADR "Locked budgets v1" |
-| 1.8 | CI smoke gate: `sdc-smoke` nDCG@10 (≤ 1.0 drop vs `main`) + ranking invariants | SPEC-0003 | 1.2, 1.3 | CI job |
+| 1.8 | CI smoke gate: `sdc-smoke` nDCG@10 over the eight non-code categories (≤ 1.0 drop vs `main`) + ranking invariants; code-enabled results reported separately | SPEC-0003 | 1.2, 1.3, 1.4 (`sdc-smoke-v1` verified) | CI job |
 
 **Exit evidence:** B0 report committed; budgets locked; CI smoke gate active.
 
@@ -668,11 +668,12 @@ finished items and add the next ones, so this list never points at done work.
    alongside — it needs no corpus or judgments, only T1 (or T1-emulated) time.
    WP-0.4 awaits maintainer approval of its disclosed license exceptions and
    advisory ignores (H4).
-3. Review and accept **SPEC-0004** (SDC + judgments); write and review
-   **SPEC-0003** (harness); secure access to a T1 reference laptop (or define
-   the T1-emulated profile).
-4. Start WP-1.3 (corpus generator) as soon as WP-0.2 merges; schedule human
-   time for WP-1.4 judgments.
+3. Review and accept **SPEC-0003** (harness); secure access to a T1 reference
+   laptop (or define the T1-emulated profile). SPEC-0004 is Accepted with
+   maintainer pre-approval in /goal.
+4. Start WP-1.3 (corpus generator) when WP-0.2 merges (SPEC-0004 is Accepted);
+   schedule human time for WP-1.4 judgments, including the `sdc-smoke-v1`
+   subset required by WP-1.8.
 5. In parallel (UX track): WP-7.1 and WP-7.2 on the existing UI after Phase 0.
 6. Start the OCR **Stage 0 paper screen now** (no code needed,
    [candidates §5](../benchmarks/candidates.md)): confirm the OCRia variant

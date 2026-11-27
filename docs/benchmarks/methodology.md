@@ -101,6 +101,12 @@ Seeky's own corpus, built to resemble a real user's folders.
   for tuning). Target ≥ 600 queries total, ≥ 60 per category, ≥ 100 per primary
   language.
 
+Source-code documents and `code_search` queries run only in the `code_enabled`
+configuration (ADR-0024). Default Q1/Q2 reporting and the WP-1.8 smoke gate
+cover the other eight query categories; code search is reported separately
+against code-enabled baselines. The `sdc-smoke-v1` set is dev-only and must be
+human-verified before WP-1.8 starts.
+
 ### 2.3 Public datasets (downloaded by script, never redistributed)
 
 | Dataset | Use | Languages | License note |
@@ -155,7 +161,9 @@ OCR CER/WER are measured against exact source text.
 
 Weighted primary score for selection: nDCG@10 averaged over language slices
 with weights pt 0.35, en 0.35, cross-lingual 0.15, other languages 0.15, and
-reported per category.
+reported per category. Default Q1/Q2 use the eight non-code categories;
+`code_search` is reported and compared only between `code_enabled`
+configurations.
 
 ### 3.2 Performance and resources
 
@@ -250,7 +258,7 @@ starts. Conditions: A4 page at 300 dpi, T1 CPU-only, background priority.
 | ID | Gate |
 |---|---|
 | Q1 | The default pipeline beats BM25-only, the PoC baseline (B0), and the best single retriever on SDC-test weighted nDCG@10, statistically significant |
-| Q2 | No language slice or query category regresses by more than 2.0 nDCG@10 points versus the current default |
+| Q2 | No language slice or query category regresses by more than 2.0 nDCG@10 points versus the current default; code search is compared only between `code_enabled` configurations |
 | Q3 | Candidate generation document Recall@100 ≥ 0.95 on known-item, identifier, and needle slices |
 | Q4 | Duplicate rate@10 ≤ 5 % on the duplicate-heavy slice, with Recall@10 not lower |
 | Q5 | Vector quantization/ANN: Recall@100 ≥ 0.99 versus exact f32 after rescoring |

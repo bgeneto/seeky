@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Status | Draft |
+| Status | Accepted (maintainer pre-approval in /goal) |
 | Version | 0.1 (text corpus v1; the WP-10.1 visual slice requires a later spec version) |
 | Owner | Maintainer |
 | Phase / work packages | Phase 1 — WP-1.3, WP-1.4; Phase 10 — WP-10.1 (later version) |
@@ -54,8 +54,7 @@ not part of version 0.1.
 
 ## 3. Requirements (EARS)
 
-All requirements in this Draft are open. The WP column is the implementation
-owner; no row authorizes implementation before maintainer acceptance (gate H1).
+All requirements are open. The WP column is the implementation owner.
 
 | ID | WP | Requirement | Verification | Status |
 |---|---|---|---|---|
@@ -96,12 +95,11 @@ remain maintainer-controlled lifecycle records.
 
 ### 4.1 Tool location and commands
 
-The proposed implementation is a Python 3.12 package in
-`tools/sdc-generator/`, installed only into an isolated development
-environment. This choice requires confirmation in §7. It is dataset-prep
-tooling, is never imported by an engine crate, and never ships. Rust, if chosen
-instead, must expose equivalent commands and file formats from the same logical
-tool directory.
+The implementation is a Python 3.12 package in `tools/sdc-generator/`,
+installed only into an isolated development environment. It is dataset-prep
+tooling, is never imported by an engine crate, and never ships. Its renderer,
+font, and other dependency assets are hash-locked and license-checked as
+required by §7.
 
 After installation, commands run from the repository root:
 
@@ -791,8 +789,8 @@ perceived difficulty may move a query between splits.
 
 The non-Latin sample is reported separately for non-regression and does not
 enter the weighted primary score. Code-search queries are likewise separate
-from the default configuration, as required by ADR-0024; see the blocking
-methodology conflict in §7.
+from the default configuration, as required by ADR-0024; see resolved question
+1 in §7.
 
 ### 5.5 Relevance rubric and human verification
 
@@ -967,7 +965,11 @@ not be used to claim that a model or ranking stage improved.
 
 ## 7. Risks and open questions
 
-### Blocking questions (must be resolved before this Draft can be Accepted)
+### Resolved blocking questions (H1)
+
+Questions 1–3 are resolved by maintainer pre-approval in /goal. The
+recommendations below are accepted and normative; the methodology and plan
+corrections they name landed in the same commit.
 
 | # | Question and conflict | Recommendation | Decides | By when |
 |---|---|---|---|---|
@@ -991,4 +993,5 @@ not be used to claim that a model or ranking stage improved.
 
 | Version | Date | Change |
 |---|---|---|
+| 0.1 | 2026-11-27 | Accepted (maintainer pre-approval in /goal); resolved H1 questions 1–3 with the draft recommendations: documents-only default benchmarks, verified smoke judgments for WP-1.8, and isolated Python 3.12 tooling |
 | 0.1 | 2026-11-27 | Initial Draft for WP-1.3/WP-1.4: deterministic licensed SDC generation, scale profiles, adversarial fixtures, nine query categories, graded document/passage judgments, provenance, human verification, pooling, and split/version protection. Visual WP-10.1 deferred to a later version |
