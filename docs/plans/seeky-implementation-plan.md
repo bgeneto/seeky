@@ -668,9 +668,9 @@ finished items and add the next ones, so this list never points at done work.
    alongside — it needs no corpus or judgments, only T1 (or T1-emulated) time.
    WP-0.4 awaits maintainer approval of its disclosed license exceptions and
    advisory ignores (H4).
-3. Write **SPEC-0003** (harness) and **SPEC-0004** (SDC + judgments) while
-   Phase 0 lands; secure access to a T1 reference laptop (or define the
-   T1-emulated profile).
+3. Review and accept **SPEC-0004** (SDC + judgments); write and review
+   **SPEC-0003** (harness); secure access to a T1 reference laptop (or define
+   the T1-emulated profile).
 4. Start WP-1.3 (corpus generator) as soon as WP-0.2 merges; schedule human
    time for WP-1.4 judgments.
 5. In parallel (UX track): WP-7.1 and WP-7.2 on the existing UI after Phase 0.

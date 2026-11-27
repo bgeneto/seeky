@@ -823,7 +823,7 @@ disagreements entering a frozen set must be adjudicated.
 The LLM drafting workflow is entirely offline: no corpus text, prompt, query,
 or judgment is sent to a hosted service. Model ID, immutable revision, and
 prompt/input hash are provenance only; the model and its outputs never become
-a product component or generated answer feature.
+a product component or a generated answer feature.
 
 ### 5.6 Pooling, publication, and scale changes
 

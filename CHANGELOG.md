@@ -90,6 +90,8 @@ roadmap (§6), with the date.
 
 ### Documentation and process
 
+- Added Draft SPEC-0004 defining deterministic Seeky Desktop Corpus generation,
+  query splits, and human-verified graded relevance judgments.
 - Drafted SPEC-0014 v1 for WP-7.1 English/Portuguese localization and WP-7.2
   light/dark themes, including requirement-linked acceptance tests and the
   current UI string inventory. It remains Draft pending maintainer gate H2.
