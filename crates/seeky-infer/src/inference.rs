@@ -1,4 +1,4 @@
-use anyhow::{Context, Result, anyhow};
+use crate::{Context, Result};
 use half::f16;
 use openvino::{
     Core, DeviceType, ElementType, InferRequest, PartialShape, Shape, Tensor as OvTensor,
@@ -6,49 +6,13 @@ use openvino::{
 use ort::execution_providers::CUDAExecutionProvider;
 use ort::session::Session;
 use ort::value::Tensor;
+use seeky_core::{Backend, EngineInfo};
 use std::path::{Path, PathBuf};
 use std::sync::OnceLock;
 use tokenizers::{PaddingParams, Tokenizer, TruncationParams};
 
 pub const DIM: usize = 384;
 const NPU_BUCKET: usize = 256;
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum Backend {
-    Auto,
-    Cpu,
-    Cuda,
-    Npu,
-}
-
-impl Backend {
-    pub fn parse(value: &str) -> Result<Self> {
-        match value.to_ascii_lowercase().as_str() {
-            "auto" => Ok(Self::Auto),
-            "cpu" => Ok(Self::Cpu),
-            "cuda" | "gpu" => Ok(Self::Cuda),
-            "npu" => Ok(Self::Npu),
-            other => Err(anyhow!("unknown backend: {other}")),
-        }
-    }
-
-    pub fn label(self) -> &'static str {
-        match self {
-            Self::Auto => "Auto",
-            Self::Cpu => "CPU",
-            Self::Cuda => "CUDA",
-            Self::Npu => "NPU",
-        }
-    }
-}
-
-#[derive(Clone, serde::Serialize)]
-pub struct EngineInfo {
-    pub backend: String,
-    pub model: String,
-    pub device: String,
-    pub detail: String,
-}
 
 pub struct Engine {
     backend: Backend,
@@ -79,7 +43,7 @@ fn init_ort(ort_dll: &Path) -> Result<()> {
     result
         .as_ref()
         .map(|_| ())
-        .map_err(|e| anyhow!("ONNX Runtime init failed: {e}"))
+        .map_err(|e| error!("ONNX Runtime init failed: {e}"))
 }
 
 impl Engine {
@@ -150,11 +114,11 @@ impl Engine {
                 prepare_openvino_path()?;
                 let ov_dir = gety_openvino_dir()?;
                 openvino_sys::library::load_from(ov_dir.join("openvino_c.dll"))
-                    .map_err(|e| anyhow!("load OpenVINO: {e}"))?;
+                    .map_err(|e| error!("load OpenVINO: {e}"))?;
                 let mut core = Core::new().context("create OpenVINO core")?;
                 let devices = core.available_devices().context("query OpenVINO devices")?;
                 if !devices.iter().any(|d| matches!(d, DeviceType::NPU)) {
-                    return Err(anyhow!("OpenVINO NPU device not available: {devices:?}"));
+                    return Err(error!("OpenVINO NPU device not available: {devices:?}"));
                 }
                 let xml = npu_dir.join("model.xml");
                 let bin = npu_dir.join("model.bin");
@@ -218,7 +182,7 @@ impl Engine {
             let encodings = self
                 .tokenizer
                 .encode_batch(batch.to_vec(), true)
-                .map_err(|e| anyhow!("tokenize: {e}"))?;
+                .map_err(|e| error!("tokenize: {e}"))?;
             let max_len = encodings
                 .iter()
                 .map(|e| e.get_ids().len())
@@ -252,14 +216,14 @@ impl Engine {
             if cuda {
                 let (_, data) = output
                     .try_extract_tensor::<f16>()
-                    .map_err(|e| anyhow!("extract CUDA f16 output: {e}"))?;
+                    .map_err(|e| error!("extract CUDA f16 output: {e}"))?;
                 for row in data.chunks(DIM) {
                     result.push(normalize_row(row.iter().map(|v| v.to_f32()).collect()));
                 }
             } else {
                 let (_, data) = output
                     .try_extract_tensor::<f32>()
-                    .map_err(|e| anyhow!("extract CPU f32 output: {e}"))?;
+                    .map_err(|e| error!("extract CPU f32 output: {e}"))?;
                 for row in data.chunks(DIM) {
                     result.push(normalize_row(row.to_vec()));
                 }
@@ -276,7 +240,7 @@ impl Engine {
             let encoding = self
                 .tokenizer
                 .encode(text.as_str(), true)
-                .map_err(|e| anyhow!("tokenize: {e}"))?;
+                .map_err(|e| error!("tokenize: {e}"))?;
             let mut ids: Vec<i64> = encoding.get_ids().iter().map(|x| *x as i64).collect();
             ids.truncate(bucket);
             ids.resize(bucket, 1); // <pad> id 1; the IR computes its own attention mask
@@ -306,13 +270,13 @@ fn load_tokenizer(model_root: &Path) -> Result<Tokenizer> {
     let path = model_root.join("tokenizer.json");
     ensure_file(&path)?;
     let mut tokenizer = Tokenizer::from_file(&path)
-        .map_err(|e| anyhow!("load tokenizer {}: {e}", path.display()))?;
+        .map_err(|e| error!("load tokenizer {}: {e}", path.display()))?;
     tokenizer
         .with_truncation(Some(TruncationParams {
             max_length: 512,
             ..Default::default()
         }))
-        .map_err(|e| anyhow!("configure truncation: {e}"))?;
+        .map_err(|e| error!("configure truncation: {e}"))?;
     tokenizer.with_padding(Some(PaddingParams {
         pad_id: 1,
         pad_token: "<pad>".to_string(),
@@ -325,7 +289,7 @@ fn ensure_file(path: &Path) -> Result<()> {
     if path.is_file() {
         Ok(())
     } else {
-        Err(anyhow!("missing model file: {}", path.display()))
+        Err(error!("missing model file: {}", path.display()))
     }
 }
 
@@ -340,7 +304,7 @@ pub fn gety_ort_dll() -> Result<PathBuf> {
         return Ok(PathBuf::from(path));
     }
     let path = gety_data_dir()
-        .ok_or_else(|| anyhow!("APPDATA is not set"))?
+        .ok_or_else(|| error!("APPDATA is not set"))?
         .join("ep")
         .join("onnxruntime.dll");
     ensure_file(&path)?;
@@ -352,7 +316,7 @@ pub fn gety_openvino_dir() -> Result<PathBuf> {
         return Ok(PathBuf::from(path));
     }
     let dir = gety_data_dir()
-        .ok_or_else(|| anyhow!("APPDATA is not set"))?
+        .ok_or_else(|| error!("APPDATA is not set"))?
         .join("third_party_libs")
         .join("openvino");
     ensure_file(&dir.join("openvino_c.dll"))?;
@@ -360,7 +324,7 @@ pub fn gety_openvino_dir() -> Result<PathBuf> {
 }
 
 pub fn prepare_cuda_paths() -> Result<()> {
-    let data = gety_data_dir().ok_or_else(|| anyhow!("APPDATA is not set"))?;
+    let data = gety_data_dir().ok_or_else(|| error!("APPDATA is not set"))?;
     let ep = data.join("ep");
     let cuda = data.join("third_party_libs").join("cuda");
     ensure_file(&ep.join("onnxruntime_providers_cuda.dll"))?;
@@ -403,7 +367,7 @@ pub fn find_gety_model_root() -> Result<PathBuf> {
         return Ok(path);
     }
     let base = gety_data_dir()
-        .ok_or_else(|| anyhow!("APPDATA is not set"))?
+        .ok_or_else(|| error!("APPDATA is not set"))?
         .join("models")
         .join("gety-ai")
         .join("gety-embed-v0");
@@ -420,7 +384,7 @@ pub fn find_gety_model_root() -> Result<PathBuf> {
     candidates.sort();
     candidates
         .pop()
-        .ok_or_else(|| anyhow!("gety-embed-v0 not found under {}", base.display()))
+        .ok_or_else(|| error!("gety-embed-v0 not found under {}", base.display()))
 }
 
 fn strip_verbatim(path: PathBuf) -> PathBuf {
@@ -432,6 +396,17 @@ fn strip_verbatim(path: PathBuf) -> PathBuf {
     } else {
         path
     }
+}
+
+fn poc_shell_dir() -> PathBuf {
+    let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    manifest_dir
+        .ancestors()
+        .nth(2)
+        .unwrap_or(Path::new("."))
+        .join("apps")
+        .join("desktop")
+        .join("src-tauri")
 }
 
 pub fn resolve_npu_dir(resource_dir: Option<&Path>) -> PathBuf {
@@ -449,7 +424,7 @@ pub fn resolve_npu_dir(resource_dir: Option<&Path>) -> PathBuf {
         candidates.push(dir.join("models").join("gety-embed-v0").join("openvino"));
     }
     candidates.push(
-        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        poc_shell_dir()
             .join("resources")
             .join("models")
             .join("gety-embed-v0")
@@ -468,7 +443,7 @@ pub fn resolve_npu_dir(resource_dir: Option<&Path>) -> PathBuf {
         .find(|path| path.join("model.xml").is_file())
         .map(strip_verbatim)
         .unwrap_or_else(|| {
-            PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            poc_shell_dir()
                 .join("resources")
                 .join("models")
                 .join("gety-embed-v0")

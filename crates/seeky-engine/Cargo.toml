@@ -10,10 +10,23 @@ authors.workspace = true
 publish = false
 
 [features]
-# Hardware/asset tests (SPEC-0001 R15); empty until this crate has any.
-hw-tests = []
+hw-tests = ["seeky-extract/hw-tests", "seeky-infer/hw-tests"]
 
 [dependencies]
+notify.workspace = true
+seeky-core = { path = "../seeky-core" }
+seeky-extract = { path = "../seeky-extract" }
+seeky-infer = { path = "../seeky-infer" }
+seeky-search = { path = "../seeky-search" }
+seeky-store = { path = "../seeky-store" }
+thiserror.workspace = true
+tracing.workspace = true
+walkdir.workspace = true
+
+[dev-dependencies]
+serde.workspace = true
+serde_json.workspace = true
+tracing-subscriber.workspace = true
 
 [lints]
 workspace = true
