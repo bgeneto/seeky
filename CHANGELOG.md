@@ -101,6 +101,12 @@ roadmap (§6), with the date.
   checklist in `AGENTS.md` §4 step 8 applied in the same commit as the work,
   a `Refs: WP-x.y, SPEC-NNNN` commit trailer, a maintenance rule for the PoC
   conformance audit, and the scope and release cut of this changelog.
+- Test and commit rules in `AGENTS.md`: required tests per kind of change
+  (regression test for every fix, characterization before refactors,
+  malformed-input tests for parsers), hermetic and hardware-free tests,
+  fixtures, and no weakening of failing tests (§6 Tests); commit every green
+  logical step and push, never leave work uncommitted, stage only your own
+  changes, and semantic subjects with an explanatory body (§9).
 
 ## 0.1.0 — 2026-11-26
 

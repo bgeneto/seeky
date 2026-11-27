@@ -12,7 +12,9 @@ Seeky uses **Spec-Driven Development** plus **Benchmark-Driven Development
    [implementation plan](docs/plans/seeky-implementation-plan.md).
 2. Implement against an **Accepted** spec in [`docs/specs/`](docs/specs/README.md);
    write one first if it does not exist.
-3. Write tests first; reference requirement IDs.
+3. Write tests first; reference requirement IDs. A bug fix needs a regression
+   test, a refactor keeps existing tests unchanged, and tests are hermetic and
+   hardware-free by default (full rules: [`AGENTS.md`](AGENTS.md) §6 Tests).
 4. Attach a benchmark report when quality or performance can change
    ([methodology](docs/benchmarks/methodology.md)).
 5. Record decisions as ADRs in [`docs/adr/`](docs/adr/README.md).
@@ -66,7 +68,14 @@ after Phase 0 are listed in [`AGENTS.md`](AGENTS.md#5-commands).
 
 ## Commit style
 
-Conventional, imperative subjects with a scope:
+Commit each logically complete step as soon as all checks pass, tests
+together with the code they cover, and push; never leave finished work
+uncommitted or commit a red tree. Stage explicit paths of your own changes,
+never `git add -A`, and keep one logical change per commit (full rules:
+[`AGENTS.md`](AGENTS.md) §9).
+
+Conventional, imperative subjects with a scope (at most 72 characters), and
+a body that explains what changed and why:
 
 ```text
 feat(indexer): add durable job queue

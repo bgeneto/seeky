@@ -87,7 +87,7 @@ Target layout after Phase 0 (do not create ahead of its work package):
    which budgets/quality gates (P*, I*, R*, D*, O*, V*, Q*) the change can affect.
 4. **Write failing tests first** (unit, property, integration, fuzz as the spec
    says). Reference requirement IDs in test names or doc comments
-   (`// SPEC-0007-R4`).
+   (`// SPEC-0007-R4`). What each kind of change must test, and how: §6 Tests.
 5. **Implement the smallest change** that passes, inside the crates the WP names.
 6. **Run the checks** (§5). All must pass.
 7. **Prove it.** If quality or performance can change, run `seeky-bench` under
@@ -118,7 +118,8 @@ Target layout after Phase 0 (do not create ahead of its work package):
    - **This file and `CONTRIBUTING.md`**: if the change moves directories,
      renames apps or crates, or changes a command, update §3 and §5 here and
      the setup and checks in `CONTRIBUTING.md`.
-   - **Commit message**: end with a `Refs: WP-x.y, SPEC-NNNN` trailer (§9).
+   - **Commit and push** per §9: green, only your own changes, a semantic
+     message ending with a `Refs: WP-x.y, SPEC-NNNN` trailer.
 
    Changes outside any WP (bug fixes, refactors, docs, tooling) have no plan
    row; they still record `CHANGELOG.md` and the audit when those apply.
@@ -206,6 +207,54 @@ touch.
 - Exactly two themes (light/dark). Minimal UI: no dashboards, chat, AI badges,
   or decorative metrics (ADR-0012).
 
+### Tests
+
+What every change must carry:
+
+| Change | Required tests |
+|---|---|
+| Spec requirement | The tests in the spec's §6.1, written first, named or commented with the requirement ID (`// SPEC-0007-R4`) |
+| Bug fix | A regression test that fails before the fix and passes after it, in the same commit |
+| Behavior-preserving refactor | Existing tests (and the golden test, once WP-0.2 adds it) pass unchanged; code without coverage first gets a characterization test, in its own commit |
+| Code that reads user files or external input (extractors, parsers, manifests, file system) | Error and malformed-input tests: no panic, a typed error, partial results only where the spec allows |
+| Ranking, fusion, dedupe, chunking | Property tests for the invariants (plan §9), besides examples |
+| Hot-path change that claims or risks a speed difference | A microbenchmark next to the code (quality and budget claims still need `seeky-bench`, §4 step 7) |
+| UI | Component tests with mocked IPC once WP-7.8 lands; until then, a manual check in both themes and both locales |
+| Docs only | None |
+
+Pick the cheapest layer that proves the behavior: unit for pure logic,
+integration through the `Engine` API for cross-crate behavior, property for
+invariants, golden for ranked output and extraction blocks, fuzz for parsers
+(tooling in plan §9).
+
+- **Location**: Rust unit tests in a `#[cfg(test)] mod tests` beside the code;
+  cross-crate and lifecycle tests in `crates/<crate>/tests/`; frontend tests
+  next to the component. Until Phase 0, PoC tests stay in their modules.
+- **Names** state the behavior (`renamed_file_keeps_embeddings`), never
+  `test1` or `it_works`.
+- **Hermetic and deterministic**: no network; no files outside a per-test
+  temporary directory; no user or home paths; fixed seeds; no sleeps as
+  synchronization; no dependence on test order; safe under parallel
+  `cargo test`.
+- **Hardware-free by default**: anything needing local models, PDFium, CUDA,
+  or an NPU goes behind `hw-tests` (§5), and its logic also gets a
+  hardware-free test where possible (for example with a fake `Embedder`).
+- **Fixtures**: small, synthetic or redistributable (ADR-0022), committed
+  beside the tests (`tests/fixtures/`); no personal documents, private
+  corpora, or model weights. Evaluation corpora and qrels live in `bench/`;
+  unit tests never assert ranking quality — `seeky-bench` does.
+- **Fast**: the hardware-free suite stays fast enough to run before every
+  commit; a test that needs more than a few seconds is an integration test
+  and says why.
+- **Behavior, not internals**: assert observable results, not private
+  details a refactor could change without changing behavior.
+- **Never** delete, weaken, `#[ignore]`, or rerun-until-green a failing test to
+  get a commit through. A flaky test is fixed, or quarantined with
+  `#[ignore = "<reason>, <WP or issue>"]` in a commit that says why.
+
+**Green** means every check in §5 passes locally. It is the precondition for
+every commit (§9).
+
 ### Models and benchmarks
 
 - Behavior comes from the model manifest; never hardcode dimensions, prompts,
@@ -251,7 +300,10 @@ touch.
 ## 8. Definition of Done
 
 - Implements an Accepted spec (or is an allowed non-spec change).
-- Tests reference requirement IDs and pass; all checks in §5 pass.
+- Tests cover the change as §6 Tests requires, reference requirement IDs, and
+  pass; all checks in §5 pass.
+- Committed in green, logical commits with semantic messages and pushed; no
+  uncommitted work of yours left in the tree (§9).
 - Benchmark report attached when quality/performance can change; budgets hold.
 - ADR added/updated when a default or rule changes.
 - Strings localized (en/pt) and both themes verified for UI changes.
@@ -261,18 +313,57 @@ touch.
 
 ## 9. Commits and pull requests
 
-- Conventional, imperative subjects with a scope:
+### When to commit
+
+- **Commit every logically complete step as soon as it is green** (§6 Tests):
+  one requirement or behavior with its tests, one bug fix with its regression
+  test, one refactor, or one docs change. A work package is a series of small
+  commits, each leaving `main` green; never let finished work pile up.
+- Tests and the code that makes them pass go in the **same commit**; never
+  commit red. The failing-first tests of §4 step 4 stay local until they pass.
+- **Never end a session, hand off, or switch tasks with uncommitted work of
+  your own.** If a step cannot be made green, do not commit it: tell the
+  maintainer what is pending and record the remainder in plan §15.3.
+- **Push right after committing** (to `main`, or to the branch of an open PR).
+  The repository is public: before each push, scan the diff for personal
+  paths, document content, and secrets (§7).
+
+### What to stage
+
+- Stage explicit paths of your own changes (`git add <path>`); never
+  `git add -A`, `git add .`, or `git commit -a`. Several agents may share one
+  working tree.
+- Read `git status` and `git diff --cached` before every commit and commit
+  only what you changed. Changes you did not make stay unstaged and
+  untouched; mention them. When someone else's edits share a file with yours,
+  stage only your hunks (build the staged version from `HEAD` plus your edits,
+  for example with a patch and `git apply --cached`); if that is not possible,
+  ask the maintainer.
+- One logical change per commit: never mix a refactor with a behavior change,
+  formatting with logic, or two work packages.
+
+### Messages
+
+- **Subject**: Conventional Commits, `type(scope): imperative summary`, at
+  most 72 characters, no trailing period. Types: `feat`, `fix`, `perf`,
+  `refactor`, `test`, `docs`, `build`, `ci`, `bench`, `style`, `chore`. The
+  scope is the crate, app, or area (`search`, `store`, `ui`, `adr`, `plan`):
   `feat(search): add MMR diversity stage`,
   `perf(store): binary first-pass vector scan`,
   `bench(embed): bake-off report for 2026-12 candidates`,
   `docs(adr): 0023 lock budgets v1`.
-- Every commit that belongs to a work package or spec ends with a trailer
-  (before any `Co-Authored-By` line), so `git log --grep "WP-0.2"` finds the
-  whole history of a WP:
+- **Body**, required unless the subject says everything: what changed and
+  why, wrapped at 72 columns; the motivation and effects (user-visible
+  behavior, gates affected, follow-ups), not a replay of the diff.
+- **Trailer**: every commit that belongs to a work package or spec ends with
+  one (before any `Co-Authored-By` line), so `git log --grep "WP-0.2"` finds
+  the whole history of a WP:
 
   ```text
   Refs: WP-0.2, SPEC-0001
   ```
+
+### Pull requests
 
 - One work package per PR where possible; reference `WP-x.y` and `SPEC-NNNN`.
 - Fill in [`.github/pull_request_template.md`](.github/pull_request_template.md).

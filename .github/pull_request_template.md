@@ -20,7 +20,8 @@
 ## Checklist
 
 - [ ] Implements an **Accepted** spec (or is a bug fix / behavior-preserving refactor / docs / tooling)
-- [ ] Tests written first and reference requirement IDs
+- [ ] Tests written first, reference requirement IDs, and meet AGENTS.md §6 Tests (regression test for a fix, hermetic, hardware-free by default)
+- [ ] Green, logical commits with semantic messages and `Refs:` trailers; nothing of mine left uncommitted (AGENTS.md §9)
 - [ ] rustfmt + Prettier, clippy `-D warnings`, tests, `cargo deny`, TypeScript build, smoke eval pass
 - [ ] Crate boundaries respected (no engine crate depends on `tauri`)
 - [ ] New dependencies license-checked (ADR-0022)
