@@ -136,6 +136,22 @@ def _check_minima(queries: list[dict], counts: dict[str, int]) -> None:
         _fail(f"non-Latin non-regression: {non_latin} queries; 10 required")
 
 
+def _check_smoke(queries: list[dict]) -> None:
+    """SPEC-0004 R26: at least five dev queries per category, never a test split."""
+
+    for category in config.CATEGORIES:
+        count = sum(
+            1
+            for query in queries
+            if query["category"] == category and query["split"] == "dev"
+        )
+        if count < config.SMOKE_MIN_PER_CATEGORY:
+            _fail(
+                f"{category}/dev has {count} queries; "
+                f"{config.SMOKE_MIN_PER_CATEGORY} required for sdc-smoke-v1"
+            )
+
+
 def audit_rows(
     queries: list[dict],
     documents: list[dict],
@@ -144,15 +160,20 @@ def audit_rows(
     *,
     check_minima: bool = True,
     corpus=None,
+    spec: config.SetSpec = config.FULL_SET,
 ) -> dict:
     if not queries:
         _fail("the draft has no queries")
     ids = [query["_id"] for query in queries]
     if len(set(ids)) != len(ids):
         _fail("duplicate query IDs")
+    pattern = re.compile(rf"^q-{re.escape(spec.set_id)}-\d{{6}}$")
     for query_id in ids:
-        if not _SET_ID.match(query_id):
-            _fail(f"query ID {query_id!r} does not match q-sdc-v1-NNNNNN")
+        if not pattern.match(query_id):
+            _fail(f"query ID {query_id!r} does not match q-{spec.set_id}-NNNNNN")
+    for row in [*documents, *passages]:
+        if row.get("judgment_set_id") != spec.set_id:
+            _fail(f"{row.get('query_id')}: judgment_set_id must be {spec.set_id}")
     texts = [query["text"].casefold() for query in queries]
     if len(set(texts)) != len(texts):
         _fail("duplicate query texts: every draft query must be distinct")
@@ -270,14 +291,20 @@ def audit_rows(
             _fail(f"{query['_id']}: no document reaches grade 2 or 3")
 
     # -- minima and assignment ------------------------------------------
-    splits = assign_splits(queries, config.SPLIT_SEED)
-    for query in queries:
-        if query["split"] != splits[query["_id"]]:
-            _fail(f"{query['_id']}: split does not match the SPEC-0004 5.4 assignment")
+    if spec.smoke:
+        for query in queries:
+            if query["split"] != "dev":
+                _fail(f"{query['_id']}: sdc-smoke-v1 is dev-only")
+        _check_smoke(queries)
+    else:
+        splits = assign_splits(queries, spec.split_seed)
+        for query in queries:
+            if query["split"] != splits[query["_id"]]:
+                _fail(f"{query['_id']}: split does not match the SPEC-0004 5.4 assignment")
     counts: dict[str, int] = {"dev": 0, "test": 0}
     for query in queries:
         counts[query["split"]] += 1
-    if check_minima:
+    if check_minima and not spec.smoke:
         _check_minima(queries, counts)
     for query in queries:
         if query["language_slice"] == "non_latin_non_regression":
@@ -378,6 +405,14 @@ def audit_directory(root: Path, *, check_minima: bool = True, corpus_root: Path 
     manifest = load_json(root / "judgment-set.json")
     if manifest.get("state") != "draft":
         _fail("only a quarantined draft is audited here")
+    spec = config.spec_for_set(str(manifest.get("judgment_set_id")))
+    if manifest.get("judgment_set_id") != spec.set_id:
+        _fail(f"judgment_set_id must be {spec.set_id}")
+    if spec.smoke:
+        if manifest.get("test_exposure") != "not-applicable":
+            _fail("sdc-smoke-v1 test_exposure must be not-applicable")
+        if manifest.get("test_pool_system_ids") != []:
+            _fail("sdc-smoke-v1 must not declare a test pool panel")
     queries = read_jsonl(root / DRAFT_FILES[0])
     documents = read_jsonl(root / DRAFT_FILES[1])
     passages = read_jsonl(root / DRAFT_FILES[2])
@@ -396,5 +431,5 @@ def audit_directory(root: Path, *, check_minima: bool = True, corpus_root: Path 
     if manifest.get("query_counts") != expected:
         _fail("manifest query_counts disagree with the query records")
     return audit_rows(
-        queries, documents, passages, pools, check_minima=check_minima, corpus=corpus
+        queries, documents, passages, pools, check_minima=check_minima, corpus=corpus, spec=spec
     )

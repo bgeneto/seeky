@@ -5,6 +5,7 @@ use seeky_engine::{
 };
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
+use std::time::Duration;
 use tauri::{AppHandle, Emitter, Manager, State};
 
 struct TauriEvents {
@@ -164,12 +165,54 @@ fn open_document(state: State<'_, Engine>, id: String) -> Result<(), String> {
     .map_err(|error| error.to_string())
 }
 
+/// SPEC-0014-R13: the main window starts hidden and the frontend shows it
+/// once the theme is applied. If the frontend never gets that far (for
+/// example its bundle fails to load), the shell shows it after this delay
+/// so the window is never left hidden.
+const STARTUP_SHOW_FALLBACK: Duration = Duration::from_secs(5);
+
+/// The two window calls the startup fallback needs (fakes in tests).
+trait StartupWindow {
+    fn is_visible(&self) -> bool;
+    fn show(&self);
+}
+
+impl StartupWindow for tauri::WebviewWindow {
+    fn is_visible(&self) -> bool {
+        // An unknown visibility is treated as hidden: showing twice is harmless.
+        tauri::WebviewWindow::is_visible(self).unwrap_or(false)
+    }
+
+    fn show(&self) {
+        let _ = tauri::WebviewWindow::show(self);
+    }
+}
+
+/// Shows the window if it is still hidden; returns whether it did.
+fn show_if_hidden(window: &impl StartupWindow) -> bool {
+    if window.is_visible() {
+        return false;
+    }
+    window.show();
+    true
+}
+
+fn spawn_startup_show_fallback(app: AppHandle) {
+    std::thread::spawn(move || {
+        std::thread::sleep(STARTUP_SHOW_FALLBACK);
+        if let Some(window) = app.get_webview_window("main") {
+            show_if_hidden(&window);
+        }
+    });
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .setup(|app| {
+            spawn_startup_show_fallback(app.handle().clone());
             let data_dir = app.path().app_data_dir().context("resolve app data dir")?;
             let config = EngineConfig {
                 data_dir,
@@ -203,6 +246,44 @@ pub fn run() {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::cell::Cell;
+
+    struct FakeWindow {
+        visible: Cell<bool>,
+        shows: Cell<u32>,
+    }
+
+    impl StartupWindow for FakeWindow {
+        fn is_visible(&self) -> bool {
+            self.visible.get()
+        }
+
+        fn show(&self) {
+            self.shows.set(self.shows.get() + 1);
+            self.visible.set(true);
+        }
+    }
+
+    /// SPEC-0014-R13: a window the frontend never showed is shown by the
+    /// shell fallback; one the frontend already showed is left alone.
+    #[test]
+    fn startup_fallback_shows_only_a_hidden_window() {
+        let hidden = FakeWindow {
+            visible: Cell::new(false),
+            shows: Cell::new(0),
+        };
+        assert!(show_if_hidden(&hidden));
+        assert!(hidden.visible.get());
+        assert!(!show_if_hidden(&hidden));
+        assert_eq!(hidden.shows.get(), 1);
+
+        let shown = FakeWindow {
+            visible: Cell::new(true),
+            shows: Cell::new(0),
+        };
+        assert!(!show_if_hidden(&shown));
+        assert_eq!(shown.shows.get(), 0);
+    }
 
     /// SPEC-0002-R7: only document formats are opened; code and unknown types
     /// are revealed instead.

@@ -40,11 +40,12 @@ def _sha256(path: Path) -> str:
 
 def _cmd_draft(args: argparse.Namespace) -> int:
     profile = config.PROFILES[args.profile]
+    spec = config.SMOKE_SET if args.smoke else config.FULL_SET
     plan = None
     if args.only_category or args.max_queries:
         selected = set(args.only_category or config.CATEGORIES)
         plan = {}
-        for category, slices in config.PLAN.items():
+        for category, slices in spec.plan.items():
             if category not in selected:
                 continue
             plan[category] = {
@@ -98,8 +99,9 @@ def _cmd_draft(args: argparse.Namespace) -> int:
         Path(args.corpus),
         Path(args.output),
         runner,
+        spec=spec,
         plan=plan,
-        check_minima=plan is None,
+        check_minima=plan is None and not spec.smoke,
         progress=progress,
     )
     if runner is not None:
@@ -260,6 +262,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     draft.add_argument("--llm-command", nargs="+", default=None)
     draft.add_argument("--templates-only", action="store_true")
+    draft.add_argument(
+        "--smoke",
+        action="store_true",
+        help="draft the dev-only sdc-smoke-v1 set (SPEC-0004 R26)",
+    )
     draft.add_argument("--progress", action="store_true", help="log stage progress to stderr")
     draft.add_argument(
         "--only-category",

@@ -1,0 +1,18 @@
+{
+  "compatible_corpus_hashes": [
+    "365511dd074fea2c577f75cf160fc933c398954b8b3949a8c67d0a5c80118234"
+  ],
+  "file_sha256": {},
+  "judgment_set_id": "sdc-smoke-v1",
+  "query_counts": {
+    "dev": 45,
+    "test": 0
+  },
+  "query_file_sha256": {},
+  "schema_version": 1,
+  "split_seed": "sdc-smoke-v1-split-v1",
+  "state": "draft",
+  "supersedes": null,
+  "test_exposure": "not-applicable",
+  "test_pool_system_ids": []
+}

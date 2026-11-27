@@ -94,8 +94,9 @@ def _unique(text: str) -> str:
 
 
 class TemplateDrafter:
-    def __init__(self, corpus: Corpus) -> None:
+    def __init__(self, corpus: Corpus, seed: str = config.DRAFT_SEED) -> None:
         self.corpus = corpus
+        self.seed = seed
         self._cache: dict[tuple[str, str], list[Document]] = {}
 
     # -- eligibility -----------------------------------------------------
@@ -235,9 +236,9 @@ class TemplateDrafter:
             if len(passages) < 3:
                 return None
             passage = passages[
-                uniform_int(config.DRAFT_SEED, "needle-passage", f"{doc.id}/{slot}", 0, len(passages) - 1)
+                uniform_int(self.seed, "needle-passage", f"{doc.id}/{slot}", 0, len(passages) - 1)
             ]
-            start = uniform_int(config.DRAFT_SEED, "needle-window", f"{passage.id}/{slot}", 0, 40)
+            start = uniform_int(self.seed, "needle-window", f"{passage.id}/{slot}", 0, 40)
             phrase = _phrase(passage.text, 7, start)
             if phrase is None:
                 return None
@@ -300,7 +301,7 @@ class TemplateDrafter:
             phrase = _phrase(
                 passage.text,
                 4,
-                uniform_int(config.DRAFT_SEED, "code-window", f"{passage.id}/{slot}", 0, 12),
+                uniform_int(self.seed, "code-window", f"{passage.id}/{slot}", 0, 12),
             )
             if phrase is None:
                 return None
@@ -317,9 +318,11 @@ class TemplateDrafter:
         raise KeyError(category)
 
 
-def build_all_templates(corpus: Corpus, plan: dict | None = None) -> list[Draft]:
+def build_all_templates(
+    corpus: Corpus, plan: dict | None = None, seed: str = config.DRAFT_SEED
+) -> list[Draft]:
     plan = plan or config.PLAN
-    drafter = TemplateDrafter(corpus)
+    drafter = TemplateDrafter(corpus, seed)
     drafts: list[Draft] = []
     used: set[str] = set()
     for category in config.TEMPLATE_CATEGORIES:

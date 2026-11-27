@@ -12,6 +12,12 @@ roadmap (§6), with the date.
 ## Unreleased
 
 ### Added
+- Desktop light and dark themes (SPEC-0014 R10–R15, WP-7.2). Seeky follows
+  the OS theme by default and live; Settings → Theme overrides it (System
+  default / Light / Dark), saved locally. The native window and titlebar
+  match, and the window stays hidden until the theme is applied, so there is
+  no startup flash. All colors come from two semantic token sets checked for
+  WCAG 2.2 AA contrast by the new `npm run theme:check`, which CI runs.
 - `tools/qrels-drafter` drafts the `sdc-v1` query set offline from templates for
   the six template-faithful categories and the pinned Qwen3-0.6B model for
   `conceptual`, `exploratory`, and `cross_language`. The committed
@@ -20,6 +26,11 @@ roadmap (§6), with the date.
   draft (`verified_by: []`, `test_exposure: unexposed`), and human verification
   (gate H6) is required before any benchmark-eligible split (WP-1.4,
   SPEC-0004 R15–R22, R25).
+- `qrels_drafter draft --smoke` drafts the dev-only `sdc-smoke-v1` set over the
+  committed smoke corpus: 45 queries, five per category, 144 document and 144
+  passage judgments, no `test` split, and a smoke-specific tool config hash.
+  It is the H6 subset that unblocks WP-1.8 and WP-1.2; every record is still an
+  unverified draft (SPEC-0004 R26 remains open).
 - `seeky-bench perf` measures warm-idle and warm-indexing search latency
   (p50/p95/p99 with fixed-seed bootstrap CIs), batch-1 query-embedding
   latency, bulk indexing throughput, lexical/semantic time-to-searchable, the

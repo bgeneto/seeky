@@ -170,6 +170,35 @@ add `--templates-only`, but that cannot satisfy the 600-query minima.
 
 Paths in commands use environment variables only; no personal path is committed.
 
+## Drafting the smoke subset (SPEC-0004 R26)
+
+`--smoke` drafts the dev-only `sdc-smoke-v1` set over the committed
+`bench/corpora/sdc/sdc-smoke` corpus: five queries per category, no `test`
+split, `test_exposure: "not-applicable"`, and a smoke-specific
+`tool_config_sha256`. It is the small set that H6 verifies first to unblock
+WP-1.8 and WP-1.2; it does not replace the full `sdc-v1` campaign.
+
+```powershell
+$env:PYTHONPATH = "tools/qrels-drafter"
+python -m qrels_drafter draft `
+  --corpus bench/corpora/sdc/sdc-smoke `
+  --output bench/qrels/sdc/drafts/sdc-smoke-v1 `
+  --smoke `
+  --profile qwen3-0.6b `
+  --llama-cli "$env:LOCALAPPDATA\seeky-dev\llm\llama.cpp-b12815\llama-completion.exe"
+
+python -m qrels_drafter audit --set bench/qrels/sdc/drafts/sdc-smoke-v1 `
+  --corpus bench/corpora/sdc/sdc-smoke
+
+$env:PYTHONPATH = "tools/sdc-generator"
+python -m sdc_generator judgments validate --allow-draft `
+  --set bench/qrels/sdc/drafts/sdc-smoke-v1 `
+  --corpus bench/corpora/sdc/sdc-smoke
+```
+
+Every record stays `state: draft` with `verified_by: []`: H6 is still required
+before `freeze-split` can publish the set.
+
 ## What the committed draft contains
 
 732 queries, 366 in `dev` and 366 in `test`, assigned by the SPEC-0004 5.4
