@@ -55,6 +55,7 @@
   "search.result.page": "p. {page}",
   "preview.kicker": "PRÉ-VISUALIZAÇÃO",
   "preview.action.close": "Fechar pré-visualização",
+  "preview.action.resize": "Redimensionar pré-visualização",
   "preview.action.openFile": "Abrir arquivo",
   "folders.dialog.addTitle": "Adicionar uma pasta ao Seeky",
   "folders.notice.addedWatching": "Pasta adicionada. Monitorando alterações — indexe-a para torná-la pesquisável.",

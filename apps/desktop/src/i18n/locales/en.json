@@ -49,6 +49,7 @@
   "search.result.page": "p.{page}",
   "preview.kicker": "PREVIEW",
   "preview.action.close": "Close preview",
+  "preview.action.resize": "Resize preview",
   "preview.action.openFile": "Open file",
   "folders.dialog.addTitle": "Add a folder to Seeky",
   "folders.notice.addedWatching": "Folder added. Watching for changes — index it to make it searchable.",

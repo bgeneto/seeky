@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Status | Accepted (2026-11-27, gate H2) |
-| Version | 0.1 (desktop experience v1) |
+| Version | 0.2 (desktop experience v1; adds the resizable preview, R17) |
 | Owner | Maintainer |
 | Phase / work packages | Phase 7 — WP-7.1, WP-7.2 |
 | Crates touched | `seeky-desktop` only (`apps/desktop` React UI and Tauri shell); no engine crate |
@@ -56,7 +56,8 @@ or filesystem behavior and performs no network request.
   | WP-7.9 | Strict Content Security Policy | v2 |
 
 - **Also out:** additional locales or regional translation catalogs, a theme
-  editor, custom palettes, more than two themes, UI layout redesign, typed
+  editor, custom palettes, more than two themes, UI layout redesign (except
+  the resizable preview of R17 and §5.5), typed
   changes to SPEC-0002 engine errors or payloads, new engine IPC business logic,
   and generative translation at runtime. V1 only adds the minimal Language and
   Theme controls needed by WP-7.1/WP-7.2; it does not deliver the WP-7.6
@@ -67,9 +68,9 @@ or filesystem behavior and performs no network request.
 | ID | Requirement | Verification | Status |
 |---|---|---|---|
 | SPEC-0014-R1 | The desktop shall load all translations from statically bundled, flat JSON catalogs named `en` and `pt`, using the key, message, plural-form, and placeholder contracts in §4.1 and without fetching catalogs at runtime. | unit `catalogs_have_identical_flat_keys_and_shapes`; inspection of bundled assets and network-free startup | Implemented (WP-7.1) |
-| SPEC-0014-R2 | When rendering a v1 surface, native dialog, accessible name, notification, or window title, the desktop shall obtain every translatable string through the catalog and shall retain only the exemptions in §4.6; the migration shall cover every item in §4.7. | unit `literal_translation_references_exist`; source inspection against §4.7; manual `localized_surfaces_have_no_hardcoded_copy` | Implemented (WP-7.1; manual locale check pending) |
+| SPEC-0014-R2 | When rendering a v1 surface, native dialog, accessible name, notification, or window title, the desktop shall obtain every translatable string through the catalog and shall retain only the exemptions in §4.6; the migration shall cover every item in §4.7. | unit `literal_translation_references_exist`; source inspection against §4.7; manual `localized_surfaces_have_no_hardcoded_copy` | Implemented (WP-7.1) |
 | SPEC-0014-R3 | When no valid locale override is stored, the desktop shall select the first supported language in the OS preference list, map regional variants to `en` or `pt` as in §5.1, and use English when no supported language can be resolved. | unit `os_locale_prefers_first_supported_language`, `os_locale_maps_regional_variants_to_base_catalogs`, `os_locale_falls_back_to_english`, `invalid_stored_locale_uses_os_locale` | Implemented (WP-7.1) |
-| SPEC-0014-R4 | When the user selects System default, English, or Português, the desktop shall apply that locale preference immediately, update `<html lang>`, persist only the corresponding enum value locally, and survive unavailable storage without failing; System default shall resume OS resolution. | unit `locale_override_persists_and_applies_without_reload`, `storage_failure_uses_in_memory_preferences`; manual restart and `languagechange` checks | Implemented (WP-7.1; manual locale check pending) |
+| SPEC-0014-R4 | When the user selects System default, English, or Português, the desktop shall apply that locale preference immediately, update `<html lang>`, persist only the corresponding enum value locally, and survive unavailable storage without failing; System default shall resume OS resolution. | unit `locale_override_persists_and_applies_without_reload`, `storage_failure_uses_in_memory_preferences`; manual restart and `languagechange` checks | Implemented (WP-7.1) |
 | SPEC-0014-R5 | If a Portuguese message, corresponding plural form, or translation is unavailable, then the desktop shall use the English message with the same parameters; if a key is absent from English, then it shall use `common.error.generic` rather than expose the key, and CI shall reject the invalid catalog before release. | unit `missing_pt_message_uses_english`, `missing_english_message_uses_generic_error_not_key`, `parity_checker_rejects_missing_english_key` | Implemented (WP-7.1) |
 | SPEC-0014-R6 | When a message has a numeric `count`, the desktop shall select its plural form with `Intl.PluralRules` for the active formatting locale and interpolate all values as plain text, without plural suffix keys, string concatenation for grammar, or HTML evaluation. | unit `plural_categories_come_from_intl`, `plural_placeholders_match_across_catalogs`, `interpolation_does_not_evaluate_markup` | Implemented (WP-7.1) |
 | SPEC-0014-R7 | When rendering a count, score, elapsed time, byte size, date, or time, the desktop shall use explicit `en` or `pt-BR` `Intl` formatting as in §4.2 and shall not call parameterless `toLocaleString`/`toLocaleDateString` or hardcode decimal/group separators. | unit `numbers_use_active_locale`, `dates_use_active_locale_and_explicit_timezone`, `bytes_use_binary_units_and_locale_number`; inspection | Implemented (WP-7.1) |
@@ -82,6 +83,7 @@ or filesystem behavior and performs no network request.
 | SPEC-0014-R14 | For every text/background pair used by either theme, the desktop shall meet WCAG 2.2 AA contrast: at least 4.5:1 for normal text and at least 3:1 for large text, including muted, placeholder, selected, marked, notice, error, hover, and focus text states. | unit `contrast_black_white_is_21`, `text_token_pairs_meet_aa_in_both_themes`, `alpha_tokens_are_composited_before_contrast`; manual computed-style spot check | Open |
 | SPEC-0014-R15 | For visual information required to identify controls, control states, meaningful icons, and focus indicators, the desktop shall meet at least 3:1 contrast against adjacent colors and shall keep a visible focus indicator in both themes. | unit `nontext_token_pairs_meet_aa_in_both_themes`; manual `focus_and_control_states_meet_contrast_targets` | Open |
 | SPEC-0014-R16 | The WP-7.1/WP-7.2 implementation shall not change engine APIs, ranked output, indexing behavior, model behavior, file access, or telemetry/network behavior, and shall add no production dependency unless §7 is revised before acceptance. | diff and `cargo tree`/npm dependency inspection; existing golden and hardware-free suites; no benchmark report required | Implemented (WP-7.1) |
+| SPEC-0014-R17 | While a preview is open, the desktop shall show a vertical separator between the results and the preview that the user can drag with the pointer or move with the keyboard to change the preview width within the §5.5 bounds, shall persist the chosen width locally under `seeky.ui.previewWidth.v1`, and shall keep the preview close control visible at every width. | unit `preview_width_is_clamped_to_container`, `invalid_stored_preview_width_uses_default`, `keyboard_resize_steps_and_clamps`; manual drag, keyboard, restart, and narrow-window check | Implemented (WP-7.1) |
 
 Status: `Open` → `Implemented` (code and its test merged; name WP-7.1 or WP-7.2)
 → `Verified` (any applicable acceptance gate passed). This draft defines no
@@ -186,6 +188,7 @@ The persisted webview keys and values are:
 |---|---|---|
 | `seeky.ui.locale.v1` | `system`, `en`, `pt` | `system` |
 | `seeky.ui.theme.v1` | `system`, `light`, `dark` | `system` |
+| `seeky.ui.previewWidth.v1` | Integer CSS pixels (R17) | `420`; clamped to §5.5 at use |
 
 Only these enums are stored, in webview `localStorage`; no locale/theme IPC
 payload, engine database migration, account, telemetry, or remote preference is
@@ -637,6 +640,20 @@ checks. V1 targets WCAG 2.2 AA Success Criteria 1.4.3 (Contrast Minimum) and
 conformance; the full accessibility pass, including screen readers and E2E, is
 WP-7.8.
 
+### 5.5 Resizable preview (R17)
+
+Addendum accepted by the maintainer on 2026-11-27 (v0.2); it belongs to
+WP-7.1. The separator
+is a focusable `role="separator"` element with `aria-orientation="vertical"`,
+a localized `preview.action.resize` accessible name, and `aria-valuenow`,
+`aria-valuemin`, and `aria-valuemax` in CSS pixels. Bounds: at least 300 px
+and at most 60% of the content area (never below the minimum); CSS applies the
+same `clamp()`, so a window resize never needs a script. Dragging updates the
+width live and persists it on release. `ArrowLeft`/`ArrowRight` widen/narrow by
+16 px, `Home`/`End` jump to the minimum/maximum, and a double click restores
+420 px. A stored value that is not a finite integer of at least 300 is ignored.
+Below 900 px the preview stays hidden as before. No engine call is involved.
+
 ## 6. Acceptance
 
 ### 6.1 Tests
@@ -814,3 +831,4 @@ v1 has one `pt` catalog with `pt-BR` formatting), and the explicit v1 scope.
 | 0.1 | 2026-11-27 | Initial Draft for desktop experience v1 (WP-7.1 localization and WP-7.2 themes); WP-7.3–WP-7.9 deferred to later versions |
 | 0.1 | 2026-11-27 | Added §7.3 forward decisions for v2 (Full speed, indexing labels, provider override, opt-in GPU tier) from ADR-0025; no v1 requirement changed |
 | 0.1 | 2026-11-27 | Accepted at gate H2 with the §7.1 recommendation and §7.2 confirmations as written; unblocks WP-7.1 then WP-7.2 |
+| 0.2 | 2026-11-27 | Addendum accepted by the maintainer: R17 (resizable preview, §5.5) joins v1 scope under WP-7.1; the close control stays visible at every width; no other requirement changed |
