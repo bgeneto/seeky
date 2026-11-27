@@ -3,7 +3,7 @@
 Target architecture of the Seeky engine and desktop shell. These documents are
 contracts: specs refine them, code implements them, and benchmark reports set
 their numeric defaults. The as-built PoC is described in
-[`../../apps/seeky/README.md`](../../apps/seeky/README.md).
+[`../../apps/desktop/README.md`](../../apps/desktop/README.md).
 
 | Document | Governs |
 |---|---|

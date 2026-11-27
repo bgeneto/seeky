@@ -51,7 +51,9 @@ engineering and source reports — context only) and
 
 ```text
 AGENTS.md / CLAUDE.md     this manual (CLAUDE.md imports it)
-apps/seeky/               as-built PoC: Tauri 2 + React 19 + Rust (becomes apps/desktop in Phase 0)
+Cargo.toml                workspace root (members: crates/*, apps/desktop/src-tauri)
+crates/                   engine crates seeky-{core,extract,infer,store,search,engine,provision,eval} (stubs until WP-0.2)
+apps/desktop/             Tauri 2 + React 19 shell; still holds the PoC engine until WP-0.2/WP-0.3
   src/                    React/TypeScript UI
   src-tauri/src/          PoC engine + shell (lib.rs, indexer.rs, search.rs, inference.rs, db.rs, extract.rs)
   demo/                   five-file smoke corpus
@@ -168,33 +170,23 @@ they win for workers.
 
 ## 5. Commands
 
-Current PoC (Windows; until Phase 0 creates the workspace):
+From the workspace root (Windows; the toolchain is pinned in `rust-toolchain.toml`):
 
 ```powershell
-cd apps\seeky
-npm install
-npm run build                                  # TypeScript + Vite build
-npm run tauri dev                              # run the desktop app
-npm run format:check                           # Prettier (npm run format fixes)
-
-cd src-tauri
-cargo fmt --check                              # rustfmt (cargo fmt fixes)
-cargo clippy --all-targets -- -D warnings
-cargo test --lib                              # hardware-free by default
-cargo test --lib --features hw-tests -- --test-threads=1   # needs local models/PDFium/CUDA/NPU
-cargo check
-```
-
-After Phase 0 (workspace root):
-
-```powershell
-cargo fmt --all --check
-npm --prefix apps/desktop run format:check
+cargo fmt --all --check                        # rustfmt (cargo fmt --all fixes)
 cargo clippy --workspace --all-targets -- -D warnings
 cargo test --workspace                         # hardware-free by default
-cargo deny check
-cargo run -p seeky-bench -- eval --corpus sdc-smoke --split dev
+cargo test --workspace --features hw-tests -- --test-threads=1   # needs local models/PDFium/CUDA/NPU
+cargo deny check bans                          # crate boundaries (SPEC-0001 §4.4)
+
+cd apps\desktop
+npm install                                    # also enables the Git hooks
+npm run build                                  # TypeScript + Vite build
+npm run format:check                           # Prettier (npm run format fixes)
+npm run tauri dev                              # run the desktop app
 ```
+
+From Phase 1 on: `cargo run -p seeky-bench -- eval --corpus sdc-smoke --split dev`.
 
 Formatting is enforced: `npm install` enables the versioned pre-commit hook
 (`.githooks/pre-commit`, check-only rustfmt + Prettier) and CI runs the same

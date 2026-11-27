@@ -172,7 +172,7 @@ removes the bundled IR.
 ## 5. Run
 
 ```powershell
-cd apps\seeky
+cd apps\desktop
 npm install
 npm run tauri dev
 ```
@@ -181,10 +181,10 @@ Production-style build:
 
 ```powershell
 npm run tauri -- build --no-bundle
-# binary: src-tauri\target\release\seeky.exe
+# binary: <repo>\target\release\seeky.exe (workspace target directory)
 ```
 
-Run it from `src-tauri\target\release`, or copy `seeky.exe` together with the
+Run it from `<repo>\target\release`, or copy `seeky.exe` together with the
 `resources\` directory. The release build places the NPU IR under
 `target\release\resources\models\gety-embed-v0\openvino`. The validated release
 binary is 11.5 MB (plus the 118.6 MB bundled OpenVINO `model.bin`).
@@ -193,13 +193,13 @@ Debug build:
 
 ```powershell
 npm run tauri -- build --debug --no-bundle
-# binary: src-tauri\target\debug\seeky.exe
+# binary: <repo>\target\debug\seeky.exe
 ```
 
 ### Use
 
 1. **Add folder** → choose a folder. Seeky starts watching it immediately. For
-   a quick smoke test, choose this repository's `apps/seeky/demo` folder.
+   a quick smoke test, choose this repository's `apps/desktop/demo` folder.
 2. **Local Files** → **Index** once to build the initial index.
 3. From then on, create/edit/rename/delete files normally; the watcher applies
    changes after a short debounce and updates the health panel.
@@ -235,15 +235,14 @@ More captures: [NPU settings](../../docs/assets/screenshots/seeky/settings-npu.p
 ## 6. Tests
 
 ```powershell
-cd apps\seeky\src-tauri
-cargo test --lib
+cargo test --workspace   # from the repository root
 ```
 
 The default run is hardware-free. Tests that need local Gety model files,
 PDFium, CUDA, or an Intel NPU are ignored unless the `hw-tests` feature is on:
 
 ```powershell
-cargo test --lib --features hw-tests -- --test-threads=1 --nocapture
+cargo test --workspace --features hw-tests -- --test-threads=1 --nocapture
 ```
 
 With `hw-tests` on a machine that has those assets, all 9 tests pass. Covers
@@ -310,7 +309,7 @@ PoC as baseline B0.
 ## 9. Repository layout
 
 ```text
-apps/seeky/
+apps/desktop/
   demo/                five-file smoke-test corpus (TXT/MD/PDF/DOCX)
   src/                 React UI
   src-tauri/

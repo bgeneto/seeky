@@ -62,16 +62,16 @@ The road from PoC to 1.0 is in the
 Prerequisites: Windows 10/11 x64, Node.js 20+, Rust stable (MSVC) with Visual
 Studio Build Tools, WebView2, Git LFS, and — for the PoC only — a local Gety
 installation providing the model, ONNX Runtime, OpenVINO, and PDFium files
-(paths and overrides in [`apps/seeky/README.md`](apps/seeky/README.md)).
+(paths and overrides in [`apps/desktop/README.md`](apps/desktop/README.md)).
 
 ```powershell
 git lfs install
-cd apps\seeky
+cd apps\desktop
 npm install
 npm run tauri dev
 ```
 
-Smoke test: add `apps\seeky\demo` as a folder, click **Index**, search
+Smoke test: add `apps\desktop\demo` as a folder, click **Index**, search
 `contract renewal notice`, then create/rename/delete a file in that folder and
 watch the index update.
 
@@ -91,7 +91,7 @@ watch the index update.
 ## Repository layout
 
 ```text
-apps/seeky/      Tauri + React + Rust PoC (becomes apps/desktop + crates/ in Phase 0)
+apps/desktop/    Tauri + React shell; holds the PoC engine until it moves to crates/ (Phase 0)
 docs/            product, architecture, ADRs, specs, benchmarks, plans, validation, research
 AGENTS.md        agent operating manual (CLAUDE.md imports it)
 CONTRIBUTING.md  contributor workflow

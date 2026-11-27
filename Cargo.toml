@@ -1,9 +1,9 @@
 # Seeky Cargo workspace (SPEC-0001). Engine crates live in crates/, the Tauri
-# shell in apps/seeky/src-tauri. Profiles must live here: Cargo ignores
+# shell in apps/desktop/src-tauri. Profiles must live here: Cargo ignores
 # profiles declared in member manifests.
 [workspace]
 resolver = "3"
-members = ["crates/*", "apps/seeky/src-tauri"]
+members = ["crates/*", "apps/desktop/src-tauri"]
 
 [workspace.package]
 version = "0.1.0"

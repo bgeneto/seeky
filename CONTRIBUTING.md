@@ -34,7 +34,7 @@ model/runtime files until the provisioning phase lands.
 
 ```powershell
 git lfs install
-cd apps\seeky
+cd apps\desktop
 npm install
 npm run tauri dev
 ```
@@ -42,29 +42,29 @@ npm run tauri dev
 ## Checks
 
 ```powershell
-cd apps\seeky
-npm run build
-npm run format:check   # Prettier; `npm run format` fixes
+# workspace root
+cargo fmt --all --check   # rustfmt; `cargo fmt --all` fixes
+cargo clippy --workspace --all-targets -- -D warnings
+cargo test --workspace
+cargo deny check bans     # crate boundaries (SPEC-0001)
 
-cd src-tauri
-cargo fmt --check      # rustfmt; `cargo fmt` fixes
-cargo clippy --all-targets -- -D warnings
-cargo test --lib
-cargo check
+cd apps\desktop
+npm run build
+npm run format:check      # Prettier; `npm run format` fixes
 ```
 
 `npm install` enables a pre-commit hook (`.githooks/pre-commit`) that checks
 rustfmt and Prettier formatting without rewriting files; CI runs the same
 checks on every pull request. Formatting rules live in `rustfmt.toml` and
-`apps/seeky/.prettierrc.json`. Because `core.hooksPath` replaces
+`apps/desktop/.prettierrc.json`. Because `core.hooksPath` replaces
 `.git/hooks`, `.githooks/` also carries the standard Git LFS hooks
 (`pre-push`, `post-checkout`, `post-commit`, `post-merge`); without them
 pushes would skip uploading LFS objects.
 
-`cargo test --lib` is hardware-free. Tests that need local models, PDFium, CUDA,
-or an NPU run with `cargo test --lib --features hw-tests -- --test-threads=1`
-on a machine that has them. The workspace-level commands that replace these
-after Phase 0 are listed in [`AGENTS.md`](AGENTS.md#5-commands).
+`cargo test --workspace` is hardware-free. Tests that need local models,
+PDFium, CUDA, or an NPU run with
+`cargo test --workspace --features hw-tests -- --test-threads=1` on a machine
+that has them. The full command list is in [`AGENTS.md`](AGENTS.md#5-commands).
 
 ## Commit style
 

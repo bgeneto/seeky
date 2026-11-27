@@ -7,8 +7,8 @@
 | Governs | Workspace layout, engine API, process and concurrency model, storage layout |
 | Related | [ADR-0015](../adr/0015-engine-first-architecture.md), [indexing](indexing.md), [retrieval engine](retrieval-engine.md), [inference and models](inference-and-models.md), [provisioning](distribution-and-provisioning.md) |
 
-This document describes the **target**. The as-built PoC (single Tauri crate in
-`apps/seeky`) is described in [`../../apps/seeky/README.md`](../../apps/seeky/README.md);
+This document describes the **target**. The as-built PoC (the Tauri crate in
+`apps/desktop`, moving into `crates/` during Phase 0) is described in [`../../apps/desktop/README.md`](../../apps/desktop/README.md);
 the implementation plan moves it to this architecture without behavior loss.
 
 ## 1. Design stance
@@ -52,7 +52,7 @@ tools/
   seeky-bench/             internal CLI: build index, run eval/perf, compare reports
   model-export/            offline export/quantization + parity tests (Python allowed)
 apps/
-  desktop/                 Tauri 2 shell + React/TypeScript UI (today: apps/seeky)
+  desktop/                 Tauri 2 shell + React/TypeScript UI
 bench/
   datasets/                dataset manifests and download scripts (no bulk data in git)
   corpora/sdc/             Seeky Desktop Corpus generator + small committed smoke subset

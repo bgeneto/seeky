@@ -26,7 +26,7 @@ pnpm-debug.log*
 # Rust / Tauri
 target/
 **/target/
-apps/seeky/src-tauri/gen/schemas/
+apps/desktop/src-tauri/gen/schemas/
 
 # Local environment
 .env

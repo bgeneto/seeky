@@ -569,7 +569,7 @@ Rules:
 
 | WP | Status | Evidence | Notes |
 |---|---|---|---|
-| 0.1 | In progress | [SPEC-0001](../specs/SPEC-0001-workspace-and-crate-boundaries.md) | Done: root workspace, eight crate stubs, toolchain pin, profiles, `hw-tests` in every member, shared lints with the one audited `unsafe` exemption (R1–R8, R15). Remaining: rename to `apps/desktop` (R9, R10, R16, R17), `cargo-deny` bans (R11–R14) |
+| 0.1 | In progress | [SPEC-0001](../specs/SPEC-0001-workspace-and-crate-boundaries.md) | Done: root workspace, eight crate stubs, toolchain pin, profiles, `hw-tests` in every member, shared lints with the one audited `unsafe` exemption, rename to `apps/desktop` with the `seeky` binary and app identity kept (R1–R10, R15–R17). Remaining: `cargo-deny` bans (R11–R14); R18 lands with WP-0.2 |
 | 0.2 | Not started | — | — |
 | 0.3 | Not started | — | — |
 | 0.4 | In progress | `.github/workflows/ci.yml` (`format` job), `.githooks/pre-commit` | Done: rustfmt + Prettier in CI and a check-only pre-commit hook; hardware tests behind the `hw-tests` feature (pre-flight). Remaining CI jobs: clippy `-D warnings`, hardware-free tests, `cargo-deny`, TypeScript typecheck + build, Windows/Linux/macOS compile |

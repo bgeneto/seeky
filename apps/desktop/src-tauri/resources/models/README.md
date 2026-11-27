@@ -22,7 +22,7 @@ the seeky Cloudflare R2 bucket on first run. See
 The current release build copies these files to:
 
 ```text
-src-tauri/target/release/resources/models/gety-embed-v0/openvino/
+<repo>/target/release/resources/models/gety-embed-v0/openvino/
 ```
 
 Keep the `resources/` directory beside `seeky.exe` for current portable builds.

@@ -14,7 +14,6 @@ concurrency:
 
 # WP-0.4 extends this workflow with clippy -D warnings, hardware-free tests,
 # cargo-deny, the TypeScript build, and the Windows/Linux/macOS compile matrix.
-# Paths change when WP-0.1 renames apps/seeky to apps/desktop.
 jobs:
   format:
     name: Format (rustfmt + Prettier)
@@ -33,12 +32,12 @@ jobs:
         with:
           node-version: 24
           cache: npm
-          cache-dependency-path: apps/seeky/package-lock.json
+          cache-dependency-path: apps/desktop/package-lock.json
 
       - name: Install frontend dependencies
-        working-directory: apps/seeky
+        working-directory: apps/desktop
         run: npm ci
 
       - name: Prettier
-        working-directory: apps/seeky
+        working-directory: apps/desktop
         run: npm run format:check

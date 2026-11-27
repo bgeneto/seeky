@@ -1,5 +1,5 @@
 [package]
-name = "seeky"
+name = "seeky-desktop"
 description = "Local neural information retrieval engine and semantic desktop search"
 version.workspace = true
 edition.workspace = true
@@ -17,6 +17,11 @@ publish = false
 # This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
 name = "seeky_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
+
+# The executable keeps its PoC name (SPEC-0001 R10).
+[[bin]]
+name = "seeky"
+path = "src/main.rs"
 
 [features]
 # Runs tests that need local assets or hardware (Gety model files, PDFium,

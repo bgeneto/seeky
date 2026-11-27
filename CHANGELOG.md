@@ -18,6 +18,11 @@ roadmap (§6), with the date.
 
 ### Changed
 
+- The repository is a Cargo workspace (SPEC-0001): engine crate stubs under
+  `crates/`, the app moved from `apps/seeky` to `apps/desktop`, the Rust
+  toolchain is pinned to 1.99.1, and Rust checks run from the root
+  (`cargo test --workspace`). The executable is still `seeky.exe`, now built
+  into `<repo>/target/`; the app identity and data folder are unchanged.
 - Auto backend selection uses the CPU only: ADR-0016 allows automatic
   NPU use only once the NPU path is validated (WP-5.1/WP-5.2). NPU and CUDA
   remain available when chosen explicitly.

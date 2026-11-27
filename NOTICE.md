@@ -37,7 +37,7 @@ phase of the [implementation plan](docs/plans/seeky-implementation-plan.md).
   published `openvino/model.bin`. It is a benchmark baseline only.
 - **`gety-ocr-v0`:** encrypted/private. Not used or redistributed by Seeky.
 - **OpenVINO IR (PoC):** temporarily tracked with Git LFS under
-  `apps/seeky/src-tauri/resources/models/`; removed when provisioning ships.
+  `apps/desktop/src-tauri/resources/models/`; removed when provisioning ships.
 - **Models, runtimes, and libraries adopted by Seeky:** must pass the
   permissive-license gate ([ADR-0022](docs/adr/0022-permissive-license-gate.md));
   every provisioned asset carries its own license and notice files.
