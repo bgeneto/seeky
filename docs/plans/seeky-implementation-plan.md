@@ -690,8 +690,5 @@ finished items and add the next ones, so this list never points at done work.
    remain unverified drafts. H6 human verification is next, including the
    `sdc-smoke-v1` subset required by WP-1.8.
 5. In parallel (UX track): WP-7.1 is Done; WP-7.2 (themes, SPEC-0014 v1
-   R10–R15) is next and depends only on WP-0.3 (maintainer, 2026-11-27).
-6. Start the OCR **Stage 0 paper screen now** (no code needed,
-   [candidates §5](../benchmarks/candidates.md)): confirm the OCRia variant
-   name, open-weight availability, each candidate's ONNX export path, and the
-   OXR-1.0 and MiniCPM-OCR licenses; its findings choose the VLM for WP-0.6.
+   R10–R15) is in progress on `wp/7.2-themes`, based on WP-0.3
+   (maintainer, 2026-11-27).
