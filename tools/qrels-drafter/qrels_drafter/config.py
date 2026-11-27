@@ -15,6 +15,9 @@ TOOL_ID = "qrels-drafter"
 JUDGMENT_SET_ID = "sdc-v1"
 DRAFT_SEED = "sdc-v1-draft-v1"
 SPLIT_SEED = "sdc-v1-split-v1"
+SMOKE_SET_ID = "sdc-smoke-v1"
+SMOKE_DRAFT_SEED = "sdc-smoke-v1-draft-v1"
+SMOKE_SPLIT_SEED = "sdc-smoke-v1-split-v1"
 SCHEMA_VERSION = 1
 
 # SPEC-0004 4.6: a deterministic tool drafts only where copying is faithful.
@@ -70,6 +73,43 @@ PLAN = {
     "exploratory": {"pt": 40, "en": 40},
     "cross_language": {"cross_lingual": 80},
 }
+
+# SPEC-0004 R26: the committed ``sdc-smoke-v1`` set is dev-only and needs at
+# least five queries per category. One slice per category keeps the smoke run
+# short while still exercising Portuguese, English, and the cross-lingual path.
+SMOKE_PLAN = {
+    "known_item": {"pt": 5},
+    "exact_identifier": {"en": 5},
+    "needle_in_haystack": {"en": 5},
+    "mixed_semantic_metadata": {"pt": 5},
+    "filename_partial": {"en": 5},
+    "code_search": {"en": 5},
+    "conceptual": {"pt": 5},
+    "exploratory": {"en": 5},
+    "cross_language": {"cross_lingual": 5},
+}
+SMOKE_MIN_PER_CATEGORY = 5
+
+
+@dataclass(frozen=True)
+class SetSpec:
+    """One judgment-set identity: id, deterministic seeds, plan, and scope."""
+
+    set_id: str
+    draft_seed: str
+    split_seed: str
+    plan: dict[str, dict[str, int]]
+    smoke: bool = False
+
+
+FULL_SET = SetSpec(JUDGMENT_SET_ID, DRAFT_SEED, SPLIT_SEED, PLAN)
+SMOKE_SET = SetSpec(SMOKE_SET_ID, SMOKE_DRAFT_SEED, SMOKE_SPLIT_SEED, SMOKE_PLAN, smoke=True)
+
+
+def spec_for_set(set_id: str) -> SetSpec:
+    """The spec a judgment-set id belongs to; full is the default."""
+
+    return SMOKE_SET if set_id == SMOKE_SET_ID else FULL_SET
 
 # Minimums from SPEC-0004 R16/R17, restated so the drafter refuses to write a
 # draft that could never pass split freeze.
@@ -174,27 +214,27 @@ DEFAULT_PROFILE = "qwen3-0.6b"
 DEFAULT_MODEL = PROFILES[DEFAULT_PROFILE]
 
 
-def tool_config(corpus_hash: str) -> dict[str, object]:
+def tool_config(corpus_hash: str, spec: SetSpec = FULL_SET) -> dict[str, object]:
     """The canonical configuration hashed into every tool-drafted record."""
 
     return {
         "tool": f"{TOOL_ID}@{VERSION}",
         "schema_version": SCHEMA_VERSION,
-        "judgment_set_id": JUDGMENT_SET_ID,
-        "draft_seed": DRAFT_SEED,
-        "split_seed": SPLIT_SEED,
+        "judgment_set_id": spec.set_id,
+        "draft_seed": spec.draft_seed,
+        "split_seed": spec.split_seed,
         "corpus_hash": corpus_hash,
-        "plan": PLAN,
+        "plan": spec.plan,
         "categories": list(TEMPLATE_CATEGORIES),
         "guard": GUARD,
         "languages": SLICE_LANGUAGE,
     }
 
 
-def tool_config_sha256(corpus_hash: str) -> str:
+def tool_config_sha256(corpus_hash: str, spec: SetSpec = FULL_SET) -> str:
     from .jsonio import canonical_sha256
 
-    return canonical_sha256(tool_config(corpus_hash))
+    return canonical_sha256(tool_config(corpus_hash, spec))
 
 
 def drafted_by_tool() -> str:
