@@ -1,0 +1,14 @@
+[project]
+name = "dataset-fetch"
+version = "0.1.0"
+description = "Offline public-dataset preparation for Seeky evaluation (development tooling only)"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [{ name = "Seeky contributors" }]
+dependencies = []
+
+# Intentionally no build-system: the tool is used from the repository with
+# PYTHONPATH=tools/dataset-fetch, or copied into an isolated development
+# environment. It is never installed into the product and never imported by an
+# engine crate.
