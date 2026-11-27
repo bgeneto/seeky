@@ -1,0 +1,171 @@
+# WP-1.8 CI smoke gate (SPEC-0003 R29-R31, section 5.6).
+#
+# Builds seeky-bench at the current main SHA (baseline) and at the PR head
+# (candidate), evaluates the sdc-smoke dev split in the default
+# configuration with the hardware-free lexical CI config (no model, no GPU),
+# evaluates the candidate twice from fresh indexes, and runs
+# `compare --gate wp1.8`. The gate fails closed on draft or unverified data.
+#
+# Dormant until bench/qrels/sdc/sdc-smoke-v1 is published on main (H6,
+# SPEC-0004 R26): until then the job prints a notice and succeeds without
+# running the gate. It is a separate workflow so that no existing CI job
+# depends on it until the maintainer makes it a required check.
+
+name: Smoke gate (WP-1.8)
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: smoke-gate-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  SMOKE_SET: bench/qrels/sdc/sdc-smoke-v1/judgment-set.json
+  CI_CONFIG: tools/seeky-bench/configs/ci-smoke-lexical.json
+
+jobs:
+  smoke-gate:
+    name: WP-1.8 smoke gate (sdc-smoke-v1, lexical, hardware-free)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Check out the candidate (PR head)
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          lfs: true
+          path: candidate
+
+      - name: Resolve the current main SHA and whether sdc-smoke-v1 is published
+        id: state
+        working-directory: candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin main
+          main_sha="$(git rev-parse FETCH_HEAD)"
+          echo "main_sha=${main_sha}" >> "$GITHUB_OUTPUT"
+          if git cat-file -e "${main_sha}:${SMOKE_SET}" 2>/dev/null; then
+            echo "published=true" >> "$GITHUB_OUTPUT"
+            echo "sdc-smoke-v1 is published on main ${main_sha}; running the gate."
+          else
+            echo "published=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=WP-1.8 smoke gate::sdc-smoke-v1 not published (H6); the gate is dormant and this job succeeds without running it."
+            {
+              echo "### WP-1.8 smoke gate: dormant"
+              echo
+              echo "sdc-smoke-v1 not published (H6). The gate runs once the verified set is on main."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Check out the baseline (current main)
+        if: steps.state.outputs.published == 'true'
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ steps.state.outputs.main_sha }}
+          lfs: true
+          path: baseline
+
+      - name: Install Linux build dependencies
+        if: steps.state.outputs.published == 'true'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y build-essential libssl-dev
+
+      - name: Install the pinned Rust toolchains (rust-toolchain.toml)
+        if: steps.state.outputs.published == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          (cd candidate && rustup toolchain install)
+          (cd baseline && rustup toolchain install)
+
+      - uses: Swatinem/rust-cache@v2
+        if: steps.state.outputs.published == 'true'
+        with:
+          workspaces: |
+            candidate -> target
+            baseline -> target
+
+      - name: Build seeky-bench (baseline and candidate)
+        if: steps.state.outputs.published == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          (cd baseline && cargo build --locked --release -p seeky-bench)
+          (cd candidate && cargo build --locked --release -p seeky-bench)
+
+      - name: Evaluate the baseline at main
+        if: steps.state.outputs.published == 'true'
+        shell: bash
+        env:
+          SEEKY_BENCH_ROOT: ${{ github.workspace }}/baseline
+        run: |
+          set -euo pipefail
+          out="$RUNNER_TEMP/smoke"
+          bin="$GITHUB_WORKSPACE/baseline/target/release/seeky-bench"
+          config="$GITHUB_WORKSPACE/candidate/$CI_CONFIG"
+          "$bin" index --corpus sdc-smoke --data-dir "$out/baseline-data" \
+            --config "$config" --output "$out/baseline-index"
+          "$bin" eval --corpus sdc-smoke --split dev --config "$config" \
+            --data-dir "$out/baseline-data" --output "$out/baseline" \
+            --require-clean --work-package WP-1.8 --spec SPEC-0003
+
+      - name: Evaluate the candidate twice from fresh indexes
+        if: steps.state.outputs.published == 'true'
+        shell: bash
+        env:
+          SEEKY_BENCH_ROOT: ${{ github.workspace }}/candidate
+        run: |
+          set -euo pipefail
+          out="$RUNNER_TEMP/smoke"
+          bin="$GITHUB_WORKSPACE/candidate/target/release/seeky-bench"
+          config="$GITHUB_WORKSPACE/candidate/$CI_CONFIG"
+          for run in candidate repeat; do
+            "$bin" index --corpus sdc-smoke --data-dir "$out/${run}-data" \
+              --config "$config" --output "$out/${run}-index"
+            "$bin" eval --corpus sdc-smoke --split dev --config "$config" \
+              --data-dir "$out/${run}-data" --output "$out/${run}" \
+              --require-clean --work-package WP-1.8 --spec SPEC-0003
+          done
+
+      - name: Run compare --gate wp1.8
+        if: steps.state.outputs.published == 'true'
+        shell: bash
+        env:
+          SEEKY_BENCH_ROOT: ${{ github.workspace }}/candidate
+          MAIN_SHA: ${{ steps.state.outputs.main_sha }}
+        run: |
+          set -euo pipefail
+          out="$RUNNER_TEMP/smoke"
+          status=0
+          "$GITHUB_WORKSPACE/candidate/target/release/seeky-bench" compare \
+            --baseline "$out/baseline/results.json" \
+            --candidate "$out/candidate/results.json" \
+            --repeat-candidate "$out/repeat/results.json" \
+            --gate wp1.8 --baseline-commit "$MAIN_SHA" \
+            --work-package WP-1.8 --spec SPEC-0003 \
+            --output "$out/gate" || status=$?
+          if [ -f "$out/gate/summary.md" ]; then
+            cat "$out/gate/summary.md" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          exit "$status"
+
+      - name: Upload the smoke-gate artifacts
+        if: always() && steps.state.outputs.published == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-gate
+          path: |
+            ${{ runner.temp }}/smoke/baseline
+            ${{ runner.temp }}/smoke/candidate
+            ${{ runner.temp }}/smoke/repeat
+            ${{ runner.temp }}/smoke/gate
+          if-no-files-found: ignore
+          retention-days: 14

@@ -12,6 +12,7 @@ pub mod engine;
 pub mod environment;
 pub mod gate;
 pub mod perf;
+pub mod smoke_gate;
 
 use artifact::ArtifactDir;
 use corpus::BenchPaths;
