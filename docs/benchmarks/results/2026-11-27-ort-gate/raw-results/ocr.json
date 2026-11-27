@@ -1,0 +1,280 @@
+{
+  "amendment": 4,
+  "baseline_rss_bytes": 290537472,
+  "detector_recipe": {
+    "box_thresh": 0.4,
+    "max_candidates": 3000.0,
+    "mean": [
+      0.485,
+      0.456,
+      0.406
+    ],
+    "std": [
+      0.229,
+      0.224,
+      0.225
+    ],
+    "thresh": 0.2,
+    "unclip_ratio": 1.4
+  },
+  "environment": {
+    "capture_schema": 1,
+    "cpu_architecture": "X86_64",
+    "cpu_flags": [
+      "3dnow",
+      "3dnowprefetch",
+      "abm",
+      "acpi",
+      "adx",
+      "aes",
+      "apic",
+      "avx",
+      "avx2",
+      "bmi1",
+      "bmi2",
+      "clflush",
+      "clflushopt",
+      "clwb",
+      "cmov",
+      "cx16",
+      "cx8",
+      "de",
+      "dts",
+      "erms",
+      "est",
+      "f16c",
+      "fma",
+      "fpu",
+      "fxsr",
+      "gfni",
+      "ht",
+      "hypervisor",
+      "ia64",
+      "intel_pt",
+      "invpcid",
+      "lahf_lm",
+      "mca",
+      "mce",
+      "mmx",
+      "monitor",
+      "movbe",
+      "msr",
+      "mtrr",
+      "osxsave",
+      "pae",
+      "pat",
+      "pbe",
+      "pcid",
+      "pclmulqdq",
+      "pdcm",
+      "pge",
+      "pni",
+      "popcnt",
+      "pqe",
+      "pse",
+      "pse36",
+      "rdpid",
+      "rdrnd",
+      "rdseed",
+      "sep",
+      "serial",
+      "sha",
+      "smap",
+      "smep",
+      "ss",
+      "sse",
+      "sse2",
+      "sse4_1",
+      "sse4_2",
+      "ssse3",
+      "tm",
+      "tm2",
+      "tsc",
+      "tscdeadline",
+      "umip",
+      "vaes",
+      "vme",
+      "vpclmulqdq",
+      "x2apic",
+      "xsave",
+      "xtpr"
+    ],
+    "cpu_model": "Intel(R) Core(TM) Ultra 7 265KF",
+    "disk_free_bytes": 89476546560,
+    "logical_cpus": 20,
+    "ort_available_providers": [
+      "AzureExecutionProvider",
+      "CPUExecutionProvider"
+    ],
+    "os": "Windows-10-10.0.26200-SP0",
+    "os_version": "10.0.26200",
+    "packages": {
+      "onnxruntime": "1.22.0",
+      "torch": "2.11.0+cpu",
+      "transformers": "5.18.0"
+    },
+    "physical_cores": 20,
+    "pid": 42564,
+    "python": "3.11.15",
+    "ram_bytes": 68398948352
+  },
+  "graphs": {
+    "det": {
+      "repository": "PaddlePaddle/PP-OCRv6_tiny_det_onnx",
+      "revision": "2ba1506c0380b8f0b03dd142459aac66d4421f6c",
+      "sha256": "193bab7a04fca699a6c82e6abb5b81bdb28177f0abd4062552b04908dafb19f8"
+    },
+    "rec": {
+      "repository": "PaddlePaddle/PP-OCRv6_tiny_rec_onnx",
+      "revision": "2612ab37152ae0a677521bae4e1e3d4fb4cf7c30",
+      "sha256": "9ef676d6ed3c88256a2d92c640c44f25b0c40947e111b14b8be8f594091563e6"
+    }
+  },
+  "label": "T1-emulated, provisional",
+  "model": "PP-OCRv6-tiny-det + PP-OCRv6-tiny-rec",
+  "no_text_page_count": 4,
+  "page_count": 20,
+  "profile": {
+    "applied_cpus": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "background": true,
+    "cpus": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "memory_bytes": 12884901888,
+    "name": "T1-emulated, provisional",
+    "ort_threads": 8,
+    "pid": 42564
+  },
+  "schema": 1,
+  "text_page_count": 16,
+  "timed_passes": 3,
+  "variant_failures": {
+    "int8-dynamic": "NotImplemented: [ONNXRuntimeError] : 9 : NOT_IMPLEMENTED : Could not find an implementation for ConvInteger(10) node with name 'Conv.0_quant'"
+  },
+  "variants": {
+    "fp32": {
+      "cold_load_seconds": 0.008152800000971183,
+      "deterministic_repeat": true,
+      "files": [
+        {
+          "bytes": 1780590,
+          "filename": "det.onnx",
+          "sha256": "193bab7a04fca699a6c82e6abb5b81bdb28177f0abd4062552b04908dafb19f8"
+        },
+        {
+          "bytes": 4462639,
+          "filename": "rec.onnx",
+          "sha256": "9ef676d6ed3c88256a2d92c640c44f25b0c40947e111b14b8be8f594091563e6"
+        }
+      ],
+      "model_bytes": 6243229,
+      "parity_passed": true,
+      "path_label": "ppocrv6-tiny/fp32",
+      "quality": {
+        "CER": 0.006980145533971336,
+        "CER_diacritic_insensitive": 0.006921963953383094,
+        "WER": 0.039199707927682986,
+        "WER_diacritic_insensitive": 0.03886549368357259,
+        "inserted_word_rate_clean": 0.0,
+        "no_text_page_count": 4,
+        "no_text_pages_with_output": 0,
+        "page_CER_p50": 0.005157431663155617,
+        "page_CER_p95": 0.017753234675932122,
+        "reference_CER_delta": 0.0,
+        "reference_inserted_word_rate_delta": 0.0
+      },
+      "quiet_window": {
+        "attempts": 1,
+        "blocked_observations": [],
+        "elapsed_seconds": 2.0159999999887077,
+        "pid": 42564,
+        "quiet": true
+      },
+      "timing": {
+        "added_peak_rss_bytes_upper_bound": 1173417984,
+        "page": {
+          "background_priority": true,
+          "count": 48,
+          "max_ms": 735.6597,
+          "mean_ms": 649.3865479166667,
+          "min_ms": 559.7169,
+          "p50_ci95_ms": [
+            639.4201,
+            659.2746999999999
+          ],
+          "p50_ms": 643.9704,
+          "p95_ci95_ms": [
+            693.1011,
+            735.6597
+          ],
+          "p95_ms": 723.5625,
+          "passes": 3
+        },
+        "power": {
+          "previous_guid": "381b4222-f694-41f0-9685-ff5bb260df2e",
+          "scheme": "High performance"
+        }
+      }
+    },
+    "int8-static-qdq": {
+      "cold_load_seconds": 0.008447899992461316,
+      "deterministic_repeat": true,
+      "files": [
+        {
+          "bytes": 291695,
+          "filename": "det.onnx",
+          "sha256": "768fcb3796a6e5a13eeb7c626f54152fd51c879c884f09d6dc34a5aa5bc4dbda"
+        },
+        {
+          "bytes": 421952,
+          "filename": "det.onnx.data",
+          "sha256": "fad0f688832fa82d8a973eab24fc8e43c2653828b0da2cc0e5ed8adae0f17540"
+        },
+        {
+          "bytes": 230087,
+          "filename": "rec.onnx",
+          "sha256": "3cc3f54939a3a0b886a93f2d5eb7bd6a267a91540f28f98d10307f42d85371f8"
+        },
+        {
+          "bytes": 1092218,
+          "filename": "rec.onnx.data",
+          "sha256": "d81f23360a4419c95be6ad26f23397017c3459cd7643e98d3e97aead96210817"
+        }
+      ],
+      "model_bytes": 2035952,
+      "parity_passed": false,
+      "path_label": "ppocrv6-tiny/int8-static-qdq",
+      "quality": {
+        "CER": 0.7028485730944207,
+        "CER_diacritic_insensitive": 0.7023299979931359,
+        "WER": 0.8794689118802834,
+        "WER_diacritic_insensitive": 0.8785594909291632,
+        "inserted_word_rate_clean": 0.0,
+        "no_text_page_count": 4,
+        "no_text_pages_with_output": 0,
+        "page_CER_p50": 0.7021232419016101,
+        "page_CER_p95": 0.7788991930023423,
+        "reference_CER_delta": 0.6958684275604494,
+        "reference_inserted_word_rate_delta": 0.0
+      },
+      "timing": null
+    }
+  },
+  "warmup_pages": 3
+}

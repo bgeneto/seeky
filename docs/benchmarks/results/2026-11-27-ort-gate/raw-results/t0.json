@@ -1,0 +1,146 @@
+{
+  "checks": {
+    "embedder": {
+      "passed": true,
+      "shape": [
+        1,
+        384
+      ],
+      "variant": "fp32"
+    },
+    "ocr": {
+      "characters": 3012,
+      "passed": true
+    },
+    "reranker": {
+      "passed": true,
+      "shape": [
+        1
+      ],
+      "variant": "fp32"
+    }
+  },
+  "environment": {
+    "capture_schema": 1,
+    "cpu_architecture": "X86_64",
+    "cpu_flags": [
+      "3dnow",
+      "3dnowprefetch",
+      "abm",
+      "acpi",
+      "adx",
+      "aes",
+      "apic",
+      "avx",
+      "avx2",
+      "bmi1",
+      "bmi2",
+      "clflush",
+      "clflushopt",
+      "clwb",
+      "cmov",
+      "cx16",
+      "cx8",
+      "de",
+      "dts",
+      "erms",
+      "est",
+      "f16c",
+      "fma",
+      "fpu",
+      "fxsr",
+      "gfni",
+      "ht",
+      "hypervisor",
+      "ia64",
+      "intel_pt",
+      "invpcid",
+      "lahf_lm",
+      "mca",
+      "mce",
+      "mmx",
+      "monitor",
+      "movbe",
+      "msr",
+      "mtrr",
+      "osxsave",
+      "pae",
+      "pat",
+      "pbe",
+      "pcid",
+      "pclmulqdq",
+      "pdcm",
+      "pge",
+      "pni",
+      "popcnt",
+      "pqe",
+      "pse",
+      "pse36",
+      "rdpid",
+      "rdrnd",
+      "rdseed",
+      "sep",
+      "serial",
+      "sha",
+      "smap",
+      "smep",
+      "ss",
+      "sse",
+      "sse2",
+      "sse4_1",
+      "sse4_2",
+      "ssse3",
+      "tm",
+      "tm2",
+      "tsc",
+      "tscdeadline",
+      "umip",
+      "vaes",
+      "vme",
+      "vpclmulqdq",
+      "x2apic",
+      "xsave",
+      "xtpr"
+    ],
+    "cpu_model": "Intel(R) Core(TM) Ultra 7 265KF",
+    "disk_free_bytes": 89476546560,
+    "logical_cpus": 20,
+    "ort_available_providers": [
+      "AzureExecutionProvider",
+      "CPUExecutionProvider"
+    ],
+    "os": "Windows-10-10.0.26200-SP0",
+    "os_version": "10.0.26200",
+    "packages": {
+      "onnxruntime": "1.22.0",
+      "torch": "2.11.0+cpu",
+      "transformers": "5.18.0"
+    },
+    "physical_cores": 20,
+    "pid": 3216,
+    "python": "3.11.15",
+    "ram_bytes": 68398948352
+  },
+  "label": "T0 functional, not budget evidence",
+  "passed": true,
+  "profile": {
+    "applied_cpus": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "background": false,
+    "cpus": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "memory_bytes": 6442450944,
+    "name": "T0 functional",
+    "ort_threads": 4,
+    "pid": 3216
+  },
+  "schema": 1
+}

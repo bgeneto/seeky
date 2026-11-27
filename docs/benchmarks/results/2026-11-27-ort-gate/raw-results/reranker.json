@@ -1,0 +1,269 @@
+{
+  "depth": 50,
+  "environment": {
+    "capture_schema": 1,
+    "cpu_architecture": "X86_64",
+    "cpu_flags": [
+      "3dnow",
+      "3dnowprefetch",
+      "abm",
+      "acpi",
+      "adx",
+      "aes",
+      "apic",
+      "avx",
+      "avx2",
+      "bmi1",
+      "bmi2",
+      "clflush",
+      "clflushopt",
+      "clwb",
+      "cmov",
+      "cx16",
+      "cx8",
+      "de",
+      "dts",
+      "erms",
+      "est",
+      "f16c",
+      "fma",
+      "fpu",
+      "fxsr",
+      "gfni",
+      "ht",
+      "hypervisor",
+      "ia64",
+      "intel_pt",
+      "invpcid",
+      "lahf_lm",
+      "mca",
+      "mce",
+      "mmx",
+      "monitor",
+      "movbe",
+      "msr",
+      "mtrr",
+      "osxsave",
+      "pae",
+      "pat",
+      "pbe",
+      "pcid",
+      "pclmulqdq",
+      "pdcm",
+      "pge",
+      "pni",
+      "popcnt",
+      "pqe",
+      "pse",
+      "pse36",
+      "rdpid",
+      "rdrnd",
+      "rdseed",
+      "sep",
+      "serial",
+      "sha",
+      "smap",
+      "smep",
+      "ss",
+      "sse",
+      "sse2",
+      "sse4_1",
+      "sse4_2",
+      "ssse3",
+      "tm",
+      "tm2",
+      "tsc",
+      "tscdeadline",
+      "umip",
+      "vaes",
+      "vme",
+      "vpclmulqdq",
+      "x2apic",
+      "xsave",
+      "xtpr"
+    ],
+    "cpu_model": "Intel(R) Core(TM) Ultra 7 265KF",
+    "disk_free_bytes": 35786870784,
+    "logical_cpus": 20,
+    "ort_available_providers": [
+      "AzureExecutionProvider",
+      "CPUExecutionProvider"
+    ],
+    "os": "Windows-10-10.0.26200-SP0",
+    "os_version": "10.0.26200",
+    "packages": {
+      "onnxruntime": "1.22.0",
+      "torch": "2.11.0+cpu",
+      "transformers": "5.18.0"
+    },
+    "physical_cores": 20,
+    "pid": 12312,
+    "python": "3.11.15",
+    "ram_bytes": 68398948352
+  },
+  "label": "T1-emulated, provisional",
+  "latency_repetitions": 30,
+  "max_pair_tokens": 384,
+  "model": "gte-reranker",
+  "profile": {
+    "applied_cpus": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "background": false,
+    "cpus": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "memory_bytes": 12884901888,
+    "name": "T1-emulated, provisional",
+    "ort_threads": 8,
+    "pid": 12312
+  },
+  "queries": 30,
+  "repository": "Alibaba-NLP/gte-multilingual-reranker-base",
+  "revision": "9ba3cad4568fc0c9299265c963d1eb11df23840d",
+  "schema": 1,
+  "variants": {
+    "fp32": {
+      "cold_load_seconds": 2.107649000012316,
+      "files": [
+        {
+          "bytes": 1224105101,
+          "filename": "model.onnx",
+          "sha256": "fbb722cd90c7aa88355a925fcd9faa725d8c7f9b7b55f849ccfcbfe6c7c5daa1"
+        }
+      ],
+      "model_bytes": 1224105101,
+      "parity": {
+        "list_count": 30,
+        "maximum_absolute_logit_delta": 2.3603439331054688e-05,
+        "mean_absolute_logit_delta": 3.38530819863081e-06,
+        "mean_kendall_tau_b": 1.0,
+        "nDCG@10": 0.794947293522709,
+        "nDCG@10_delta": 0.0,
+        "reference_nDCG@10": 0.794947293522709,
+        "worst_kendall_tau_b": 1.0
+      },
+      "parity_passed": true,
+      "path_label": "gte-reranker/fp32",
+      "providers": [
+        "CPUExecutionProvider"
+      ],
+      "quiet_window": {
+        "attempts": 1,
+        "blocked_observations": [],
+        "elapsed_seconds": 2.014999999999418,
+        "pid": 12312,
+        "quiet": true
+      },
+      "timing": {
+        "depth_50": {
+          "count": 30,
+          "depth": 50,
+          "inference_only": true,
+          "max_ms": 10082.8051,
+          "mean_ms": 8553.300119999998,
+          "min_ms": 6889.0009,
+          "p50_ci95_ms": [
+            8420.1829,
+            8483.182700000001
+          ],
+          "p50_ms": 8457.003200000001,
+          "p95_ci95_ms": [
+            8604.9258,
+            10082.8051
+          ],
+          "p95_ms": 9933.5756,
+          "pair_token_lengths": {
+            "count": 1500,
+            "max": 384.0,
+            "mean": 195.50266666666667,
+            "p50": 183.0,
+            "p95": 380.0
+          }
+        },
+        "power": {
+          "previous_guid": "381b4222-f694-41f0-9685-ff5bb260df2e",
+          "scheme": "High performance"
+        }
+      }
+    },
+    "int8-dynamic": {
+      "cold_load_seconds": 0.8406307000113884,
+      "files": [
+        {
+          "bytes": 1093945,
+          "filename": "model.onnx",
+          "sha256": "c9a1399389a15fbb1745eb4e94af92989b483245107abd19cdffdb8959b578ae"
+        },
+        {
+          "bytes": 306213888,
+          "filename": "model.onnx.data",
+          "sha256": "b81b9b25df22309e98a37622dc11bfaa30d1540fcb123296fc77072e248391da"
+        }
+      ],
+      "model_bytes": 307307833,
+      "parity": {
+        "list_count": 30,
+        "maximum_absolute_logit_delta": 2.291833758354187,
+        "mean_absolute_logit_delta": 0.6692799615842911,
+        "mean_kendall_tau_b": 0.6681904761904763,
+        "nDCG@10": 0.8219808915349659,
+        "nDCG@10_delta": 0.02703359801225691,
+        "reference_nDCG@10": 0.794947293522709,
+        "worst_kendall_tau_b": 0.46122448979591835
+      },
+      "parity_passed": false,
+      "path_label": "gte-reranker/int8-dynamic",
+      "providers": [
+        "CPUExecutionProvider"
+      ],
+      "timing": null
+    },
+    "int8-static-qdq": {
+      "cold_load_seconds": 0.689878300006967,
+      "files": [
+        {
+          "bytes": 1637528,
+          "filename": "model.onnx",
+          "sha256": "dde39a979e2db432f89fdc0915cd71b8ded4ff0dfcec45c1d3e5b46c5a8e9b95"
+        },
+        {
+          "bytes": 305958912,
+          "filename": "model.onnx.data",
+          "sha256": "6895545f1190f64d50b0ea1a20d0434b91e6f30003795ec9b3a2340013c87854"
+        }
+      ],
+      "model_bytes": 307596440,
+      "parity": {
+        "list_count": 30,
+        "maximum_absolute_logit_delta": 3.768764704465866,
+        "mean_absolute_logit_delta": 2.030519714937856,
+        "mean_kendall_tau_b": 0.0,
+        "nDCG@10": 0.09476036077813942,
+        "nDCG@10_delta": -0.7001869327445696,
+        "reference_nDCG@10": 0.794947293522709,
+        "worst_kendall_tau_b": 0.0
+      },
+      "parity_passed": false,
+      "path_label": "gte-reranker/int8-static-qdq",
+      "providers": [
+        "CPUExecutionProvider"
+      ],
+      "timing": null
+    }
+  }
+}

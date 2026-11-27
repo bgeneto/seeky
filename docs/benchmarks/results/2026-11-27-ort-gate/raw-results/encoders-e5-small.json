@@ -1,0 +1,419 @@
+{
+  "environment": {
+    "capture_schema": 1,
+    "cpu_architecture": "X86_64",
+    "cpu_flags": [
+      "3dnow",
+      "3dnowprefetch",
+      "abm",
+      "acpi",
+      "adx",
+      "aes",
+      "apic",
+      "avx",
+      "avx2",
+      "bmi1",
+      "bmi2",
+      "clflush",
+      "clflushopt",
+      "clwb",
+      "cmov",
+      "cx16",
+      "cx8",
+      "de",
+      "dts",
+      "erms",
+      "est",
+      "f16c",
+      "fma",
+      "fpu",
+      "fxsr",
+      "gfni",
+      "ht",
+      "hypervisor",
+      "ia64",
+      "intel_pt",
+      "invpcid",
+      "lahf_lm",
+      "mca",
+      "mce",
+      "mmx",
+      "monitor",
+      "movbe",
+      "msr",
+      "mtrr",
+      "osxsave",
+      "pae",
+      "pat",
+      "pbe",
+      "pcid",
+      "pclmulqdq",
+      "pdcm",
+      "pge",
+      "pni",
+      "popcnt",
+      "pqe",
+      "pse",
+      "pse36",
+      "rdpid",
+      "rdrnd",
+      "rdseed",
+      "sep",
+      "serial",
+      "sha",
+      "smap",
+      "smep",
+      "ss",
+      "sse",
+      "sse2",
+      "sse4_1",
+      "sse4_2",
+      "ssse3",
+      "tm",
+      "tm2",
+      "tsc",
+      "tscdeadline",
+      "umip",
+      "vaes",
+      "vme",
+      "vpclmulqdq",
+      "x2apic",
+      "xsave",
+      "xtpr"
+    ],
+    "cpu_model": "Intel(R) Core(TM) Ultra 7 265KF",
+    "disk_free_bytes": 80601243648,
+    "logical_cpus": 20,
+    "ort_available_providers": [
+      "AzureExecutionProvider",
+      "CPUExecutionProvider"
+    ],
+    "os": "Windows-10-10.0.26200-SP0",
+    "os_version": "10.0.26200",
+    "packages": {
+      "onnxruntime": "1.22.0",
+      "torch": "2.11.0+cpu",
+      "transformers": "5.18.0"
+    },
+    "physical_cores": 20,
+    "pid": 19432,
+    "python": "3.11.15",
+    "ram_bytes": 68398948352
+  },
+  "label": "T1-emulated, provisional",
+  "max_passage_tokens": 384,
+  "max_query_tokens": 64,
+  "model": "e5-small",
+  "passage_batch_size": 8,
+  "passage_passes": 3,
+  "profile": {
+    "applied_cpus": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "background": false,
+    "cpus": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "memory_bytes": 12884901888,
+    "name": "T1-emulated, provisional",
+    "ort_threads": 8,
+    "pid": 19432
+  },
+  "query_repetitions": 30,
+  "repository": "intfloat/multilingual-e5-small",
+  "revision": "614241f622f53c4eeff9890bdc4f31cfecc418b3",
+  "samples": {
+    "miracl": {
+      "passages": 512,
+      "queries": 32
+    },
+    "mmarco": {
+      "passages": 512,
+      "queries": 32
+    }
+  },
+  "schema": 1,
+  "variants": {
+    "fp32": {
+      "cold_load_seconds": 1.5664755000034347,
+      "files": [
+        {
+          "bytes": 470268510,
+          "filename": "model.onnx",
+          "sha256": "ca456c06b3a9505ddfd9131408916dd79290368331e7d76bb621f1cba6bc8665"
+        }
+      ],
+      "model_bytes": 470268510,
+      "parity": {
+        "candidate_nDCG@10": 0.4027464397248415,
+        "mean_cosine": 0.999999999999806,
+        "nDCG@10_delta": 0.0,
+        "neighbor_k": 100,
+        "neighbor_recall_at_100": 1.0,
+        "passage_count": 1024,
+        "query_count": 64,
+        "reference_nDCG@10": 0.4027464397248415
+      },
+      "parity_passed": true,
+      "path_label": "e5-small/fp32",
+      "providers": [
+        "CPUExecutionProvider"
+      ],
+      "quiet_window": {
+        "attempts": 20,
+        "blocked_observations": [
+          {
+            "busy_pids": [
+              38980
+            ],
+            "elapsed_seconds": 2.047000000005937
+          },
+          {
+            "busy_pids": [
+              38980
+            ],
+            "elapsed_seconds": 4.047000000005937
+          },
+          {
+            "busy_pids": [
+              38980
+            ],
+            "elapsed_seconds": 6.047000000005937
+          },
+          {
+            "busy_pids": [
+              38980
+            ],
+            "elapsed_seconds": 8.047000000005937
+          },
+          {
+            "busy_pids": [
+              38980
+            ],
+            "elapsed_seconds": 10.062000000005355
+          },
+          {
+            "busy_pids": [
+              38980
+            ],
+            "elapsed_seconds": 12.078000000001339
+          },
+          {
+            "busy_pids": [
+              38980
+            ],
+            "elapsed_seconds": 14.078000000001339
+          },
+          {
+            "busy_pids": [
+              38980
+            ],
+            "elapsed_seconds": 16.0940000000046
+          },
+          {
+            "busy_pids": [
+              38980
+            ],
+            "elapsed_seconds": 18.0940000000046
+          },
+          {
+            "busy_pids": [
+              38980
+            ],
+            "elapsed_seconds": 20.109000000004016
+          },
+          {
+            "busy_pids": [
+              38980
+            ],
+            "elapsed_seconds": 22.109000000004016
+          },
+          {
+            "busy_pids": [
+              38980
+            ],
+            "elapsed_seconds": 24.125
+          },
+          {
+            "busy_pids": [
+              38980
+            ],
+            "elapsed_seconds": 26.125
+          },
+          {
+            "busy_pids": [
+              38980
+            ],
+            "elapsed_seconds": 28.14100000000326
+          },
+          {
+            "busy_pids": [
+              38980
+            ],
+            "elapsed_seconds": 30.14100000000326
+          },
+          {
+            "busy_pids": [
+              38980
+            ],
+            "elapsed_seconds": 32.15600000000268
+          },
+          {
+            "busy_pids": [
+              38980
+            ],
+            "elapsed_seconds": 34.15600000000268
+          },
+          {
+            "busy_pids": [
+              38980
+            ],
+            "elapsed_seconds": 36.17200000000594
+          },
+          {
+            "busy_pids": [
+              35812,
+              35912,
+              38560,
+              38980
+            ],
+            "elapsed_seconds": 38.17200000000594
+          }
+        ],
+        "elapsed_seconds": 40.187000000005355,
+        "pid": 19432,
+        "quiet": true
+      },
+      "timing": {
+        "passage": {
+          "batch_mean_ms": 247.69741015625,
+          "batch_p95_ms": 540.2597000000001,
+          "batch_size": 8,
+          "batches": 384,
+          "inference_only": true,
+          "passages": 3072,
+          "passages_per_second": 32.29747131774015,
+          "passes": 3,
+          "throughput_ci95": [
+            28.187316951082554,
+            37.15449343868141
+          ],
+          "token_lengths": {
+            "count": 1024,
+            "max": 384.0,
+            "mean": 125.7548828125,
+            "p50": 104.0,
+            "p95": 273.0
+          },
+          "total_seconds": 95.1158055
+        },
+        "power": {
+          "previous_guid": "381b4222-f694-41f0-9685-ff5bb260df2e",
+          "scheme": "High performance"
+        },
+        "query": {
+          "count": 1920,
+          "inference_only": true,
+          "max_ms": 9.044500000000001,
+          "mean_ms": 2.86106828125,
+          "min_ms": 2.177,
+          "p50_ci95_ms": [
+            2.7769,
+            2.8029
+          ],
+          "p50_ms": 2.7895,
+          "p95_ci95_ms": [
+            3.3299,
+            3.4922
+          ],
+          "p95_ms": 3.4087,
+          "token_lengths": {
+            "count": 64,
+            "max": 19.0,
+            "mean": 14.078125,
+            "p50": 14.0,
+            "p95": 18.0
+          }
+        }
+      }
+    },
+    "int8-dynamic": {
+      "cold_load_seconds": 0.1885926999966614,
+      "files": [
+        {
+          "bytes": 629464,
+          "filename": "model.onnx",
+          "sha256": "198e7408ba8b423837a0ddfb5932b127d220b47c8424264d6c4db45270f374ef"
+        },
+        {
+          "bytes": 117691264,
+          "filename": "model.onnx.data",
+          "sha256": "d69b4a2530fa504826fe34f648cacb8632ac094e45cba93b33d596218ee30187"
+        }
+      ],
+      "model_bytes": 118320728,
+      "parity": {
+        "candidate_nDCG@10": 0.40273340847381495,
+        "mean_cosine": 0.9967255081310548,
+        "nDCG@10_delta": -1.3031251026529578e-05,
+        "neighbor_k": 100,
+        "neighbor_recall_at_100": 0.89671875,
+        "passage_count": 1024,
+        "query_count": 64,
+        "reference_nDCG@10": 0.4027464397248415
+      },
+      "parity_passed": false,
+      "path_label": "e5-small/int8-dynamic",
+      "providers": [
+        "CPUExecutionProvider"
+      ],
+      "timing": null
+    },
+    "int8-static-qdq": {
+      "cold_load_seconds": 0.5308718000014778,
+      "files": [
+        {
+          "bytes": 1158801,
+          "filename": "model.onnx",
+          "sha256": "3510d33df1eda1c2c66739d70c03c2ce5e153acaef2e2bcb39d93daf8d6cc418"
+        },
+        {
+          "bytes": 117467008,
+          "filename": "model.onnx.data",
+          "sha256": "14dd263256d473cd3634085905ced748ff252bd19ad7cbba53a0e10d33ba4cec"
+        }
+      ],
+      "model_bytes": 118625809,
+      "parity": {
+        "candidate_nDCG@10": 0.012773899849280382,
+        "mean_cosine": 0.7102072151225797,
+        "nDCG@10_delta": -0.3899725398755611,
+        "neighbor_k": 100,
+        "neighbor_recall_at_100": 0.128125,
+        "passage_count": 1024,
+        "query_count": 64,
+        "reference_nDCG@10": 0.4027464397248415
+      },
+      "parity_passed": false,
+      "path_label": "e5-small/int8-static-qdq",
+      "providers": [
+        "CPUExecutionProvider"
+      ],
+      "timing": null
+    }
+  }
+}

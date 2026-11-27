@@ -1,0 +1,264 @@
+{
+  "environment": {
+    "capture_schema": 1,
+    "cpu_architecture": "X86_64",
+    "cpu_flags": [
+      "3dnow",
+      "3dnowprefetch",
+      "abm",
+      "acpi",
+      "adx",
+      "aes",
+      "apic",
+      "avx",
+      "avx2",
+      "bmi1",
+      "bmi2",
+      "clflush",
+      "clflushopt",
+      "clwb",
+      "cmov",
+      "cx16",
+      "cx8",
+      "de",
+      "dts",
+      "erms",
+      "est",
+      "f16c",
+      "fma",
+      "fpu",
+      "fxsr",
+      "gfni",
+      "ht",
+      "hypervisor",
+      "ia64",
+      "intel_pt",
+      "invpcid",
+      "lahf_lm",
+      "mca",
+      "mce",
+      "mmx",
+      "monitor",
+      "movbe",
+      "msr",
+      "mtrr",
+      "osxsave",
+      "pae",
+      "pat",
+      "pbe",
+      "pcid",
+      "pclmulqdq",
+      "pdcm",
+      "pge",
+      "pni",
+      "popcnt",
+      "pqe",
+      "pse",
+      "pse36",
+      "rdpid",
+      "rdrnd",
+      "rdseed",
+      "sep",
+      "serial",
+      "sha",
+      "smap",
+      "smep",
+      "ss",
+      "sse",
+      "sse2",
+      "sse4_1",
+      "sse4_2",
+      "ssse3",
+      "tm",
+      "tm2",
+      "tsc",
+      "tscdeadline",
+      "umip",
+      "vaes",
+      "vme",
+      "vpclmulqdq",
+      "x2apic",
+      "xsave",
+      "xtpr"
+    ],
+    "cpu_model": "Intel(R) Core(TM) Ultra 7 265KF",
+    "disk_free_bytes": 14787989504,
+    "logical_cpus": 20,
+    "ort_available_providers": [
+      "AzureExecutionProvider",
+      "CPUExecutionProvider"
+    ],
+    "os": "Windows-10-10.0.26200-SP0",
+    "os_version": "10.0.26200",
+    "packages": {
+      "onnxruntime": "1.22.0",
+      "torch": "2.11.0+cpu",
+      "transformers": "5.18.0"
+    },
+    "physical_cores": 20,
+    "pid": 42232,
+    "python": "3.11.15",
+    "ram_bytes": 68398948352
+  },
+  "label": "T1-emulated, provisional",
+  "max_passage_tokens": 384,
+  "max_query_tokens": 64,
+  "model": "gety-embed-v0",
+  "passage_batch_size": 8,
+  "passage_passes": 3,
+  "profile": {
+    "applied_cpus": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "background": false,
+    "cpus": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "memory_bytes": 12884901888,
+    "name": "T1-emulated, provisional",
+    "ort_threads": 8,
+    "pid": 42232
+  },
+  "query_repetitions": 30,
+  "repository": "gety-ai/gety-embed-v0",
+  "revision": "424f41cb36776481b7e2c9f619ca7ce5d5351fe0",
+  "samples": {
+    "miracl": {
+      "passages": 512,
+      "queries": 32
+    },
+    "mmarco": {
+      "passages": 512,
+      "queries": 32
+    }
+  },
+  "schema": 1,
+  "variants": {
+    "fp16-upcast": {
+      "cold_load_seconds": 0.6672963000019081,
+      "files": [
+        {
+          "bytes": 470086600,
+          "filename": "model.onnx",
+          "sha256": "17be00aa812a5f4b2e64b4bf8c1bf20d6f8f92efa911f5d9e5558d9265ef821a"
+        }
+      ],
+      "model_bytes": 470086600,
+      "parity": {
+        "candidate_nDCG@10": 0.3978884243652864,
+        "mean_cosine": 1.0,
+        "nDCG@10_delta": 0.0,
+        "neighbor_k": 100,
+        "neighbor_recall_at_100": 1.0,
+        "passage_count": 1024,
+        "query_count": 64,
+        "reference_nDCG@10": 0.3978884243652864
+      },
+      "parity_passed": true,
+      "path_label": "gety-embed-v0/fp16-upcast",
+      "providers": [
+        "CPUExecutionProvider"
+      ],
+      "quiet_window": {
+        "attempts": 1,
+        "blocked_observations": [],
+        "elapsed_seconds": 2.0160000000032596,
+        "pid": 42232,
+        "quiet": true
+      },
+      "timing": {
+        "passage": {
+          "batch_mean_ms": 139.3769578125,
+          "batch_p95_ms": 238.7699,
+          "batch_size": 8,
+          "batches": 384,
+          "inference_only": true,
+          "passages": 3072,
+          "passages_per_second": 57.39829686024702,
+          "passes": 3,
+          "throughput_ci95": [
+            51.4016322420385,
+            63.410897582548316
+          ],
+          "token_lengths": {
+            "count": 1024,
+            "max": 384.0,
+            "mean": 125.7548828125,
+            "p50": 104.0,
+            "p95": 273.0
+          },
+          "total_seconds": 53.5207518
+        },
+        "power": {
+          "previous_guid": "381b4222-f694-41f0-9685-ff5bb260df2e",
+          "scheme": "High performance"
+        },
+        "query": {
+          "count": 1920,
+          "inference_only": true,
+          "max_ms": 32.165800000000004,
+          "mean_ms": 2.1982384375,
+          "min_ms": 1.6682000000000001,
+          "p50_ci95_ms": [
+            2.0864,
+            2.1009
+          ],
+          "p50_ms": 2.0923000000000003,
+          "p95_ci95_ms": [
+            2.4259,
+            2.4824
+          ],
+          "p95_ms": 2.4578,
+          "token_lengths": {
+            "count": 64,
+            "max": 19.0,
+            "mean": 14.078125,
+            "p50": 14.0,
+            "p95": 18.0
+          }
+        }
+      }
+    },
+    "published-uint8": {
+      "cold_load_seconds": 0.28327809998882003,
+      "files": [
+        {
+          "bytes": 118130759,
+          "filename": "model.onnx",
+          "sha256": "183b375d5f27b6ab5cb8ab6c7154231652920d4ad5cdd23de2000da23b19324a"
+        }
+      ],
+      "model_bytes": 118130759,
+      "parity": {
+        "candidate_nDCG@10": 0.3925634080656455,
+        "mean_cosine": 0.9898457189480493,
+        "nDCG@10_delta": -0.005325016299640883,
+        "neighbor_k": 100,
+        "neighbor_recall_at_100": 0.87390625,
+        "passage_count": 1024,
+        "query_count": 64,
+        "reference_nDCG@10": 0.3978884243652864
+      },
+      "parity_passed": false,
+      "path_label": "gety-embed-v0/published-uint8",
+      "providers": [
+        "CPUExecutionProvider"
+      ],
+      "timing": null
+    }
+  }
+}

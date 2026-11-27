@@ -1,0 +1,207 @@
+{
+  "blank_pages": 4,
+  "dpi": 300,
+  "font": {
+    "name": "DejaVu Serif 2.37",
+    "sha256": "42d1edeb7952f31b1f96d767ed7030b08a39e0c372b0071641518864e2bffb51",
+    "url": "https://github.com/dejavu-fonts/dejavu-fonts/releases/download/version_2_37/dejavu-fonts-ttf-2.37.zip"
+  },
+  "height": 3508,
+  "pages": [
+    {
+      "bytes": 441871,
+      "ground_truth_sha256": "358b3fc97f1d8bde23c994e262b3a1c69c8d8ef7daaf799ba6d096872c17bf03",
+      "id": "en-00",
+      "image": "en-00.png",
+      "kind": "text",
+      "language": "en",
+      "sha256": "2c4b19b78de19a878bd8cc6a6c9054a3ba08902d6da81ad306fee38c9cbdf9cd"
+    },
+    {
+      "bytes": 444181,
+      "ground_truth_sha256": "fd9f5d03d64bf894c8b41213a04ba84deed47642bf5f20f2a790647aadff92c8",
+      "id": "en-01",
+      "image": "en-01.png",
+      "kind": "text",
+      "language": "en",
+      "sha256": "5688dcce743382c8757773d2be8c8ec4a829e60063007547a18bcc0a414119d1"
+    },
+    {
+      "bytes": 386089,
+      "ground_truth_sha256": "01061ec6eab82d4c5fa94aca347e2093c326b3f6f710d8943db32c9e8557667b",
+      "id": "en-02",
+      "image": "en-02.png",
+      "kind": "text",
+      "language": "en",
+      "sha256": "bcd3ae5a4b990cf053b1ae521771a6653e72711a88fcace737a7bf4ac9db88bd"
+    },
+    {
+      "bytes": 426758,
+      "ground_truth_sha256": "c4f7f75c03bea47b13cd7916155d4f922624b57e113f226158cdab41d2c5bc38",
+      "id": "en-03",
+      "image": "en-03.png",
+      "kind": "text",
+      "language": "en",
+      "sha256": "1a821e939d9b4b1f670f2b269287c66232ddab590be4724611d10f0d7e746c68"
+    },
+    {
+      "bytes": 426156,
+      "ground_truth_sha256": "5ba2126ce4b02217533cd6b48f3f2044d13665de619d809a2b659d92e1c646eb",
+      "id": "en-04",
+      "image": "en-04.png",
+      "kind": "text",
+      "language": "en",
+      "sha256": "b0ca5f01f21899c4ad057d8bd1498a3d2ebd9c3a3ee7b4f25113d198048ef365"
+    },
+    {
+      "bytes": 443550,
+      "ground_truth_sha256": "eb9750440711c6dbb2faa574cd779209cfccb4881fbb7e36c64969dc51d10bce",
+      "id": "en-05",
+      "image": "en-05.png",
+      "kind": "text",
+      "language": "en",
+      "sha256": "b895dd10234198899fde490528c5c81fbbed468ae1fbd32caf23a49fd0abda54"
+    },
+    {
+      "bytes": 464203,
+      "ground_truth_sha256": "ef2f1fd9488de9668fc9674e42bd9b6642fa0f7f5eafb4eebc2f1f76c6a95a5d",
+      "id": "en-06",
+      "image": "en-06.png",
+      "kind": "text",
+      "language": "en",
+      "sha256": "a0c5b704e141d1088d291a4ab4f48be27a7f1b5582df1a95e2eed5e53003955d"
+    },
+    {
+      "bytes": 451651,
+      "ground_truth_sha256": "41efd566a2c6136459782c4dd20d2cf8236447b4873869d6df943ea4ca43b089",
+      "id": "en-07",
+      "image": "en-07.png",
+      "kind": "text",
+      "language": "en",
+      "sha256": "0e46500504ea06170e531cb4a7fbc540f1f392822f0905c9bcf4b2a59affe308"
+    },
+    {
+      "bytes": 473143,
+      "ground_truth_sha256": "0234be16b7c477046e9c20155622a961ec2b2027beb2f9b205a331191ae8e887",
+      "id": "pt-00",
+      "image": "pt-00.png",
+      "kind": "text",
+      "language": "pt",
+      "sha256": "13960cdd3d0193b13488be42a3772662ab0e78f6fac9da9a60520505fb031e6a"
+    },
+    {
+      "bytes": 438631,
+      "ground_truth_sha256": "078d9b2c8611eff7205d6b68c467d80037d5c0502613e36685985205f94fadd7",
+      "id": "pt-01",
+      "image": "pt-01.png",
+      "kind": "text",
+      "language": "pt",
+      "sha256": "d40ac066e4e29dd4f5d064e373ccb9c943775707ecc3ace1608b8a884642ca6c"
+    },
+    {
+      "bytes": 386284,
+      "ground_truth_sha256": "f1c657523d7ab99f6aef1c2aa12fea9702be1358ae788a681e5c1fba13a79690",
+      "id": "pt-02",
+      "image": "pt-02.png",
+      "kind": "text",
+      "language": "pt",
+      "sha256": "2516a0cdf1f143b4a8d52a9f458a98b5946573559ceecd00b9a4b102e5af9df0"
+    },
+    {
+      "bytes": 443184,
+      "ground_truth_sha256": "309eb2ebf6cb063b81132b469f17571462ed7a409f239fcc0d75d90a1cbbc038",
+      "id": "pt-03",
+      "image": "pt-03.png",
+      "kind": "text",
+      "language": "pt",
+      "sha256": "163d7c0a218f120b2eb57612dcfcd21b1afde78681b7acec6bebbefb54099d79"
+    },
+    {
+      "bytes": 431920,
+      "ground_truth_sha256": "a188c1ba70217ab35559e96c2c5ad0fd15433f566121b80e9a7550fa8561b20e",
+      "id": "pt-04",
+      "image": "pt-04.png",
+      "kind": "text",
+      "language": "pt",
+      "sha256": "4202f6d3e9b4bcd795f3c0342b19d20964bd8515f87d6febc1f9a4bfde6067c2"
+    },
+    {
+      "bytes": 461147,
+      "ground_truth_sha256": "8b5b7ac1ba0834082fc8c54061867ab7256c2f1c3fc192c6ad8cfbbdcda4ed30",
+      "id": "pt-05",
+      "image": "pt-05.png",
+      "kind": "text",
+      "language": "pt",
+      "sha256": "bdc10bf3065f12c786402410b9c6355e60327be1ab92bb27180c4293e0bd81cf"
+    },
+    {
+      "bytes": 459029,
+      "ground_truth_sha256": "2aa20c116bc10ae4618757ab918caeb519a173a72f545b94cd3aaa8d19786be7",
+      "id": "pt-06",
+      "image": "pt-06.png",
+      "kind": "text",
+      "language": "pt",
+      "sha256": "1ce33f3f0f407535a4f185368de8a71ee90a284c8982325347f046f1b78284ca"
+    },
+    {
+      "bytes": 442703,
+      "ground_truth_sha256": "534c859dc60363fa52cc8bb1287ca7240875a500431e6e6fde44f52363bb0352",
+      "id": "pt-07",
+      "image": "pt-07.png",
+      "kind": "text",
+      "language": "pt",
+      "sha256": "e980a4d38c61c78d2d773fcdcb67d5a0e52ebfd9158c914217ec68417d543ea2"
+    },
+    {
+      "bytes": 31256,
+      "ground_truth_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "id": "blank-00",
+      "image": "blank-00.png",
+      "kind": "no-text",
+      "language": null,
+      "sha256": "c1b82ccb710970ce26b8a9b9e2b806b7e9b1dffb3f9e9c7a57962da786a53b9a"
+    },
+    {
+      "bytes": 31256,
+      "ground_truth_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "id": "blank-01",
+      "image": "blank-01.png",
+      "kind": "no-text",
+      "language": null,
+      "sha256": "c1b82ccb710970ce26b8a9b9e2b806b7e9b1dffb3f9e9c7a57962da786a53b9a"
+    },
+    {
+      "bytes": 31256,
+      "ground_truth_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "id": "blank-02",
+      "image": "blank-02.png",
+      "kind": "no-text",
+      "language": null,
+      "sha256": "c1b82ccb710970ce26b8a9b9e2b806b7e9b1dffb3f9e9c7a57962da786a53b9a"
+    },
+    {
+      "bytes": 31256,
+      "ground_truth_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "id": "blank-03",
+      "image": "blank-03.png",
+      "kind": "no-text",
+      "language": null,
+      "sha256": "c1b82ccb710970ce26b8a9b9e2b806b7e9b1dffb3f9e9c7a57962da786a53b9a"
+    }
+  ],
+  "schema": 1,
+  "sources": {
+    "en": {
+      "body_sha256": "8b0e67baf93e9a01fff89aa84437d6adb9f0a908bacb9faea3db12b98564bbc7",
+      "source_url": "https://gutenberg.pglaf.org/cache/epub/35/pg35.txt",
+      "title": "The Time Machine"
+    },
+    "pt": {
+      "body_sha256": "7a156f2a1a0adb4a35da03cde7e7e0f1b1211c1f8e98b01b22b042f24c816fb3",
+      "source_url": "https://gutenberg.pglaf.org/cache/epub/55752/pg55752.txt",
+      "title": "Dom Casmurro"
+    }
+  },
+  "text_pages_per_language": 8,
+  "width": 2480
+}

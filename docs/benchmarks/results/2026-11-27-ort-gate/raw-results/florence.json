@@ -1,0 +1,334 @@
+{
+  "baseline_rss_bytes": 396115968,
+  "environment": {
+    "capture_schema": 1,
+    "cpu_architecture": "X86_64",
+    "cpu_flags": [
+      "3dnow",
+      "3dnowprefetch",
+      "abm",
+      "acpi",
+      "adx",
+      "aes",
+      "apic",
+      "avx",
+      "avx2",
+      "bmi1",
+      "bmi2",
+      "clflush",
+      "clflushopt",
+      "clwb",
+      "cmov",
+      "cx16",
+      "cx8",
+      "de",
+      "dts",
+      "erms",
+      "est",
+      "f16c",
+      "fma",
+      "fpu",
+      "fxsr",
+      "gfni",
+      "ht",
+      "hypervisor",
+      "ia64",
+      "intel_pt",
+      "invpcid",
+      "lahf_lm",
+      "mca",
+      "mce",
+      "mmx",
+      "monitor",
+      "movbe",
+      "msr",
+      "mtrr",
+      "osxsave",
+      "pae",
+      "pat",
+      "pbe",
+      "pcid",
+      "pclmulqdq",
+      "pdcm",
+      "pge",
+      "pni",
+      "popcnt",
+      "pqe",
+      "pse",
+      "pse36",
+      "rdpid",
+      "rdrnd",
+      "rdseed",
+      "sep",
+      "serial",
+      "sha",
+      "smap",
+      "smep",
+      "ss",
+      "sse",
+      "sse2",
+      "sse4_1",
+      "sse4_2",
+      "ssse3",
+      "tm",
+      "tm2",
+      "tsc",
+      "tscdeadline",
+      "umip",
+      "vaes",
+      "vme",
+      "vpclmulqdq",
+      "x2apic",
+      "xsave",
+      "xtpr"
+    ],
+    "cpu_model": "Intel(R) Core(TM) Ultra 7 265KF",
+    "disk_free_bytes": 89122054144,
+    "logical_cpus": 20,
+    "ort_available_providers": [
+      "AzureExecutionProvider",
+      "CPUExecutionProvider"
+    ],
+    "os": "Windows-10-10.0.26200-SP0",
+    "os_version": "10.0.26200",
+    "packages": {
+      "onnxruntime": "1.22.0",
+      "torch": "2.11.0+cpu",
+      "transformers": "5.18.0"
+    },
+    "physical_cores": 20,
+    "pid": 21780,
+    "python": "3.11.15",
+    "ram_bytes": 68398948352
+  },
+  "label": "T1-emulated, provisional",
+  "max_new_tokens": 1024,
+  "model": "Florence-2-large",
+  "onnx_repository": "onnx-community/Florence-2-large",
+  "profile": {
+    "applied_cpus": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "background": false,
+    "cpus": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "memory_bytes": 12884901888,
+    "name": "T1-emulated, provisional",
+    "ort_threads": 8,
+    "pid": 21780
+  },
+  "prompt": "<OCR>",
+  "repository": "microsoft/Florence-2-large",
+  "schema": 1,
+  "static_qdq": {
+    "attempted": false,
+    "reason": "The published split graphs expose dynamic KV-cache/control-flow inputs; no static-shape export exists in the frozen asset set."
+  },
+  "task_prompt": "What is the text in the image?",
+  "text_pages": 16,
+  "variants": {
+    "fp32": {
+      "cold_load_seconds": 12.54014250000182,
+      "early_stop_all_above_4s": true,
+      "files": [
+        {
+          "bytes": 1453500335,
+          "filename": "vision_encoder.onnx",
+          "sha256": "3579b2a9fe0e73d80a6e6152c610c80fed3739bc9e386145740ac41a0ac0dc05"
+        },
+        {
+          "bytes": 210080043,
+          "filename": "embed_tokens.onnx",
+          "sha256": "af0a7ec8918e556c4f3b7931271b8cf882db2024e2b777955daa053ee6a881b3"
+        },
+        {
+          "bytes": 609049107,
+          "filename": "encoder_model.onnx",
+          "sha256": "3046c1c8abee3c1d5ed667db738035a4abbe2793c5298683a8ccf1d6db5f4170"
+        },
+        {
+          "bytes": 1021996421,
+          "filename": "decoder_model_merged.onnx",
+          "sha256": "b8cc87fea29465237fc9980ee9cf4ef5c6a3e197d78ae6fd1e0b31c20bf7fd80"
+        }
+      ],
+      "hypotheses_sha256": {
+        "en-00": "aa4a6bb2b05c703e98fda329cc2f96636a709f1cb3dfb465f43a7e3d2d787484",
+        "en-01": "baca19fcca15fab35a5e2f6bbdbc5a05593523a11913081de0db22c9a297ff5c",
+        "en-02": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "model_bytes": 3294625906,
+      "pages_at_token_bound": [
+        "en-02"
+      ],
+      "parity": {
+        "CER_delta_vs_fp32": 0.0,
+        "CER_parity_passed": true,
+        "deterministic_repeat": true
+      },
+      "parity_passed": true,
+      "path_label": "florence-large/fp32",
+      "providers": {
+        "decoder_model_merged": [
+          "CPUExecutionProvider"
+        ],
+        "embed_tokens": [
+          "CPUExecutionProvider"
+        ],
+        "encoder_model": [
+          "CPUExecutionProvider"
+        ],
+        "vision_encoder": [
+          "CPUExecutionProvider"
+        ]
+      },
+      "quality": {
+        "CER": 0.48955449550507607,
+        "WER": 0.6062363045919451
+      },
+      "quiet_window": {
+        "attempts": 1,
+        "blocked_observations": [],
+        "elapsed_seconds": 2.0310000000026776,
+        "pid": 21780,
+        "quiet": true
+      },
+      "timing": {
+        "added_peak_rss_bytes_upper_bound": 8331874304,
+        "page": {
+          "count": 3,
+          "early_stop_pages": 3,
+          "max_ms": 174453.91,
+          "mean_ms": 69304.0535,
+          "min_ms": 14824.674200000001,
+          "p50_ci95_ms": [
+            14824.674200000001,
+            174453.91
+          ],
+          "p50_ms": 18633.5763,
+          "p95_ci95_ms": [
+            14824.674200000001,
+            174453.91
+          ],
+          "p95_ms": 174453.91
+        },
+        "power": {
+          "previous_guid": "381b4222-f694-41f0-9685-ff5bb260df2e",
+          "scheme": "High performance"
+        }
+      }
+    },
+    "int4-matmulnbits": {
+      "cold_load_seconds": 4.757871599998907,
+      "early_stop_all_above_4s": true,
+      "files": [
+        {
+          "bytes": 315744335,
+          "filename": "vision_encoder_q4.onnx",
+          "sha256": "34dff602f09ee6dd50a075df84d0030400d9989bd4d603f5759e2d1c4a576408"
+        },
+        {
+          "bytes": 210080062,
+          "filename": "embed_tokens_q4.onnx",
+          "sha256": "8e2d2d452503b2c75683f21e96659a13b3c3da1561ca59a5294ee35f9f49b78c"
+        },
+        {
+          "bytes": 99451927,
+          "filename": "encoder_model_q4.onnx",
+          "sha256": "aa3fdccdbab224adcfbf3c5df7a95ea89cdffc7e917bac9f8a7879b94560c1f0"
+        },
+        {
+          "bytes": 165295714,
+          "filename": "decoder_model_merged_q4.onnx",
+          "sha256": "d13b29ac7da5a998c73d9d8bf9e9380425dc5d03398a82507831651e1a47a374"
+        }
+      ],
+      "hypotheses_sha256": {
+        "en-00": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "en-01": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "en-02": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "model_bytes": 790572038,
+      "pages_at_token_bound": [
+        "en-00",
+        "en-01",
+        "en-02"
+      ],
+      "parity": {
+        "CER_delta_vs_fp32": 0.5104455044949239,
+        "CER_parity_passed": false,
+        "deterministic_repeat": true
+      },
+      "parity_passed": false,
+      "path_label": "florence-large/int4-matmulnbits",
+      "providers": {
+        "decoder_model_merged": [
+          "CPUExecutionProvider"
+        ],
+        "embed_tokens": [
+          "CPUExecutionProvider"
+        ],
+        "encoder_model": [
+          "CPUExecutionProvider"
+        ],
+        "vision_encoder": [
+          "CPUExecutionProvider"
+        ]
+      },
+      "quality": {
+        "CER": 1.0,
+        "WER": 1.0
+      },
+      "quiet_window": {
+        "attempts": 1,
+        "blocked_observations": [],
+        "elapsed_seconds": 2.0,
+        "pid": 21780,
+        "quiet": true
+      },
+      "timing": {
+        "added_peak_rss_bytes_upper_bound": 8331874304,
+        "page": {
+          "count": 3,
+          "early_stop_pages": 3,
+          "max_ms": 106850.3492,
+          "mean_ms": 78914.29093333334,
+          "min_ms": 41295.6477,
+          "p50_ci95_ms": [
+            41295.6477,
+            106850.3492
+          ],
+          "p50_ms": 88596.8759,
+          "p95_ci95_ms": [
+            41295.6477,
+            106850.3492
+          ],
+          "p95_ms": 106850.3492
+        },
+        "power": {
+          "previous_guid": "381b4222-f694-41f0-9685-ff5bb260df2e",
+          "scheme": "High performance"
+        }
+      }
+    },
+    "int8-dynamic": {
+      "error": "ModelError",
+      "parity_passed": false
+    }
+  }
+}

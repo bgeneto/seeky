@@ -91,8 +91,16 @@ roadmap (§6), with the date.
 - `tools/model-export` implements the WP-0.6 ORT validation gate with
   per-gate bounded timeouts (default 1800 s), timeout artifacts that cannot
   produce K1-K4 verdicts, parity/quantization/NPU/OCR/VLM probes, and
-  preregistered kill criteria. The e5/granite fp32 and reranker fp32 proxies
-  fired K1; the final K1-K4 report remains pending.
+  preregistered kill criteria. The final K1–K4 report
+  (`docs/benchmarks/results/2026-11-27-ort-gate/summary.md`) finds: K1 fires
+  for the embedder and reranker proxies (the supplementary Bekko and gety
+  embedders meet the embedder targets on ORT; no measured cross-encoder comes
+  within 20× of the depth-50 / 250 ms reranker budget); PP-OCRv6 tiny replaces
+  PP-OCRv5 mobile as the OCR proxy and passes O1 and O3, with O2 passing only
+  on the new isolated `ocr-memory` probe; Florence-2-large is out of the CPU
+  tier; K3 fires (the NPU runs the fp32 embedder but misses parity); K4 does
+  not fire because the models alone exceed D2. The NPU gate now needs the
+  pinned `openvino` wheel (telemetry opted out). H5 is the maintainer's.
 - `seeky-bench` implements WP-1.2: `index`, `eval`, `perf` (skeleton),
   `compare`, and `report`; environment capture and semantic config hashing;
   atomic, reproducible artifacts; fail-closed depth; test confirmation and an

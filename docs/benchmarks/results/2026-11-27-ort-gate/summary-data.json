@@ -1,0 +1,156 @@
+{
+  "incomplete_sources": [],
+  "runtime_installed_bytes": 14877304,
+  "schema": 1,
+  "sources_present": [
+    "encoders-e5-small",
+    "encoders-granite-modernbert",
+    "reranker",
+    "ocr",
+    "ocr-memory",
+    "florence",
+    "npu",
+    "t0",
+    "encoders-bekko-a8m",
+    "encoders-gety-embed-v0",
+    "reranker-hs-rerank-1"
+  ],
+  "supplementary_embedders": {
+    "affects_k1": false,
+    "amendment": 2,
+    "qualified_variants": [
+      {
+        "meets_targets": true,
+        "model": "bekko-a8m",
+        "passages_per_second": 162.39968971086367,
+        "query_p95_ms": 1.0485,
+        "variant": "fp32"
+      },
+      {
+        "meets_targets": true,
+        "model": "bekko-a8m",
+        "passages_per_second": 153.9099931954949,
+        "query_p95_ms": 1.2196,
+        "variant": "published-default"
+      },
+      {
+        "meets_targets": true,
+        "model": "gety-embed-v0",
+        "passages_per_second": 57.39829686024702,
+        "query_p95_ms": 2.4578,
+        "variant": "fp16-upcast"
+      }
+    ],
+    "target": {
+      "passages_per_second": 56.0,
+      "query_p95_ms": 20.0
+    }
+  },
+  "supplementary_rerankers": {
+    "affects_k1": false,
+    "amendment": 3,
+    "qualified_variants": [
+      {
+        "depth_50_p95_ms": 5971.0747,
+        "meets_target": false,
+        "model": "hs-rerank-1",
+        "variant": "fp32"
+      },
+      {
+        "depth_50_p95_ms": 4965.6245,
+        "meets_target": false,
+        "model": "hs-rerank-1",
+        "variant": "published-default"
+      }
+    ],
+    "target": {
+      "depth_50_p95_ms": 250.0
+    }
+  },
+  "verdicts": {
+    "k1_embedder": {
+      "k1_fires": true,
+      "qualified_variants": [
+        {
+          "meets_targets": false,
+          "model": "e5-small",
+          "passages_per_second": 32.29747131774015,
+          "query_p95_ms": 3.4087,
+          "variant": "fp32"
+        },
+        {
+          "meets_targets": false,
+          "model": "granite-modernbert",
+          "passages_per_second": 12.299407562761097,
+          "query_p95_ms": 24.2022,
+          "variant": "fp32"
+        }
+      ],
+      "role": "embedder",
+      "target": {
+        "passages_per_second": 56.0,
+        "query_p95_ms": 20.0
+      },
+      "winners": []
+    },
+    "k1_florence": {
+      "best_variant": "fp32",
+      "evaluable": true,
+      "k1_fires": false,
+      "outside_cpu_on_any_engine": true,
+      "page_p95_ms": 174453.91,
+      "role": "transcription-vlm"
+    },
+    "k1_ocr": {
+      "k1_fires": true,
+      "qualified_variants": [
+        {
+          "added_peak_rss_bytes": 1173417984,
+          "meets_targets": false,
+          "model": "pp-ocr",
+          "model_bytes": 6243229,
+          "page_p95_ms": 723.5625,
+          "variant": "fp32"
+        }
+      ],
+      "role": "pp-ocr",
+      "target": {
+        "added_peak_rss_bytes": 1073741824,
+        "model_bytes": 150000000,
+        "page_p95_ms": 2000.0
+      },
+      "winners": []
+    },
+    "k1_reranker": {
+      "k1_fires": true,
+      "qualified_variants": [
+        {
+          "depth_50_p95_ms": 9933.5756,
+          "meets_target": false,
+          "model": "gte-reranker",
+          "variant": "fp32"
+        }
+      ],
+      "role": "reranker",
+      "target": {
+        "depth_50_p95_ms": 250.0
+      },
+      "winners": []
+    },
+    "k3": {
+      "k3_fires": true,
+      "reached_with_parity": false,
+      "role": "intel-npu"
+    },
+    "k4": {
+      "d2_bytes": 250000000,
+      "embedder_bytes": 470268510,
+      "k4_fires": false,
+      "models_alone_exceed_d2": true,
+      "models_bytes": 1694373611,
+      "reranker_bytes": 1224105101,
+      "runtime_bytes": 14877304,
+      "total_bytes": 1709250915
+    }
+  }
+}
