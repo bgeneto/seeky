@@ -110,9 +110,10 @@ cd apps\seeky
 npm install
 npm run build                                  # TypeScript + Vite build
 npm run tauri dev                              # run the desktop app
+npm run format:check                           # Prettier (npm run format fixes)
 
 cd src-tauri
-cargo fmt --check
+cargo fmt --check                              # rustfmt (cargo fmt fixes)
 cargo clippy --all-targets -- -D warnings
 cargo test --lib                              # hardware-free by default
 cargo test --lib --features hw-tests -- --test-threads=1   # needs local models/PDFium/CUDA/NPU
@@ -123,11 +124,17 @@ After Phase 0 (workspace root):
 
 ```powershell
 cargo fmt --all --check
+npm --prefix apps/desktop run format:check
 cargo clippy --workspace --all-targets -- -D warnings
 cargo test --workspace                         # hardware-free by default
 cargo deny check
 cargo run -p seeky-bench -- eval --corpus sdc-smoke --split dev
 ```
+
+Formatting is enforced: `npm install` enables the versioned pre-commit hook
+(`.githooks/pre-commit`, check-only rustfmt + Prettier) and CI runs the same
+checks. Run the formatters before committing; never commit with
+`--no-verify`. Markdown is not Prettier-formatted yet.
 
 Hardware-dependent tests (NPU, real models) are opt-in via a cargo feature and
 must never be required for CI to pass. Until WP-0.4 makes `clippy -D warnings`

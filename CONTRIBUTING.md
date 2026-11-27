@@ -37,13 +37,19 @@ npm run tauri dev
 ```powershell
 cd apps\seeky
 npm run build
+npm run format:check   # Prettier; `npm run format` fixes
 
 cd src-tauri
-cargo fmt --check
+cargo fmt --check      # rustfmt; `cargo fmt` fixes
 cargo clippy --all-targets -- -D warnings
 cargo test --lib
 cargo check
 ```
+
+`npm install` enables a pre-commit hook (`.githooks/pre-commit`) that checks
+rustfmt and Prettier formatting without rewriting files; CI runs the same
+checks on every pull request. Formatting rules live in `rustfmt.toml` and
+`apps/seeky/.prettierrc.json`.
 
 `cargo test --lib` is hardware-free. Tests that need local models, PDFium, CUDA,
 or an NPU run with `cargo test --lib --features hw-tests -- --test-threads=1`

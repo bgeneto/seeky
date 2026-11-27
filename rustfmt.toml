@@ -1,0 +1,7 @@
+# Rust formatting for every crate in this repository. Defaults otherwise:
+# rustfmt guarantees stable output for a given style edition, so CI and local
+# toolchains agree without pinning a rustfmt version.
+edition = "2024"
+style_edition = "2024"
+# Matches .editorconfig and .gitattributes (LF everywhere).
+newline_style = "Unix"

@@ -1,0 +1,17 @@
+# Build output and dependencies (also in .gitignore).
+dist/
+node_modules/
+src-tauri/target/
+src-tauri/gen/
+
+# Generated or vendored files.
+package-lock.json
+src-tauri/icons/
+src-tauri/resources/
+
+# Test inputs and the smoke corpus are data: never reformat them.
+demo/
+src-tauri/tests/fixtures/
+
+# Markdown is not formatted yet: Prettier would realign every docs table.
+*.md

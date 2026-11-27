@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+# WP-0.4 extends this workflow with clippy -D warnings, hardware-free tests,
+# cargo-deny, the TypeScript build, and the Windows/Linux/macOS compile matrix.
+# Paths change when WP-0.1 renames apps/seeky to apps/desktop.
+jobs:
+  format:
+    name: Format (rustfmt + Prettier)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install rustfmt
+        run: |
+          rustup toolchain install stable --profile minimal --component rustfmt
+          rustup default stable
+
+      - name: rustfmt
+        run: cargo fmt --manifest-path apps/seeky/src-tauri/Cargo.toml --check
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: apps/seeky/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: apps/seeky
+        run: npm ci
+
+      - name: Prettier
+        working-directory: apps/seeky
+        run: npm run format:check

@@ -18,6 +18,10 @@ All notable changes to Seeky are recorded here.
 - Tests that need local model files, PDFium, CUDA, or an NPU run only with the
   `hw-tests` cargo feature; `cargo test` is hardware-free.
 - Code formatted with `rustfmt`; `cargo clippy -- -D warnings` passes.
+- Formatting is enforced: `rustfmt.toml` and Prettier (pinned dev
+  dependency, `npm run format` / `format:check`) with a check-only
+  pre-commit hook enabled by `npm install`, and a CI `format` job.
+  Frontend sources reformatted with Prettier (no behavior change).
 
 ### Product decisions
 

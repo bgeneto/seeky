@@ -174,10 +174,10 @@ engine before anything is built on it (priority zero).
 
 | WP | Work package | Spec | Depends | Deliverables |
 |---|---|---|---|---|
-| 0.1 | Cargo workspace skeleton; shared lints (`clippy` pedantic subset, `unsafe_code = "deny"` outside audited modules), profiles, toolchain pin; rename `apps/seeky` → `apps/desktop` | SPEC-0001 | — | `Cargo.toml` workspace, `rust-toolchain.toml`, crate stubs |
+| 0.1 | Cargo workspace skeleton; shared lints (`clippy` pedantic subset, `unsafe_code = "deny"` outside audited modules), profiles, toolchain pin; rename `apps/seeky` → `apps/desktop` (update paths in `.githooks/pre-commit` and `.github/workflows/ci.yml`) | SPEC-0001 | — | `Cargo.toml` workspace, `rust-toolchain.toml`, crate stubs |
 | 0.2 | Extract engine crates from the PoC (`core`, `extract`, `infer`, `store`, `search`, `engine`) with **no behavior change**; add a golden search test (fixed corpus → identical ranked output) | SPEC-0001, SPEC-0002 v1 | 0.1 | Crates; PoC tests pass in new locations; golden test |
 | 0.3 | Tauri shell becomes a thin adapter over the `Engine` API; no SQLite/model/filesystem access from the shell; files are opened by document ID, never by a path supplied by the webview (audit A8) | SPEC-0002 v1 | 0.2 | `apps/desktop/src-tauri` reduced to commands + wiring |
-| 0.4 | CI: fmt, clippy `-D warnings`, hardware-free tests, `cargo-deny` (licenses/advisories/bans), TypeScript typecheck + build; compile check on Windows, Linux, macOS; hardware tests behind a feature flag | — | 0.1 | CI workflow; green on `main` |
+| 0.4 | CI: format checks (rustfmt + Prettier: **done**, `format` job and pre-commit hook), clippy `-D warnings`, hardware-free tests, `cargo-deny` (licenses/advisories/bans), TypeScript typecheck + build; compile check on Windows, Linux, macOS; hardware tests behind a feature flag | — | 0.1 | CI workflow; green on `main` |
 | 0.5 | Process scaffolding: AGENTS.md, ADR/spec/report templates, PR template | — | — | **Done in this reorganization** |
 | 0.6 | **[human: T1 access or T1-emulated profile] Priority zero — ORT validation gate:** first version of `tools/model-export`; one representative model per role (two embedders, a reranker, a PP-OCR-class pipeline, a ~1B transcription VLM as split graphs) exported to ONNX in fp32/int8/int4 variants; parity; speed, RSS, load time, and runtime size on T1 CPU-only; Intel NPU through the OpenVINO EP; kill criteria K1–K4 ([methodology §8.7](../benchmarks/methodology.md)) | report | — | Gate report in `docs/benchmarks/results/`; ADR-0019 stands, or WP-2.3 is triggered for the failing role |
 
@@ -398,7 +398,7 @@ Runtime candidate by the predeclared new-engine margin
 
 ## 10. CI/CD and tooling
 
-- **Every PR:** fmt, clippy `-D warnings`, tests (hardware-free), `cargo-deny`,
+- **Every PR:** rustfmt + Prettier (also a pre-commit hook), clippy `-D warnings`, tests (hardware-free), `cargo-deny`,
   TypeScript typecheck/build, locale parity, `sdc-smoke` gate, Windows +
   Linux + macOS compile.
 - **Nightly/manual on reference hardware:** full evaluation and perf runs;
@@ -485,7 +485,7 @@ Options discussed in earlier documents that this plan deliberately drops:
 |---|---|---|
 | M0 Runnable PoC | Done | 0.1.0 |
 | M1 Live incremental index | Done | 0.1.0 |
-| Phase 0 | In progress | WP-0.5 done (repository reorganization, AGENTS.md, templates); pre-flight done (fmt, clippy `-D warnings`, `hw-tests` feature, HTML fix, Auto never selects CUDA; [conformance audit](../validation/poc-conformance-audit.md)) |
+| Phase 0 | In progress | WP-0.5 done (repository reorganization, AGENTS.md, templates); pre-flight done (fmt, clippy `-D warnings`, `hw-tests` feature, HTML fix, Auto never selects CUDA; [conformance audit](../validation/poc-conformance-audit.md)); WP-0.4 format gate done (rustfmt + Prettier in CI and a pre-commit hook) |
 | Phases 1–9 | Not started | — |
 
 ## 16. Immediate next actions
