@@ -43,9 +43,11 @@ cannot is priced under the ADR-0019 runtime-cost rule.
 | `nomic-ai/nomic-embed-text-v2-moe` | 475M total / 305M active | 768 (MRL 256) | Apache-2.0 | challenger | MoE export/runtime cost *(verify)* |
 | `minishlab/potion-multilingual-128M` | static | 256 | MIT | challenger | Static (lookup) embedder; native Rust; T0 tier or instant-semantic experiments |
 | `BAAI/bge-m3` | 568M | 1024 (+ sparse, multi-vector) | MIT | ceiling | Offline quality reference |
-| `Qwen/Qwen3-Embedding-0.6B` | 0.6B | 1024 (MRL) | Apache-2.0 | ceiling | Decoder; far beyond CPU indexing budget |
+| `Qwen/Qwen3-Embedding-0.6B` | 0.6B | 1024 (MRL) | Apache-2.0 | ceiling | Decoder; far beyond CPU indexing budget. Large decoders are ceilings, not shipped defaults ([ADR-0016](../adr/0016-cpu-first-npu-ready-execution.md)); a GPU opt-in tier would need its own ADR. As-deployed ONNX export below |
+| `n24q02m/Qwen3-Embedding-0.6B-ONNX` | 0.6B | 1024 (MRL) | Apache-2.0 | ceiling (as-deployed variant of the row above) | Third-party ONNX export, opset 21, rev `dc873d6`: int8 dynamic (`quantize_dynamic` QInt8) 572 MB; q4f16 (`MatMulNBits` int4, block 128, symmetric, fp16 activations) 517 MB. Query instruction prefix required. Parity vs upstream fp32 not yet checked; q4f16 is GPU-oriented (fp16 activations) |
 | `Snowflake/snowflake-arctic-embed-l-v2.0` | 568M | 1024 | Apache-2.0 | ceiling | Offline reference |
 | `jinaai/jina-embeddings-v3` / `v4` / `v5-text-*` | — | — | CC-BY-NC (and variants) | excluded | Non-commercial license |
+| `jinaai/jina-embeddings-v5-text-nano` (and `-retrieval`) | 239M (EuroBERT-210M) | 768 (MRL down to 32) | CC-BY-NC-4.0 → ineligible | excluded | Checked 2026-11-27. Technically attractive: 32k context, distilled from Qwen3-Embedding-4B, vendor-reported MMTEB 65.5, robust to binary quantization, official ONNX in the `-retrieval` repo (fp32, fp16, int8, q4, q4f16). Excluded regardless of quality under [ADR-0022](../adr/0022-permissive-license-gate.md); commercial terms are only available from Jina on request |
 | `Qwen3-Embedding-4B` / `8B` | 4B / 8B | — | Apache-2.0 | excluded | GPU-class; violates CPU-first |
 
 ## 2. Rerankers (cross-encoders)
@@ -57,9 +59,20 @@ cannot is priced under the ADR-0019 runtime-cost rule.
 | `agentic-in/elephant-rerank-v1-text-small` | small (ModernBERT) | Apache-2.0 | challenger | 2026; custom heads/loader — export risk *(verify)* |
 | `BAAI/bge-reranker-v2-m3` | 568M | Apache-2.0 | challenger (NPU) / ceiling | Likely NPU-only on budget; community int8 ONNX exists |
 | `mixedbread-ai/mxbai-rerank-base-v2` | 0.5B | Apache-2.0 | ceiling | Decoder-based |
-| `Qwen/Qwen3-Reranker-0.6B` | 0.6B | Apache-2.0 | ceiling | Decoder-based; offline reference |
+| `Qwen/Qwen3-Reranker-0.6B` | 0.6B | Apache-2.0 | ceiling | Decoder-based; offline reference. As-deployed ONNX export below |
+| `n24q02m/Qwen3-Reranker-0.6B-ONNX` | 0.6B | Apache-2.0 | ceiling (as-deployed variant of the row above) | Third-party ONNX export, opset 21, rev `342a8a5`: int8 dynamic 573 MB, q4f16 517 MB, and "yes/no" variants that output only the two scoring logits of the last token (int8 572 MB; a q4f16 yes/no file is listed in the card but absent from the repository at that revision). Pointwise prompt template; parity vs upstream not yet checked |
 | Seeky-distilled small reranker | — | MIT (ours) | post-1.0 R&D | Only if no candidate meets Q6 on CPU |
 | `jinaai/jina-reranker-v2-*` / `v3` | — | CC-BY-NC | excluded | Non-commercial |
+
+Sources checked 2026-11-27 for the Qwen3 ONNX exports (§1, §2) and
+jina-embeddings-v5-text-nano (§1): the Hugging Face model cards and file
+listings of
+[n24q02m/Qwen3-Embedding-0.6B-ONNX](https://huggingface.co/n24q02m/Qwen3-Embedding-0.6B-ONNX),
+[n24q02m/Qwen3-Reranker-0.6B-ONNX](https://huggingface.co/n24q02m/Qwen3-Reranker-0.6B-ONNX),
+[jinaai/jina-embeddings-v5-text-nano](https://huggingface.co/jinaai/jina-embeddings-v5-text-nano),
+and its `-retrieval` repository. Third-party exports inherit the upstream
+license but must pass the manifest parity check against the upstream fp32
+model before any result counts.
 
 ## 3. Snippet scorers (search-engine "pruner" slot)
 

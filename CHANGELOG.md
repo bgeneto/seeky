@@ -18,6 +18,10 @@ roadmap (§6), with the date.
 
 ### Changed
 
+- Candidate registry: the third-party ONNX exports of Qwen3-Embedding-0.6B
+  and Qwen3-Reranker-0.6B (n24q02m) are recorded as as-deployed variants of
+  the existing ceiling entries; jina-embeddings-v5-text-nano is recorded as
+  excluded (CC-BY-NC-4.0, ADR-0022).
 - The PoC engine is extracted into `seeky-core`, `seeky-extract`,
   `seeky-infer`, `seeky-store`, `seeky-search`, and `seeky-engine` behind the
   `Engine` API (SPEC-0002). The Tauri crate now only resolves paths, forwards
