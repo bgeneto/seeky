@@ -32,15 +32,24 @@ python -m sdc_generator fetch --sources <sources> --cache <cache>
 python -m sdc_generator build --profile <profile.json> --seed <seed> \
   --sources <sources> --cache <cache> --output <corpus-dir>
 python -m sdc_generator verify --output <corpus-dir>
+python -m sdc_generator judgments validate --set <set-dir> \
+  --corpus <corpus-dir> [--allow-draft]
+python -m sdc_generator judgments freeze-split --draft <draft-dir>
+python -m sdc_generator judgments publish --draft <draft-dir> \
+  --output <frozen-dir>
 ```
 
-Only `fetch` may open a network connection. `build` and `verify` read pinned
-cache objects and committed files; a missing cache object is `CACHE_MISS`, not
-a download. A failed build writes only into a sibling `.<name>.tmp` directory
-and leaves an existing corpus untouched.
+Only `fetch` may open a network connection. `build`, `verify`, and every
+`judgments` command read pinned cache objects, committed files, or local draft
+data; a missing cache object is `CACHE_MISS`, not a download. A failed build
+writes only into a sibling `.<name>.tmp` directory and leaves an existing
+corpus untouched; `publish` likewise refuses an existing output directory and
+writes atomically.
 
-Successful `build` and `verify` print the corpus SHA-256 (`corpus_hash`).
-Structural errors are one JSON object on stderr:
+Successful `build` and `verify` print the corpus SHA-256 (`corpus_hash`);
+`publish` prints the SHA-256 of the exact `judgment-set.json` bytes.
+`validate` and `freeze-split` print a compact JSON summary. Structural errors
+are one JSON object on stderr:
 
 ```json
 {"code":"SCHEMA_INVALID","file":"sources/x.json","line":12,"field":"sha256","message":"..."}
@@ -53,6 +62,33 @@ Paths in diagnostics are repository- or cache-relative.
 `bench/corpora/sdc/` owns the manifests, profiles, renderer lock, notices, and
 the committed `sdc-smoke` tree. `sdc-s` and `sdc-m` are generated on demand and
 are not committed. See [its README](../../bench/corpora/sdc/README.md).
+
+## Judgment sets
+
+Draft and split-frozen sets live below `bench/qrels/sdc/drafts/<set-id>/` and
+use the combined `queries.draft.jsonl`, `qrels.draft.documents.jsonl`,
+`qrels.draft.passages.jsonl`, and `pools.draft.jsonl` files from SPEC-0004
+§4.7. They are never benchmark-eligible:
+
+- `judgments validate --allow-draft` checks schemas, ordering, provenance,
+  target hashes against `--corpus`, and pool rows. The flag is refused outside
+  a `drafts` directory and is never needed for a frozen set.
+- `judgments freeze-split` requires state `draft`, every non-rejected query to
+  be human-verified or adjudicated, no pool rows, and the SPEC-0004 query
+  minima. It verifies the stratified assignment from §5.4 and records the exact
+  future `dev`/`test` query-file digests in `query_file_sha256`.
+- `judgments publish` requires state `split_frozen`, an unchanged query digest,
+  complete provenance on every non-rejected record, and complete pool coverage.
+  It omits `rejected` records, refuses a nonempty or incompatible test pool
+  panel, writes the §4.3 split files atomically, and records `file_sha256`.
+  The output directory must not exist.
+
+The minima applied by `freeze-split` and `publish` follow the set named by the
+spec: `sdc-smoke-*` sets use the R26 smoke minima (at least five dev queries
+per category, no test split); every other set, including a correction with a new
+judgment-set ID, uses the full R16/R17 minima. `reviewers.json` is optional in
+a draft; when present, recognized reviewer IDs are checked against every human
+provenance value. Its only required content is pseudonymous IDs and roles.
 
 ## Determinism rules
 
@@ -83,8 +119,8 @@ python -m unittest tests.test_renderers -v
 
 Known gaps for later work packages:
 
-- `judgments` commands and query/qrels data belong to WP-1.4; the CLI does not
-  implement them yet.
+- Query and qrels *data* belong to WP-1.4; these commands validate and publish
+  it but draft none of it.
 - Scanned fixtures use 150 dpi bilevel PNG with deterministic speckle/skew.
   JPEG compression artifacts require a deterministic JPEG encoder and are
   deferred; WP-2.11 can extend the real-scan slice.

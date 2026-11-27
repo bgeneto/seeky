@@ -1,11 +1,13 @@
 """Command-line interface (SPEC-0004 section 4.1).
 
-Only ``fetch`` may use the network; ``build`` and ``verify`` work offline.
+Only ``fetch`` may use the network; ``build``, ``verify``, and every
+``judgments`` command work offline.
 """
 
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import sys
 from pathlib import Path
@@ -60,6 +62,33 @@ def _cmd_verify(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_judgments_validate(args: argparse.Namespace) -> int:
+    from .judgments import validate_judgment_set
+
+    summary = validate_judgment_set(
+        Path(args.set),
+        Path(args.corpus),
+        allow_draft=args.allow_draft,
+    )
+    print(json.dumps(summary, sort_keys=True, separators=(",", ":")))
+    return 0
+
+
+def _cmd_judgments_freeze(args: argparse.Namespace) -> int:
+    from .judgments import freeze_split
+
+    summary = freeze_split(Path(args.draft))
+    print(json.dumps(summary, sort_keys=True, separators=(",", ":")))
+    return 0
+
+
+def _cmd_judgments_publish(args: argparse.Namespace) -> int:
+    from .judgments import publish
+
+    print(publish(Path(args.draft), Path(args.output)))
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="sdc-generator")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -84,6 +113,34 @@ def build_parser() -> argparse.ArgumentParser:
     verify = subparsers.add_parser("verify", help="verify a generated corpus")
     verify.add_argument("--output", required=True)
     verify.set_defaults(handler=_cmd_verify)
+
+    judgments = subparsers.add_parser(
+        "judgments", help="validate, freeze, and publish relevance judgments"
+    )
+    judgment_subparsers = judgments.add_subparsers(
+        dest="judgment_command", required=True
+    )
+
+    validate = judgment_subparsers.add_parser(
+        "validate", help="validate a draft or frozen judgment set"
+    )
+    validate.add_argument("--set", required=True, dest="set")
+    validate.add_argument("--corpus", required=True)
+    validate.add_argument("--allow-draft", action="store_true")
+    validate.set_defaults(handler=_cmd_judgments_validate)
+
+    freeze = judgment_subparsers.add_parser(
+        "freeze-split", help="freeze query membership, splits, and query hashes"
+    )
+    freeze.add_argument("--draft", required=True)
+    freeze.set_defaults(handler=_cmd_judgments_freeze)
+
+    publish = judgment_subparsers.add_parser(
+        "publish", help="publish a split-frozen draft as a frozen judgment set"
+    )
+    publish.add_argument("--draft", required=True)
+    publish.add_argument("--output", required=True)
+    publish.set_defaults(handler=_cmd_judgments_publish)
     return parser
 
 

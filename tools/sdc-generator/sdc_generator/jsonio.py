@@ -119,7 +119,9 @@ def write_json_file(path: Path, value: Any) -> None:
     write_bytes(path, pretty_json_bytes(value))
 
 
-def write_jsonl_file(path: Path, rows: Iterable[dict[str, Any]]) -> None:
+def jsonl_bytes(rows: Iterable[dict[str, Any]]) -> bytes:
+    """Encode rows exactly as :func:`write_jsonl_file` writes them."""
+
     chunks: list[bytes] = []
     for row in rows:
         line = json.dumps(
@@ -130,7 +132,11 @@ def write_jsonl_file(path: Path, rows: Iterable[dict[str, Any]]) -> None:
             allow_nan=False,
         )
         chunks.append(line.encode("utf-8") + b"\n")
-    write_bytes(path, b"".join(chunks))
+    return b"".join(chunks)
+
+
+def write_jsonl_file(path: Path, rows: Iterable[dict[str, Any]]) -> None:
+    write_bytes(path, jsonl_bytes(rows))
 
 
 def read_jsonl_bytes(data: bytes, *, file: str) -> list[dict[str, Any]]:
