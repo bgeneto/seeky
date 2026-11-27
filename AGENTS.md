@@ -128,6 +128,44 @@ Stop and ask the maintainer when: a spec is ambiguous, documents conflict, a
 budget cannot be met, a dependency or model license is unclear, or a change
 would touch more than the WP's named crates.
 
+### Parallel agents
+
+When several agents work at the same time, one **orchestrator** (a lead
+session or the maintainer) assigns and integrates the work, and **workers**
+implement it. These rules add to the loop above; where they differ from §9,
+they win for workers.
+
+1. **One worktree, one branch, one work package.** Each worker runs in its
+   own git worktree on its own branch (for example `wp/0.2-engine-extraction`)
+   and delivers one work package per pull request. Workers never commit to
+   `main` and never share a working tree with another agent; they commit and
+   push to their branch (§9) and open a PR. The orchestrator merges after CI
+   is green and the PR is reviewed.
+2. **Owned paths.** Every assignment lists the paths the worker may change,
+   taken from the crate ownership in
+   [SPEC-0001](docs/specs/SPEC-0001-workspace-and-crate-boundaries.md) §4.2 and
+   the WP's crates. Two concurrent assignments never own the same path. A
+   worker that needs a change outside its paths (another crate, the root
+   `Cargo.toml` or `deny.toml`, CI, a shared doc) stops and reports it instead
+   of making it.
+3. **Shared records belong to the orchestrator.** Workers do not edit plan
+   §15 and §16, `CHANGELOG.md`, the specs and ADR indexes, or the conformance
+   audit; parallel edits to those files always conflict. A worker updates only
+   the §3 Status column of the spec it implements and proposes the remaining
+   step 8 records in its PR description. Before merging, the orchestrator
+   rebases the branch on `main` and adds one commit with those records, so
+   `main` still never claims more or less than it contains.
+4. **Every worker starts from a brief** that names:
+   - the work package, the Accepted spec and version, and the requirement IDs;
+   - the owned paths, and paths it must not touch;
+   - the tests to write first (§4 step 4, §6 Tests);
+   - the commands that define green: §5 plus any WP-specific gate;
+   - the definition of done: §8 without the orchestrator's records;
+   - the stop conditions: the list above, plus any change outside the owned
+     paths, a new dependency, or a failing check the worker did not cause;
+   - the report it returns: what changed, test evidence, open questions, and
+     the proposed records.
+
 ## 5. Commands
 
 Current PoC (Windows; until Phase 0 creates the workspace):

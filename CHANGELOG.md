@@ -76,6 +76,10 @@ roadmap (§6), with the date.
 
 ### Documentation and process
 
+- `AGENTS.md` §4 "Parallel agents": one worktree, branch, and work package
+  per worker; owned paths per assignment; shared records (plan status,
+  CHANGELOG, indexes, audit) written only by the orchestrator before merge;
+  a fixed brief for every worker.
 - Accepted SPEC-0001 (workspace and crate boundaries) and SPEC-0002 v1
   (headless engine API, golden test, opening files by document ID) for
   Phase 0.
