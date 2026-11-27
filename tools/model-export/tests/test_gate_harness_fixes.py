@@ -156,6 +156,9 @@ def test_static_embedder_export_traces_the_padded_static_shape(tmp_path, monkeyp
     graph = onnx.load(destination).graph
     dims = [d.dim_value for d in graph.input[0].type.tensor_type.shape.dim]
     assert dims == [1, 32]
+    # The Intel NPU compiler rejects IsNaN, which the SDPA attention mask
+    # path emits; the static graph is traced with eager attention.
+    assert "IsNaN" not in {node.op_type for node in graph.node}
 
 
 def test_npu_probe_is_frozen_tokens_the_openvino_env_can_read(tmp_path):
@@ -177,3 +180,77 @@ def test_npu_probe_is_frozen_tokens_the_openvino_env_can_read(tmp_path):
     np.savez(path, input_ids=ids[:, :4], attention_mask=np.ones_like(ids[:, :4]))
     with pytest.raises(npu_run.NpuRunError):
         npu_run.load_npu_inputs(tmp_path)
+
+
+def _fake_attempt(monkeypatch, code):
+    import sys
+
+    from seeky_model_export import npu_run
+
+    monkeypatch.setattr(npu_run, "_attempt_command", lambda request: [sys.executable, "-c", code])
+    return npu_run
+
+
+def test_npu_attempt_that_crashes_the_process_is_recorded(tmp_path, monkeypatch):
+    # The NPU compiler segfaulted inside the gate on the QDQ graph; a native
+    # crash must become a recorded failure, not a lost gate.
+    from seeky_model_export.deadline import Deadline
+    from seeky_model_export.system import RunningProfile
+
+    npu_run = _fake_attempt(monkeypatch, "import os; os._exit(139)")
+
+    attempt, vectors = npu_run.run_attempt_isolated(
+        tmp_path / "model.onnx",
+        RunningProfile.t0_functional(),
+        {"device_type": "NPU"},
+        workspace=tmp_path,
+        variant="int8-static-qdq",
+        deadline=Deadline(60),
+    )
+
+    assert attempt["reached"] is False
+    assert attempt["exit_code"] == 139
+    assert vectors is None
+
+
+def test_npu_attempt_reads_the_child_vectors(tmp_path, monkeypatch):
+    from seeky_model_export.deadline import Deadline
+    from seeky_model_export.system import RunningProfile
+
+    code = (
+        "import json, sys, numpy as np\n"
+        "request = json.loads(sys.stdin.read())\n"
+        "np.save(request['vectors_path'], np.ones((2, 3), dtype=np.float32))\n"
+        "print(json.dumps({'reached': True, 'providers': ['OpenVINOExecutionProvider'],"
+        " 'cold_load_seconds': 0.5}))\n"
+    )
+    npu_run = _fake_attempt(monkeypatch, code)
+
+    attempt, vectors = npu_run.run_attempt_isolated(
+        tmp_path / "model.onnx",
+        RunningProfile.t0_functional(),
+        {"device_type": "NPU"},
+        workspace=tmp_path,
+        variant="fp32",
+        deadline=Deadline(60),
+    )
+
+    assert attempt["reached"] is True
+    assert vectors.shape == (2, 3)
+
+
+def test_npu_parity_compares_the_pooled_embedding_not_a_padded_position():
+    # PREREGISTRATION §5: NPU parity uses the embedder tolerance, which is the
+    # cosine of the model's embedding vectors (e5: masked mean pooling).
+    from seeky_model_export import npu_run
+
+    rng = np.random.default_rng(0)
+    cpu = rng.normal(size=(2, 4, 3)).astype(np.float32)
+    mask = np.array([[1, 1, 0, 0], [1, 1, 1, 0]], dtype=np.int64)
+    npu = cpu.copy()
+    npu[mask == 0] = 50.0  # padded positions never reach the embedding
+
+    parity = npu_run.embedding_parity(cpu, npu, mask, "mean")
+
+    assert parity["mean_cosine_vs_cpu"] > 0.9999
+    assert parity["parity_passed"]

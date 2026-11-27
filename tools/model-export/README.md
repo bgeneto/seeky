@@ -25,11 +25,17 @@ py -3.11 -m venv "$env:LOCALAPPDATA%\seeky-dev\wp06\venv"
 py -3.11 -m venv "$env:LOCALAPPDATA%\seeky-dev\wp06\venv-openvino"
 & "$env:LOCALAPPDATA%\seeky-dev\wp06\venv-openvino\Scripts\python.exe" -m pip install -r tools/model-export/requirements-openvino.txt
 & "$env:LOCALAPPDATA%\seeky-dev\wp06\venv-openvino\Scripts\python.exe" -m pip install -e tools/model-export
+& "$env:LOCALAPPDATA%\seeky-dev\wp06\venv-openvino\Scripts\opt_in_out.exe" --opt_out
 ```
+
+`onnxruntime-openvino` does not bundle the OpenVINO runtime, so the OpenVINO
+environment also pins the `openvino` wheel (which caps NumPy below 2.3); the NPU
+gate puts its DLLs on the Windows loader path itself. That wheel pulls in
+`openvino-telemetry`, so opt out once per environment as shown (P3).
 
 PyTorch is pinned to the CPU wheel (`2.11.0+cpu`); no CUDA package is used.
 Direct dependency licenses were screened under ADR-0022: PyTorch BSD-3-Clause;
-Transformers, Hugging Face Hub, RapidOCR, ONNX Runtime, ONNX, and requests
+Transformers, Hugging Face Hub, RapidOCR, ONNX Runtime, ONNX, OpenVINO, and requests
 Apache-2.0; NumPy, Pillow, psutil, and py-cpuinfo BSD/MIT-class permissive
 licenses; pytest and setuptools MIT. Transitive versions and licenses are
 captured in the environment report. This tooling and its downloads are not
@@ -54,9 +60,12 @@ $workspace = "$env:LOCALAPPDATA\seeky-dev\wp06"
 ```
 
 The NPU probe must use the OpenVINO environment's interpreter and ONNX Runtime
-package, with its own `PYTHONPATH` or editable install:
+package, with its own `PYTHONPATH` or editable install. That environment has no
+PyTorch or Transformers, so the CPU environment first exports the static graphs
+and freezes the tokenized probe queries:
 
 ```powershell
+& $python -c "from pathlib import Path; from seeky_model_export.npu_run import prepare_npu_embedder; prepare_npu_embedder(Path('$workspace'))"
 $openvino = "$env:LOCALAPPDATA\seeky-dev\wp06\venv-openvino\Scripts\python.exe"
 & $openvino -m seeky_model_export.cli --workspace $workspace npu
 & $python -m seeky_model_export.cli --workspace $workspace export-results --destination docs/benchmarks/results/2026-11-27-ort-gate

@@ -524,6 +524,12 @@ def export_embedder_static_fp32(
     if batch_size <= 0 or sequence_length <= 0:
         raise ModelError("static export shapes must be positive")
     model = load_reference_model(model_dir, spec)
+    # SDPA attention traces an IsNaN mask guard that the Intel NPU compiler
+    # rejects; eager attention computes the same function without it.
+    if hasattr(model, "set_attn_implementation"):
+        model.set_attn_implementation("eager")
+    else:
+        model.config._attn_implementation = "eager"
     tokenizer = load_tokenizer(model_dir)
     # Pad to the static length: the graph is traced at exactly this shape.
     encoded = tokenize(
