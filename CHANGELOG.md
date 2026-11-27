@@ -13,6 +13,11 @@ roadmap (§6), with the date.
 
 ### Added
 
+- SPEC-0002 has a Draft v1.1 evaluation extension for `seeky-bench`:
+  evaluation depth to 1,000 with a deterministic order, in-process stage and
+  query-embedding timings, exact metadata filters with push-down/post reporting,
+  and a canonical engine configuration snapshot. It is not accepted and changes
+  no v1 behavior.
 - `seeky-eval` implements the SPEC-0003 evaluation harness for WP-1.1: BEIR and
   SDC loaders, graded document and passage judgments, document and passage
   nDCG/MRR/Recall/Success, duplicate and diversity metrics, seeded paired
