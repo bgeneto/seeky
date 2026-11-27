@@ -104,9 +104,13 @@ WPs that edit the same crate module are sequenced by the maintainer.
 | Evaluation | None | Harness, SDC corpus, public sets, perf harness, B0 (Phase 1) |
 | Distribution | `--no-bundle` exe + LFS OpenVINO IR | Slim installer, signed R2 assets, lexical-first (Phase 6) |
 | UI | Dark-only, English-only, backend picker on main settings | en/pt, light/dark, progressive results, diagnostics hidden (Phase 7) |
-| Tests | 8 Rust tests (3 need local hardware/models) | CI matrix, property/fuzz/integration/E2E, smoke eval gate |
+| Tests | 9 Rust tests: 4 hardware-free, 5 behind the `hw-tests` feature (local assets/hardware) | CI matrix, property/fuzz/integration/E2E, smoke eval gate |
 
 Verified PoC evidence: [`../validation/seeky-poc-validation.md`](../validation/seeky-poc-validation.md).
+Conformance of the PoC with the ADRs, including deviations not listed above
+(mixed vector spaces across backends, indexing blocked without a model, search
+waiting on indexing locks, arbitrary-path file opening) and the WP that closes
+each one: [`../validation/poc-conformance-audit.md`](../validation/poc-conformance-audit.md).
 
 ## 5. Target architecture (summary)
 
@@ -172,7 +176,7 @@ engine before anything is built on it (priority zero).
 |---|---|---|---|---|
 | 0.1 | Cargo workspace skeleton; shared lints (`clippy` pedantic subset, `unsafe_code = "deny"` outside audited modules), profiles, toolchain pin; rename `apps/seeky` → `apps/desktop` | SPEC-0001 | — | `Cargo.toml` workspace, `rust-toolchain.toml`, crate stubs |
 | 0.2 | Extract engine crates from the PoC (`core`, `extract`, `infer`, `store`, `search`, `engine`) with **no behavior change**; add a golden search test (fixed corpus → identical ranked output) | SPEC-0001, SPEC-0002 v1 | 0.1 | Crates; PoC tests pass in new locations; golden test |
-| 0.3 | Tauri shell becomes a thin adapter over the `Engine` API; no SQLite/model/filesystem access from the shell | SPEC-0002 v1 | 0.2 | `apps/desktop/src-tauri` reduced to commands + wiring |
+| 0.3 | Tauri shell becomes a thin adapter over the `Engine` API; no SQLite/model/filesystem access from the shell; files are opened by document ID, never by a path supplied by the webview (audit A8) | SPEC-0002 v1 | 0.2 | `apps/desktop/src-tauri` reduced to commands + wiring |
 | 0.4 | CI: fmt, clippy `-D warnings`, hardware-free tests, `cargo-deny` (licenses/advisories/bans), TypeScript typecheck + build; compile check on Windows, Linux, macOS; hardware tests behind a feature flag | — | 0.1 | CI workflow; green on `main` |
 | 0.5 | Process scaffolding: AGENTS.md, ADR/spec/report templates, PR template | — | — | **Done in this reorganization** |
 | 0.6 | **[human: T1 access or T1-emulated profile] Priority zero — ORT validation gate:** first version of `tools/model-export`; one representative model per role (two embedders, a reranker, a PP-OCR-class pipeline, a ~1B transcription VLM as split graphs) exported to ONNX in fp32/int8/int4 variants; parity; speed, RSS, load time, and runtime size on T1 CPU-only; Intel NPU through the OpenVINO EP; kill criteria K1–K4 ([methodology §8.7](../benchmarks/methodology.md)) | report | — | Gate report in `docs/benchmarks/results/`; ADR-0019 stands, or WP-2.3 is triggered for the failing role |
@@ -481,7 +485,7 @@ Options discussed in earlier documents that this plan deliberately drops:
 |---|---|---|
 | M0 Runnable PoC | Done | 0.1.0 |
 | M1 Live incremental index | Done | 0.1.0 |
-| Phase 0 | In progress | WP-0.5 done (repository reorganization, AGENTS.md, templates) |
+| Phase 0 | In progress | WP-0.5 done (repository reorganization, AGENTS.md, templates); pre-flight done (fmt, clippy `-D warnings`, `hw-tests` feature, HTML fix, Auto never selects CUDA; [conformance audit](../validation/poc-conformance-audit.md)) |
 | Phases 1–9 | Not started | — |
 
 ## 16. Immediate next actions

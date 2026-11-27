@@ -22,7 +22,7 @@ corrected:
 | [`architecture/`](architecture/README.md) | Overview, indexing, retrieval engine, inference and models, provisioning | Yes |
 | [`plans/`](plans/README.md) | The single active implementation plan | Yes |
 | [`benchmarks/`](benchmarks/README.md) | Methodology, candidate registry, report template, results | Yes (protocol); results are evidence |
-| [`validation/`](validation/seeky-poc-validation.md) | As-built PoC runtime evidence | Evidence |
+| [`validation/`](validation/seeky-poc-validation.md) | As-built PoC runtime evidence; [conformance audit](validation/poc-conformance-audit.md) against the ADRs | Evidence |
 | [`glossary.md`](glossary.md) | Terminology | Reference |
 | [`research/`](research/README.md) | Gety reverse-engineering notes, supplied reports | No — context only |
 | [`archive/`](archive/README.md) | Superseded documents | No |

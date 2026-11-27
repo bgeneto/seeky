@@ -4,6 +4,21 @@ All notable changes to Seeky are recorded here.
 
 ## Unreleased
 
+### Fixed
+
+- HTML and HTM files are extracted again; extraction previously failed for every
+  HTML file because of an unsupported regular-expression backreference.
+
+### Changed
+
+- Auto backend selection resolves NPU → CPU and never selects a GPU
+  (ADR-0016); CUDA remains available only when chosen explicitly.
+- Extraction regular expressions are compiled once instead of per file and per
+  text run.
+- Tests that need local model files, PDFium, CUDA, or an NPU run only with the
+  `hw-tests` cargo feature; `cargo test` is hardware-free.
+- Code formatted with `rustfmt`; `cargo clippy -- -D warnings` passes.
+
 ### Product decisions
 
 - Seeky source is now MIT-licensed; no account or commercial license key is

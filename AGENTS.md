@@ -62,7 +62,7 @@ docs/
   architecture/           overview, indexing, retrieval-engine, inference-and-models, provisioning
   benchmarks/             methodology, candidates, report template, results/
   plans/                  the implementation plan (single active plan)
-  validation/             as-built PoC runtime evidence
+  validation/             as-built PoC runtime evidence and conformance audit
   research/               non-binding research (gety/ = reverse-engineering notes)
   archive/                superseded documents
   glossary.md             terminology
@@ -114,7 +114,8 @@ npm run tauri dev                              # run the desktop app
 cd src-tauri
 cargo fmt --check
 cargo clippy --all-targets -- -D warnings
-cargo test --lib -- --test-threads=1          # inference tests need local models/hardware
+cargo test --lib                              # hardware-free by default
+cargo test --lib --features hw-tests -- --test-threads=1   # needs local models/PDFium/CUDA/NPU
 cargo check
 ```
 

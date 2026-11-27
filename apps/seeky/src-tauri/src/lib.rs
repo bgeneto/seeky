@@ -4,11 +4,11 @@ mod indexer;
 mod inference;
 mod search;
 
-use anyhow::{anyhow, Context, Result};
+use anyhow::{Context, Result, anyhow};
 use db::{ChunkInput, Counts, DocumentView, FileSignature, Root};
 use indexer::{IndexContext, IndexProgress, IndexSummary, PreparedFile};
 use inference::{
-    available_backends, find_gety_model_root, resolve_npu_dir, Backend, Engine, EngineInfo,
+    Backend, Engine, EngineInfo, available_backends, find_gety_model_root, resolve_npu_dir,
 };
 use notify::event::{ModifyKind, RenameMode};
 use notify::{Event, EventKind, RecommendedWatcher, RecursiveMode, Watcher};
@@ -125,8 +125,8 @@ impl WatchManager {
         let pending = self.pending.clone();
         let root_id = root.id.clone();
         let root_id_for_error = root_id.clone();
-        let mut watcher = notify::recommended_watcher(move |result: notify::Result<Event>| {
-            match result {
+        let mut watcher =
+            notify::recommended_watcher(move |result: notify::Result<Event>| match result {
                 Ok(event) => {
                     pending.fetch_add(1, Ordering::Relaxed);
                     let _ = tx.send(WatchMessage::Fs {
@@ -140,9 +140,8 @@ impl WatchManager {
                         message: err.to_string(),
                     });
                 }
-            }
-        })
-        .context("create filesystem watcher")?;
+            })
+            .context("create filesystem watcher")?;
         watcher
             .watch(Path::new(&root.path), RecursiveMode::Recursive)
             .with_context(|| format!("watch {}", root.path))?;
@@ -157,7 +156,10 @@ impl WatchManager {
     }
 
     fn count(&self) -> usize {
-        self.watchers.lock().map(|watchers| watchers.len()).unwrap_or(0)
+        self.watchers
+            .lock()
+            .map(|watchers| watchers.len())
+            .unwrap_or(0)
     }
 
     fn pending(&self) -> usize {
@@ -236,7 +238,12 @@ fn get_pdfium_path() -> PathBuf {
         return PathBuf::from(path);
     }
     std::env::var("LOCALAPPDATA")
-        .map(|path| PathBuf::from(path).join("Gety").join("lib").join("pdfium.dll"))
+        .map(|path| {
+            PathBuf::from(path)
+                .join("Gety")
+                .join("lib")
+                .join("pdfium.dll")
+        })
         .unwrap_or_else(|_| PathBuf::from("pdfium.dll"))
 }
 
@@ -276,10 +283,7 @@ fn update_health(app: &AppHandle, state: &AppState, update: impl FnOnce(&mut Ind
 }
 
 fn status_of(state: &AppState) -> Result<Status> {
-    let conn = state
-        .db
-        .lock()
-        .map_err(|_| anyhow!("db lock poisoned"))?;
+    let conn = state.db.lock().map_err(|_| anyhow!("db lock poisoned"))?;
     let roots = db::list_roots(&conn)?;
     let counts = db::counts(&conn)?;
     drop(conn);
@@ -336,16 +340,16 @@ fn add_root(app: AppHandle, state: State<'_, AppState>, path: String) -> Result<
         db::add_root(&conn, &path).map_err(|err| format!("{err:#}"))?
     };
 
-    if root.watch_enabled {
-        if let Err(err) = state.watcher.start(&root) {
-            if let Ok(conn) = state.db.lock() {
-                let _ = db::set_root_watching(&conn, &root.id, false);
-            }
-            root.watch_enabled = false;
-            update_health(&app, &state, |health| {
-                health.last_error = Some(format!("watching {}: {err:#}", root.path));
-            });
+    if root.watch_enabled
+        && let Err(err) = state.watcher.start(&root)
+    {
+        if let Ok(conn) = state.db.lock() {
+            let _ = db::set_root_watching(&conn, &root.id, false);
         }
+        root.watch_enabled = false;
+        update_health(&app, &state, |health| {
+            health.last_error = Some(format!("watching {}: {err:#}", root.path));
+        });
     }
     update_health(&app, &state, |_| {});
     Ok(root)
@@ -494,18 +498,15 @@ async fn start_index(
         state.cancel_index.store(false, Ordering::SeqCst);
         ensure_engine(&state)?;
         let root = {
-            let conn = state
-                .db
-                .lock()
-                .map_err(|_| anyhow!("db lock poisoned"))?;
+            let conn = state.db.lock().map_err(|_| anyhow!("db lock poisoned"))?;
             db::add_root(&conn, &path)?
         };
-        if root.watch_enabled {
-            if let Err(err) = state.watcher.start(&root) {
-                update_health(&app, &state, |health| {
-                    health.last_error = Some(format!("watching {}: {err:#}", root.path));
-                });
-            }
+        if root.watch_enabled
+            && let Err(err) = state.watcher.start(&root)
+        {
+            update_health(&app, &state, |health| {
+                health.last_error = Some(format!("watching {}: {err:#}", root.path));
+            });
         }
 
         let _index_guard = state
@@ -594,15 +595,12 @@ async fn search_documents(
                 .map_err(|_| anyhow!("engine lock poisoned"))?;
             engine
                 .as_mut()
-                .and_then(|engine| engine.embed(&[query.clone()]).ok())
+                .and_then(|engine| engine.embed(std::slice::from_ref(&query)).ok())
                 .and_then(|mut vectors| vectors.pop())
         } else {
             None
         };
-        let conn = state
-            .db
-            .lock()
-            .map_err(|_| anyhow!("db lock poisoned"))?;
+        let conn = state.db.lock().map_err(|_| anyhow!("db lock poisoned"))?;
         let hits = search::search(&conn, &query, query_vector.as_deref(), limit)?;
         let backend = state
             .engine
@@ -732,12 +730,7 @@ fn collect_watch_changes(messages: Vec<WatchMessage>) -> (Vec<WatchChange>, Vec<
     (changes, errors)
 }
 
-fn index_watched_file(
-    state: &AppState,
-    root: &Root,
-    path: &Path,
-    summary: &mut IndexSummary,
-) {
+fn index_watched_file(state: &AppState, root: &Root, path: &Path, summary: &mut IndexSummary) {
     let mut context = AppIndexContext { state };
     match indexer::index_file(&mut context, root, path, &state.pdfium_dll) {
         Ok(indexer::FileOutcome::Updated { chunks }) => {
@@ -757,9 +750,7 @@ fn index_watched_file(
         Err(err) => {
             summary.errors += 1;
             if summary.details.len() < 12 {
-                summary
-                    .details
-                    .push(format!("{}: {err:#}", path.display()));
+                summary.details.push(format!("{}: {err:#}", path.display()));
             }
         }
     }
@@ -771,7 +762,11 @@ fn set_current_file(state: &AppState, file: Option<String>) {
     }
 }
 
-fn process_watch_batch(app: &AppHandle, state: &AppState, messages: Vec<WatchMessage>) -> Result<()> {
+fn process_watch_batch(
+    app: &AppHandle,
+    state: &AppState,
+    messages: Vec<WatchMessage>,
+) -> Result<()> {
     let pending = state.watcher.pending.swap(0, Ordering::Relaxed);
     let (changes, watch_errors) = collect_watch_changes(messages);
     if changes.is_empty() {
@@ -809,10 +804,7 @@ fn process_watch_batch(app: &AppHandle, state: &AppState, messages: Vec<WatchMes
         let root = match roots.entry(change.root_id.clone()) {
             std::collections::hash_map::Entry::Occupied(entry) => entry.into_mut(),
             std::collections::hash_map::Entry::Vacant(entry) => {
-                let conn = state
-                    .db
-                    .lock()
-                    .map_err(|_| anyhow!("db lock poisoned"))?;
+                let conn = state.db.lock().map_err(|_| anyhow!("db lock poisoned"))?;
                 entry.insert(db::get_root(&conn, &change.root_id)?)
             }
         };
@@ -825,10 +817,7 @@ fn process_watch_batch(app: &AppHandle, state: &AppState, messages: Vec<WatchMes
         }
         match change.kind {
             ChangeKind::Remove => {
-                let conn = state
-                    .db
-                    .lock()
-                    .map_err(|_| anyhow!("db lock poisoned"))?;
+                let conn = state.db.lock().map_err(|_| anyhow!("db lock poisoned"))?;
                 summary.removed += db::delete_document_by_path(&conn, &change.path)?;
                 summary.removed += db::delete_documents_under(&conn, &root.id, &change.path)?;
             }
@@ -836,11 +825,11 @@ fn process_watch_batch(app: &AppHandle, state: &AppState, messages: Vec<WatchMes
                 if change.path.is_dir() {
                     for file in indexer::scan_root(&change.path) {
                         set_current_file(state, Some(file.to_string_lossy().to_string()));
-                        index_watched_file(state, &root, &file, &mut summary);
+                        index_watched_file(state, root, &file, &mut summary);
                     }
                 } else if indexer::is_supported_file(&change.path) {
                     set_current_file(state, Some(change.path.to_string_lossy().to_string()));
-                    index_watched_file(state, &root, &change.path, &mut summary);
+                    index_watched_file(state, root, &change.path, &mut summary);
                 }
             }
         }
@@ -882,11 +871,7 @@ fn spawn_watch_worker(app: AppHandle, state: AppState, receiver: Receiver<WatchM
     let _ = std::thread::Builder::new()
         .name("seeky-watcher".into())
         .spawn(move || {
-            loop {
-                let first = match receiver.recv() {
-                    Ok(message) => message,
-                    Err(_) => break,
-                };
+            while let Ok(first) = receiver.recv() {
                 let mut messages = vec![first];
                 let deadline = Instant::now() + Duration::from_millis(600);
                 loop {
@@ -917,10 +902,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .setup(|app| {
-            let data_dir = app
-                .path()
-                .app_data_dir()
-                .context("resolve app data dir")?;
+            let data_dir = app.path().app_data_dir().context("resolve app data dir")?;
             std::fs::create_dir_all(&data_dir).ok();
             let db_path = data_dir.join("seeky.db");
             let conn = db::open(&db_path).context("open seeky database")?;
@@ -958,12 +940,12 @@ pub fn run() {
 
             let mut watcher_errors = Vec::new();
             for root in roots {
-                if root.watch_enabled {
-                    if let Err(err) = state.watcher.start(&root) {
-                        watcher_errors.push(format!("{}: {err:#}", root.path));
-                        if let Ok(conn) = state.db.lock() {
-                            let _ = db::set_root_watching(&conn, &root.id, false);
-                        }
+                if root.watch_enabled
+                    && let Err(err) = state.watcher.start(&root)
+                {
+                    watcher_errors.push(format!("{}: {err:#}", root.path));
+                    if let Ok(conn) = state.db.lock() {
+                        let _ = db::set_root_watching(&conn, &root.id, false);
                     }
                 }
             }
@@ -1017,10 +999,7 @@ mod tests {
     #[test]
     fn maps_watch_events_to_upserts_and_removes() {
         let messages = vec![
-            message(
-                EventKind::Create(CreateKind::File),
-                &["C:/docs/new.txt"],
-            ),
+            message(EventKind::Create(CreateKind::File), &["C:/docs/new.txt"]),
             message(
                 EventKind::Modify(ModifyKind::Data(notify::event::DataChange::Content)),
                 &["C:/docs/edited.txt"],
@@ -1043,7 +1022,7 @@ mod tests {
         let find = |path: &str| {
             changes
                 .iter()
-                .find(|change| change.path == PathBuf::from(path))
+                .find(|change| change.path == *path)
                 .map(|change| change.kind.clone())
         };
         assert_eq!(find("C:/docs/new.txt"), Some(ChangeKind::Upsert));

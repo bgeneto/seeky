@@ -1,6 +1,6 @@
 use crate::db::{ChunkInput, FileSignature, Root};
 use crate::extract;
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use serde::Serialize;
 use std::path::{Path, PathBuf};
 use std::time::UNIX_EPOCH;
@@ -126,7 +126,10 @@ pub fn index_root(
             Ok(FileOutcome::Unchanged) => summary.unchanged += 1,
             Ok(FileOutcome::Skipped { reason }) => {
                 summary.skipped += 1;
-                push_detail(&mut summary.details, format!("{}: {reason}", path.display()));
+                push_detail(
+                    &mut summary.details,
+                    format!("{}: {reason}", path.display()),
+                );
             }
             Ok(FileOutcome::Missing) => {
                 summary.skipped += 1;
@@ -235,11 +238,7 @@ pub fn index_file(
     Ok(FileOutcome::Updated { chunks: stored })
 }
 
-fn prepare_file(
-    path: &Path,
-    pdfium: &Path,
-    metadata: &std::fs::Metadata,
-) -> Result<PreparedFile> {
+fn prepare_file(path: &Path, pdfium: &Path, metadata: &std::fs::Metadata) -> Result<PreparedFile> {
     let text = extract::extract(path, pdfium)?;
     let text = text.trim().to_string();
     if text.chars().count() < 20 {
@@ -322,9 +321,9 @@ pub fn is_ignored(path: &Path) -> bool {
 
 pub fn is_ignored_under(root: &Path, path: &Path) -> bool {
     let relative = path.strip_prefix(root).unwrap_or(path);
-    relative.components().any(|component| {
-        is_ignored(Path::new(component.as_os_str()))
-    })
+    relative
+        .components()
+        .any(|component| is_ignored(Path::new(component.as_os_str())))
 }
 
 fn chunk_text(text: &str) -> Vec<(String, usize, usize)> {
@@ -349,7 +348,10 @@ fn chunk_text(text: &str) -> Vec<(String, usize, usize)> {
         let chunk: String = chars[start..end].iter().collect();
         let trimmed = chunk.trim();
         if trimmed.chars().count() >= 40 {
-            let leading = chunk.chars().take_while(|character| character.is_whitespace()).count();
+            let leading = chunk
+                .chars()
+                .take_while(|character| character.is_whitespace())
+                .count();
             let trailing = chunk
                 .chars()
                 .rev()
@@ -369,7 +371,7 @@ fn chunk_text(text: &str) -> Vec<(String, usize, usize)> {
 mod tests {
     use super::*;
     use crate::db;
-    use crate::inference::{find_gety_model_root, resolve_npu_dir, Backend, Engine};
+    use crate::inference::{Backend, Engine, find_gety_model_root, resolve_npu_dir};
     use crate::search;
     use rusqlite::Connection;
 
@@ -413,6 +415,10 @@ mod tests {
     }
 
     #[test]
+    #[cfg_attr(
+        not(feature = "hw-tests"),
+        ignore = "needs local gety-embed-v0, ONNX Runtime, and PDFium; run with --features hw-tests"
+    )]
     fn index_and_search_roundtrip() {
         let dir = std::env::temp_dir().join(format!("seeky-test-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
@@ -501,8 +507,9 @@ mod tests {
             .expect("vector");
         let hits = search::search(&conn, "atlas", Some(&query_vector), 10).expect("search");
         assert!(
-            hits.iter()
-                .any(|hit| hit.title == "atlas-notes" && hit.matched.iter().any(|m| m == "filename")),
+            hits.iter().any(
+                |hit| hit.title == "atlas-notes" && hit.matched.iter().any(|m| m == "filename")
+            ),
             "hits={hits:?}"
         );
 

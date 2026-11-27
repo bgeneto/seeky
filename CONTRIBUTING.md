@@ -40,12 +40,14 @@ npm run build
 
 cd src-tauri
 cargo fmt --check
-cargo test --lib -- --test-threads=1
+cargo clippy --all-targets -- -D warnings
+cargo test --lib
 cargo check
 ```
 
-Inference tests require local models and hardware; frontend build and pure Rust
-tests must pass without them. The workspace-level commands that replace these
+`cargo test --lib` is hardware-free. Tests that need local models, PDFium, CUDA,
+or an NPU run with `cargo test --lib --features hw-tests -- --test-threads=1`
+on a machine that has them. The workspace-level commands that replace these
 after Phase 0 are listed in [`AGENTS.md`](AGENTS.md#5-commands).
 
 ## Commit style

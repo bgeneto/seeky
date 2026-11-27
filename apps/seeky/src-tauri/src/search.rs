@@ -116,11 +116,7 @@ fn dense(conn: &Connection, query: &[f32], limit: usize) -> Result<Vec<(i64, f32
         if vector.len() != query.len() {
             continue;
         }
-        let score: f32 = vector
-            .iter()
-            .zip(query.iter())
-            .map(|(a, b)| a * b)
-            .sum();
+        let score: f32 = vector.iter().zip(query.iter()).map(|(a, b)| a * b).sum();
         scored.push((chunk_id, score));
     }
     scored.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
@@ -150,13 +146,13 @@ fn snippet(text: &str, query: &str) -> String {
         .split_whitespace()
         .find(|t| t.len() >= 3)
         .map(|t| t.to_lowercase());
-    if let Some(needle) = needle {
-        if let Some(byte_pos) = lower.find(&needle) {
-            let char_pos = lower[..byte_pos].chars().count();
-            let start = char_pos.saturating_sub(80);
-            let snippet: String = clean.chars().skip(start).take(320).collect();
-            return format!("…{}…", snippet.trim());
-        }
+    if let Some(needle) = needle
+        && let Some(byte_pos) = lower.find(&needle)
+    {
+        let char_pos = lower[..byte_pos].chars().count();
+        let start = char_pos.saturating_sub(80);
+        let snippet: String = clean.chars().skip(start).take(320).collect();
+        return format!("…{}…", snippet.trim());
     }
     format!("{}…", clean.chars().take(320).collect::<String>())
 }

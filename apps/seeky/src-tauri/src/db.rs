@@ -1,5 +1,5 @@
 use anyhow::{Context, Result};
-use rusqlite::{params, Connection, OptionalExtension};
+use rusqlite::{Connection, OptionalExtension, params};
 use serde::Serialize;
 use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -175,12 +175,7 @@ fn init_schema(conn: &Connection) -> Result<()> {
     Ok(())
 }
 
-fn ensure_column(
-    conn: &Connection,
-    table: &str,
-    column: &str,
-    declaration: &str,
-) -> Result<()> {
+fn ensure_column(conn: &Connection, table: &str, column: &str, declaration: &str) -> Result<()> {
     let mut stmt = conn.prepare(&format!("PRAGMA table_info({table})"))?;
     let mut rows = stmt.query([])?;
     while let Some(row) = rows.next()? {
@@ -343,10 +338,12 @@ pub fn counts(conn: &Connection) -> Result<Counts> {
 }
 
 pub fn last_indexed_at(conn: &Connection) -> Result<Option<i64>> {
-    conn.query_row("SELECT MAX(indexed_at) FROM documents", [], |row| row.get(0))
-        .optional()
-        .map(|value| value.flatten())
-        .map_err(Into::into)
+    conn.query_row("SELECT MAX(indexed_at) FROM documents", [], |row| {
+        row.get(0)
+    })
+    .optional()
+    .map(|value| value.flatten())
+    .map_err(Into::into)
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -398,7 +395,10 @@ pub fn upsert_document(
         )?;
         let chunk_id = tx.last_insert_rowid();
         if let Some(vector) = &chunk.embedding {
-            let bytes: Vec<u8> = vector.iter().flat_map(|value| value.to_le_bytes()).collect();
+            let bytes: Vec<u8> = vector
+                .iter()
+                .flat_map(|value| value.to_le_bytes())
+                .collect();
             tx.execute(
                 "INSERT INTO embeddings(chunk_id, dim, vector) VALUES (?1, ?2, ?3)",
                 params![chunk_id, vector.len() as i64, bytes],
@@ -416,10 +416,8 @@ pub fn all_embeddings(conn: &Connection) -> Result<Vec<(i64, Vec<f32>)>> {
         let dim: usize = row.get::<_, i64>(1)? as usize;
         let bytes: Vec<u8> = row.get(2)?;
         let mut vector = Vec::with_capacity(dim);
-        for chunk in bytes.chunks_exact(4) {
-            vector.push(f32::from_le_bytes([
-                chunk[0], chunk[1], chunk[2], chunk[3],
-            ]));
+        for chunk in bytes.as_chunks::<4>().0 {
+            vector.push(f32::from_le_bytes([chunk[0], chunk[1], chunk[2], chunk[3]]));
         }
         Ok((id, vector))
     })?;
@@ -485,11 +483,7 @@ pub fn chunk_contexts(conn: &Connection, ids: &[i64]) -> Result<Vec<ChunkContext
     if ids.is_empty() {
         return Ok(Vec::new());
     }
-    let placeholders = ids
-        .iter()
-        .map(|_| "?")
-        .collect::<Vec<_>>()
-        .join(",");
+    let placeholders = ids.iter().map(|_| "?").collect::<Vec<_>>().join(",");
     let sql = format!(
         "SELECT c.id, c.doc_id, d.title, d.path, d.ext, c.text, c.page,
                 c.start_offset, c.end_offset
@@ -497,10 +491,8 @@ pub fn chunk_contexts(conn: &Connection, ids: &[i64]) -> Result<Vec<ChunkContext
          WHERE c.id IN ({placeholders})"
     );
     let mut stmt = conn.prepare(&sql)?;
-    let params: Vec<&dyn rusqlite::ToSql> = ids
-        .iter()
-        .map(|id| id as &dyn rusqlite::ToSql)
-        .collect();
+    let params: Vec<&dyn rusqlite::ToSql> =
+        ids.iter().map(|id| id as &dyn rusqlite::ToSql).collect();
     let rows = stmt.query_map(params.as_slice(), |row| {
         Ok(ChunkContext {
             chunk_id: row.get(0)?,

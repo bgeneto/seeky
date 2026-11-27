@@ -20,8 +20,8 @@ const BACKENDS = [
   {
     id: "auto",
     label: "Auto",
-    detail: "CUDA → NPU → CPU",
-    blurb: "Pick the best accelerator available on this machine.",
+    detail: "NPU → CPU",
+    blurb: "Use the NPU when available, otherwise the CPU. Never selects a GPU.",
   },
   {
     id: "cpu",

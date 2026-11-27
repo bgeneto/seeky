@@ -1,14 +1,31 @@
-use anyhow::{anyhow, Context, Result};
-use calamine::{open_workbook_auto, Reader};
+use anyhow::{Context, Result, anyhow};
+use calamine::{Reader, open_workbook_auto};
 use pdfium_render::prelude::*;
 use regex::Regex;
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
-use std::sync::OnceLock;
+use std::sync::{LazyLock, OnceLock};
 use zip::ZipArchive;
 
 static PDFIUM: OnceLock<std::result::Result<Pdfium, String>> = OnceLock::new();
+
+// Patterns are compiled once; `clippy::invalid_regex` validates them at build time.
+// The `regex` crate has no backreferences, so script and style are matched explicitly.
+static DOCX_PARAGRAPH_END: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"(?i)</w:p>").expect("valid DOCX paragraph regex"));
+static DOCX_TEXT_RUN: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"(?s)<w:t[^>]*>(.*?)</w:t>").expect("valid DOCX text regex"));
+static PPTX_TEXT_RUN: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"(?s)<a:t[^>]*>(.*?)</a:t>").expect("valid PPTX text regex"));
+static HTML_SCRIPT_STYLE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"(?is)<script\b[^>]*>.*?</script\s*>|<style\b[^>]*>.*?</style\s*>")
+        .expect("valid HTML script/style regex")
+});
+static HTML_TAG: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"(?s)<[^>]+>").expect("valid HTML tag regex"));
+static NUMERIC_ENTITY: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"&#(x?[0-9a-fA-F]+);").expect("valid entity regex"));
 
 fn pdfium_instance(dll: &Path) -> Result<&'static Pdfium> {
     let instance = PDFIUM.get_or_init(|| {
@@ -16,23 +33,49 @@ fn pdfium_instance(dll: &Path) -> Result<&'static Pdfium> {
             .map(Pdfium::new)
             .map_err(|e| format!("bind pdfium {}: {e}", dll.display()))
     });
-    instance
-        .as_ref()
-        .map_err(|e| anyhow!("{e}"))
+    instance.as_ref().map_err(|e| anyhow!("{e}"))
 }
 
 pub fn supported_ext(ext: &str) -> bool {
     matches!(
         ext,
-        "txt" | "md" | "markdown" | "rst" | "log"
+        "txt"
+            | "md"
+            | "markdown"
+            | "rst"
+            | "log"
             | "pdf"
             | "docx"
-            | "xlsx" | "xls"
+            | "xlsx"
+            | "xls"
             | "pptx"
-            | "html" | "htm"
-            | "csv" | "json" | "jsonl" | "xml" | "yaml" | "yml"
-            | "rs" | "py" | "js" | "jsx" | "ts" | "tsx" | "go" | "java" | "c" | "h"
-            | "cpp" | "hpp" | "cs" | "rb" | "php" | "sh" | "ps1" | "sql" | "toml"
+            | "html"
+            | "htm"
+            | "csv"
+            | "json"
+            | "jsonl"
+            | "xml"
+            | "yaml"
+            | "yml"
+            | "rs"
+            | "py"
+            | "js"
+            | "jsx"
+            | "ts"
+            | "tsx"
+            | "go"
+            | "java"
+            | "c"
+            | "h"
+            | "cpp"
+            | "hpp"
+            | "cs"
+            | "rb"
+            | "php"
+            | "sh"
+            | "ps1"
+            | "sql"
+            | "toml"
     )
 }
 
@@ -86,11 +129,9 @@ fn extract_docx(path: &Path) -> Result<String> {
         .by_name("word/document.xml")
         .context("docx missing word/document.xml")?
         .read_to_string(&mut xml)?;
-    let paragraph = Regex::new(r"(?i)</w:p>")?;
-    let xml = paragraph.replace_all(&xml, "\n");
-    let text_re = Regex::new(r"(?s)<w:t[^>]*>(.*?)</w:t>")?;
+    let xml = DOCX_PARAGRAPH_END.replace_all(&xml, "\n");
     let mut out = String::new();
-    for cap in text_re.captures_iter(&xml) {
+    for cap in DOCX_TEXT_RUN.captures_iter(&xml) {
         out.push_str(&decode_entities(&cap[1]));
     }
     Ok(out)
@@ -102,29 +143,28 @@ fn extract_pptx(path: &Path) -> Result<String> {
         .file_names()
         .filter_map(|s| s.ok().map(|s| s.to_string()))
         .collect();
-    let text_re = Regex::new(r"(?s)<a:t[^>]*>(.*?)</a:t>")?;
     let mut out = String::new();
     for name in names {
         if !name.starts_with("ppt/slides/slide") || !name.ends_with(".xml") {
             continue;
         }
         let mut xml = String::new();
-        if let Ok(mut file) = archive.by_name(&name) {
-            if file.read_to_string(&mut xml).is_ok() {
-                for cap in text_re.captures_iter(&xml) {
-                    out.push_str(&decode_entities(&cap[1]));
-                    out.push(' ');
-                }
-                out.push('\n');
+        if let Ok(mut file) = archive.by_name(&name)
+            && file.read_to_string(&mut xml).is_ok()
+        {
+            for cap in PPTX_TEXT_RUN.captures_iter(&xml) {
+                out.push_str(&decode_entities(&cap[1]));
+                out.push(' ');
             }
+            out.push('\n');
         }
     }
     Ok(out)
 }
 
 fn extract_xlsx(path: &Path) -> Result<String> {
-    let mut workbook = open_workbook_auto(path)
-        .with_context(|| format!("open workbook {}", path.display()))?;
+    let mut workbook =
+        open_workbook_auto(path).with_context(|| format!("open workbook {}", path.display()))?;
     let mut out = String::new();
     for sheet in workbook.sheet_names().to_owned() {
         if let Ok(range) = workbook.worksheet_range(&sheet) {
@@ -149,10 +189,8 @@ fn extract_xlsx(path: &Path) -> Result<String> {
 
 fn extract_html(path: &Path) -> Result<String> {
     let raw = extract_text(path)?;
-    let script = Regex::new(r"(?is)<(script|style)[^>]*>.*?</\1>")?;
-    let tags = Regex::new(r"(?is)<[^>]+>")?;
-    let text = script.replace_all(&raw, " ");
-    let text = tags.replace_all(&text, " ");
+    let text = HTML_SCRIPT_STYLE.replace_all(&raw, " ");
+    let text = HTML_TAG.replace_all(&text, " ");
     Ok(decode_entities(&text))
 }
 
@@ -169,8 +207,7 @@ fn decode_entities(input: &str) -> String {
         .replace("&quot;", "\"")
         .replace("&apos;", "'")
         .replace("&#39;", "'");
-    let numeric = Regex::new(r"&#(x?[0-9a-fA-F]+);").unwrap();
-    out = numeric
+    out = NUMERIC_ENTITY
         .replace_all(&out, |caps: &regex::Captures| {
             let raw = &caps[1];
             let code = if let Some(hex) = raw.strip_prefix('x') {
@@ -199,13 +236,17 @@ mod tests {
     }
 
     fn pdfium() -> PathBuf {
-        PathBuf::from(std::env::var("LOCALAPPDATA").unwrap())
+        PathBuf::from(std::env::var("LOCALAPPDATA").unwrap_or_default())
             .join("Gety")
             .join("lib")
             .join("pdfium.dll")
     }
 
     #[test]
+    #[cfg_attr(
+        not(feature = "hw-tests"),
+        ignore = "needs a local PDFium library; run with --features hw-tests"
+    )]
     fn extracts_pdf_text() {
         let text = extract(&fixture("renewal.pdf"), &pdfium()).expect("pdf text");
         assert!(!text.trim().is_empty(), "empty pdf text");
@@ -226,5 +267,28 @@ mod tests {
         let result = extract(&path, &pdfium());
         assert!(result.is_err());
         let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn extracts_html_text_without_scripts_and_styles() {
+        let dir = std::env::temp_dir().join(format!("seeky-html-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let path = dir.join("page.html");
+        std::fs::write(
+            &path,
+            "<html><head><style>body { color: red; }</style>\
+             <SCRIPT type=\"text/javascript\">var secret = 1;</SCRIPT></head>\
+             <body><h1>Renova&#231;&#227;o</h1><p>Contract &amp; terms&#x21;</p>\
+             <script>\nalert('x');\n</script ></body></html>",
+        )
+        .unwrap();
+        let text = extract(&path, &pdfium()).expect("html text");
+        let _ = std::fs::remove_dir_all(&dir);
+        assert!(text.contains("Contract & terms!"), "text={text:?}");
+        assert!(text.contains("Renovação"), "text={text:?}");
+        assert!(!text.contains("color: red"), "style leaked: {text:?}");
+        assert!(!text.contains("secret"), "script leaked: {text:?}");
+        assert!(!text.contains("alert"), "script leaked: {text:?}");
+        assert!(!text.contains('<'), "tag leaked: {text:?}");
     }
 }

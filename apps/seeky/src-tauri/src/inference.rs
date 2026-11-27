@@ -1,6 +1,8 @@
-use anyhow::{anyhow, Context, Result};
+use anyhow::{Context, Result, anyhow};
 use half::f16;
-use openvino::{Core, DeviceType, ElementType, InferRequest, PartialShape, Shape, Tensor as OvTensor};
+use openvino::{
+    Core, DeviceType, ElementType, InferRequest, PartialShape, Shape, Tensor as OvTensor,
+};
 use ort::execution_providers::CUDAExecutionProvider;
 use ort::session::Session;
 use ort::value::Tensor;
@@ -85,7 +87,9 @@ impl Engine {
         match backend {
             Backend::Auto => {
                 let mut last_err = None;
-                for candidate in [Backend::Cuda, Backend::Npu, Backend::Cpu] {
+                // ADR-0016: Auto never selects a GPU; CUDA stays available only
+                // when chosen explicitly (frozen until removal, plan WP-5.7).
+                for candidate in [Backend::Npu, Backend::Cpu] {
                     match Self::create_one(candidate, model_root, npu_dir) {
                         Ok(engine) => return Ok(engine),
                         Err(err) => last_err = Some((candidate, err)),
@@ -172,10 +176,7 @@ impl Engine {
                     )
                     .with_context(|| format!("read OpenVINO IR {}", xml.display()))?;
                 model
-                    .reshape_single_input(&PartialShape::new_static(
-                        2,
-                        &[1, NPU_BUCKET as i64],
-                    )?)
+                    .reshape_single_input(&PartialShape::new_static(2, &[1, NPU_BUCKET as i64])?)
                     .context("reshape OpenVINO model for NPU")?;
                 let compiled = core
                     .compile_model(&model, DeviceType::NPU)
@@ -209,7 +210,6 @@ impl Engine {
     pub fn info(&self) -> EngineInfo {
         self.info.clone()
     }
-
 
     pub fn embed(&mut self, texts: &[String]) -> Result<Vec<Vec<f32>>> {
         match self.backend {
@@ -252,7 +252,11 @@ impl Engine {
                 "input_ids" => Tensor::from_array((shape.clone(), ids))?,
                 "attention_mask" => Tensor::from_array((shape.clone(), mask))?
             ])?;
-            let output_name = if cuda { "embeddings" } else { "sentence_embedding" };
+            let output_name = if cuda {
+                "embeddings"
+            } else {
+                "sentence_embedding"
+            };
             let output = &outputs[output_name];
             if cuda {
                 let (_, data) = output
@@ -285,13 +289,8 @@ impl Engine {
             let mut ids: Vec<i64> = encoding.get_ids().iter().map(|x| *x as i64).collect();
             ids.truncate(bucket);
             ids.resize(bucket, 1); // <pad> id 1; the IR computes its own attention mask
-            let mut tensor = OvTensor::new(
-                ElementType::I64,
-                &Shape::new(&[1, bucket as i64])?,
-            )?;
-            tensor
-                .get_data_mut::<i64>()?
-                .copy_from_slice(&ids);
+            let mut tensor = OvTensor::new(ElementType::I64, &Shape::new(&[1, bucket as i64])?)?;
+            tensor.get_data_mut::<i64>()?.copy_from_slice(&ids);
             npu.request.set_input_tensor(&tensor)?;
             npu.request.infer()?;
             let output = npu.request.get_output_tensor_by_index(0)?;
@@ -479,14 +478,17 @@ pub fn resolve_npu_dir(resource_dir: Option<&Path>) -> PathBuf {
 
 pub fn available_backends(model_root: Option<&Path>, npu_dir: &Path) -> Vec<String> {
     let mut backends = vec!["cpu".to_string()];
-    if let Some(root) = model_root {
-        if root.join("onnx_cuda").join("model_fp16.onnx").is_file()
-            && gety_data_dir()
-                .map(|d| d.join("ep").join("onnxruntime_providers_cuda.dll").is_file())
-                .unwrap_or(false)
-        {
-            backends.push("cuda".to_string());
-        }
+    if let Some(root) = model_root
+        && root.join("onnx_cuda").join("model_fp16.onnx").is_file()
+        && gety_data_dir()
+            .map(|d| {
+                d.join("ep")
+                    .join("onnxruntime_providers_cuda.dll")
+                    .is_file()
+            })
+            .unwrap_or(false)
+    {
+        backends.push("cuda".to_string());
     }
     if npu_dir.join("model.xml").is_file()
         && gety_data_dir()
@@ -514,6 +516,10 @@ mod tests {
     }
 
     #[test]
+    #[cfg_attr(
+        not(feature = "hw-tests"),
+        ignore = "needs local gety-embed-v0 and ONNX Runtime; run with --features hw-tests"
+    )]
     fn cpu_embedding_works() {
         let (model, npu) = roots();
         let mut engine = Engine::create(Backend::Cpu, &model, &npu).expect("cpu engine");
@@ -530,6 +536,10 @@ mod tests {
     }
 
     #[test]
+    #[cfg_attr(
+        not(feature = "hw-tests"),
+        ignore = "needs an NVIDIA GPU and local CUDA assets; run with --features hw-tests"
+    )]
     fn cuda_embedding_works() {
         let (model, npu) = roots();
         let mut engine = Engine::create(Backend::Cuda, &model, &npu).expect("cuda engine");
@@ -540,6 +550,10 @@ mod tests {
     }
 
     #[test]
+    #[cfg_attr(
+        not(feature = "hw-tests"),
+        ignore = "needs an Intel NPU and local OpenVINO assets; run with --features hw-tests"
+    )]
     fn npu_embedding_works() {
         let (model, npu) = roots();
         let mut engine = Engine::create(Backend::Npu, &model, &npu).expect("npu engine");

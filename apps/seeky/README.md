@@ -210,10 +210,15 @@ npm run tauri -- build --debug --no-bundle
    `contract renewal notice`. Filename and path terms are matched too and show
    a `FILENAME` tag.
 7. Click a result to preview; **Open file** launches the OS default app.
-8. **Settings** → choose Auto / CPU / CUDA / NPU. Auto resolves
-   CUDA → NPU → CPU. The choice is saved and reused on the next launch.
-9. Switching backends does not re-embed the index: CPU, CUDA and NPU all use
-   compatible 384-d `gety-embed-v0` vectors.
+8. **Settings** → choose Auto / CPU / CUDA / NPU. Auto resolves NPU → CPU and
+   never selects a GPU (ADR-0016); CUDA must be chosen explicitly. The choice is
+   saved and reused on the next launch.
+9. Switching backends does not re-embed the index. All backends produce 384-d
+   `gety-embed-v0` vectors, but cross-backend parity is **not verified** (the
+   NPU path truncates passages at 256 tokens versus 512 on CPU), so an index
+   built on one backend and queried on another may rank differently. Known
+   deviation from ADR-0019 until index generations land (plan WP-2.1, WP-3.7);
+   see the [conformance audit](../../docs/validation/poc-conformance-audit.md).
 
 While indexing, the status bar and **Index health** panel show progress; use
 **Cancel** to stop after the current file.
@@ -230,11 +235,18 @@ More captures: [NPU settings](../../docs/assets/screenshots/seeky/settings-npu.p
 
 ```powershell
 cd apps\seeky\src-tauri
-cargo test --lib -- --test-threads=1 --nocapture
+cargo test --lib
 ```
 
-Current result: **8 passed**. Covers CPU/CUDA/NPU embeddings, PDF/DOCX
-extraction, incremental index/search roundtrip (create, modify, rename, delete,
+The default run is hardware-free. Tests that need local Gety model files,
+PDFium, CUDA, or an Intel NPU are ignored unless the `hw-tests` feature is on:
+
+```powershell
+cargo test --lib --features hw-tests -- --test-threads=1 --nocapture
+```
+
+With `hw-tests` on a machine that has those assets, all 9 tests pass. Covers
+CPU/CUDA/NPU embeddings, PDF/DOCX/HTML extraction, incremental index/search roundtrip (create, modify, rename, delete,
 unchanged skip), and watcher event mapping. The release binary was also
 smoke-tested end-to-end on the NPU, including a portable `exe + resources`
 copy. See
