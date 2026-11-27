@@ -12,6 +12,11 @@ roadmap (§6), with the date.
 ## Unreleased
 
 ### Added
+- The desktop UI is localized in English and Portuguese (WP-7.1): it follows
+  the OS language, offers a Language preference, falls back to English per
+  message, and CI checks catalog parity and runs the frontend unit tests.
+- The preview panel can be resized by dragging or with the keyboard, and its
+  close button stays visible for long file names.
 - The maintainer accepted SPEC-0014 v0.2, an addendum that adds R17: a
   resizable preview panel (drag or keyboard, 300 px to 60% of the content
   area, width kept in `seeky.ui.previewWidth.v1`) to WP-7.1.

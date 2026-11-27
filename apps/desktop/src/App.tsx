@@ -1,4 +1,12 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { open } from "@tauri-apps/plugin-dialog";
@@ -7,6 +15,16 @@ import { useI18n } from "./i18n/I18nProvider";
 import { LOCALE_PREFERENCES, type LocalePreference } from "./i18n/locale";
 import type { I18n, MessageKey, MessageValues } from "./i18n/messages";
 import { OPERATION_ERROR_KEYS, progressPhaseKey } from "./i18n/operations";
+import {
+  PREVIEW_DEFAULT,
+  PREVIEW_MIN,
+  PREVIEW_WIDTH_KEY,
+  clampPreviewWidth,
+  keyboardResize,
+  maxPreviewWidth,
+  parsePreviewWidth,
+} from "./layout/previewWidth";
+import { browserStorage, createPreferenceStore } from "./preferences";
 import type {
   DocumentView,
   IndexHealth,
@@ -77,6 +95,8 @@ const LOCALE_OPTIONS: Record<LocalePreference, MessageKey> = {
   en: "settings.locale.option.en",
   pt: "settings.locale.option.pt",
 };
+
+const layoutStore = createPreferenceStore(browserStorage);
 
 function basename(path: string) {
   const parts = path.split(/[\\/]/);
@@ -217,6 +237,56 @@ function App() {
   const [indexing, setIndexing] = useState<string | null>(null);
   const [probing, setProbing] = useState<string | null>(null);
   const searchSeq = useRef(0);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [previewWidth, setPreviewWidth] = useState(() =>
+    parsePreviewWidth(layoutStore.read(PREVIEW_WIDTH_KEY)),
+  );
+
+  function contentWidth() {
+    return contentRef.current?.getBoundingClientRect().width ?? 0;
+  }
+
+  function commitPreviewWidth(width: number) {
+    setPreviewWidth(width);
+    layoutStore.write(PREVIEW_WIDTH_KEY, String(width));
+  }
+
+  // SPEC-0014-R17: drag the separator; the width persists on release.
+  function startPreviewResize(event: ReactPointerEvent<HTMLDivElement>) {
+    const rect = contentRef.current?.getBoundingClientRect();
+    if (event.button !== 0 || !rect) return;
+    event.preventDefault();
+    const handle = event.currentTarget;
+    handle.setPointerCapture(event.pointerId);
+    document.body.classList.add("resizing");
+    let latest = clampPreviewWidth(previewWidth, rect.width);
+    const move = (moveEvent: PointerEvent) => {
+      latest = clampPreviewWidth(rect.right - moveEvent.clientX, rect.width);
+      setPreviewWidth(latest);
+    };
+    const end = () => {
+      handle.removeEventListener("pointermove", move);
+      handle.removeEventListener("pointerup", end);
+      handle.removeEventListener("pointercancel", end);
+      document.body.classList.remove("resizing");
+      commitPreviewWidth(latest);
+    };
+    handle.addEventListener("pointermove", move);
+    handle.addEventListener("pointerup", end);
+    handle.addEventListener("pointercancel", end);
+  }
+
+  function onPreviewResizeKey(event: ReactKeyboardEvent<HTMLDivElement>) {
+    const width = contentWidth();
+    const next = keyboardResize(
+      clampPreviewWidth(previewWidth, width),
+      event.key,
+      width,
+    );
+    if (next === null) return;
+    event.preventDefault();
+    commitPreviewWidth(next);
+  }
 
   async function refresh() {
     try {
@@ -541,9 +611,11 @@ function App() {
         )}
 
         <div
+          ref={contentRef}
           className={
             selected && view === "search" ? "content with-preview" : "content"
           }
+          style={{ "--preview-width": `${previewWidth}px` } as CSSProperties}
         >
           <section className="results-area">
             {view === "search" && (
@@ -993,6 +1065,20 @@ function App() {
 
           {selected && view === "search" && (
             <aside className="preview">
+              <div
+                className="preview-resizer"
+                role="separator"
+                aria-orientation="vertical"
+                aria-label={t("preview.action.resize")}
+                title={t("preview.action.resize")}
+                aria-valuemin={PREVIEW_MIN}
+                aria-valuemax={maxPreviewWidth(contentWidth())}
+                aria-valuenow={clampPreviewWidth(previewWidth, contentWidth())}
+                tabIndex={0}
+                onPointerDown={startPreviewResize}
+                onKeyDown={onPreviewResizeKey}
+                onDoubleClick={() => commitPreviewWidth(PREVIEW_DEFAULT)}
+              />
               <div className="preview-head">
                 <div>
                   <div className="preview-kicker">{t("preview.kicker")}</div>

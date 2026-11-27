@@ -637,7 +637,7 @@ Rules:
 | 6.4 | Not started | — | — |
 | 6.5 | Not started | — | — |
 | 6.6 | Not started | — | — |
-| 7.1 | In progress | Unmerged branch `wp/7.1-i18n`: SPEC-0014 v1 R1–R9, R16 | Dependency moved from Phase 0 to WP-0.3 by the maintainer on 2026-11-27: the UI needs only the thin shell, not the WP-0.6 ORT gate |
+| 7.1 | Done | SPEC-0014 v0.2 R1–R9, R16, R17: `apps/desktop/src/i18n/`, `src/layout/previewWidth.ts`, `scripts/check-i18n.mjs`, `tests/unit/` (`npm run i18n:check`, `npm run test:unit` in CI); manual locale check by the maintainer 2026-11-27 | Dependency moved from Phase 0 to WP-0.3 by the maintainer on 2026-11-27: the UI needs only the thin shell, not the WP-0.6 ORT gate |
 | 7.2 | Not started | — | — |
 | 7.3 | Not started | — | — |
 | 7.4 | Not started | — | — |
@@ -687,9 +687,8 @@ finished items and add the next ones, so this list never points at done work.
    pt<->en pairs; every item remains a candidate and the maintainer verifies it
    (H6), including the `sdc-smoke-v1` subset required by WP-1.8. WP-1.6 is
    unblocked after WP-1.2.
-5. In parallel (UX track): SPEC-0014 v1 is Accepted (H2, 2026-11-27); WP-7.1
-   is in progress on `wp/7.1-i18n`, then WP-7.2; both depend on WP-0.3, not
-   on the whole of Phase 0 (maintainer, 2026-11-27).
+5. In parallel (UX track): WP-7.1 is Done; WP-7.2 (themes, SPEC-0014 v1
+   R10–R15) is next and depends only on WP-0.3 (maintainer, 2026-11-27).
 6. Start the OCR **Stage 0 paper screen now** (no code needed,
    [candidates §5](../benchmarks/candidates.md)): confirm the OCRia variant
    name, open-weight availability, each candidate's ONNX export path, and the
