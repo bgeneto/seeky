@@ -472,7 +472,7 @@ fn unsupported_filter_metadata_is_an_error() {
 
 /// SPEC-0003-R15
 #[test]
-fn perf_writes_a_not_budget_eligible_skeleton() {
+fn perf_writes_a_not_budget_eligible_report() {
     let fixture = support::build();
     let data = fixture.data_dir("perf");
     index(
@@ -495,9 +495,11 @@ fn perf_writes_a_not_budget_eligible_skeleton() {
             data.to_str().unwrap(),
             "--output",
             output.to_str().unwrap(),
+            "--suite",
+            "resources",
         ],
     )
-    .expect("perf skeleton");
+    .expect("perf resources suite");
     let report = read_json(&output.join("results.json"));
     assert_eq!(report["kind"], "performance");
     assert_eq!(report["performance"]["qualifies_for_budget"], false);

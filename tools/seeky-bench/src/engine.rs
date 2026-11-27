@@ -75,11 +75,20 @@ pub struct EngineAdapter {
 impl EngineAdapter {
     /// Open the engine for the configured capabilities.
     pub fn open(data_dir: &Path, config: &RunConfig) -> Result<Self> {
+        Self::open_with_events(data_dir, config, Arc::new(NoopEvents))
+    }
+
+    /// Open the engine and forward its index events to `events` (perf uses
+    /// progress events to confirm that bulk indexing is active).
+    pub fn open_with_events(
+        data_dir: &Path,
+        config: &RunConfig,
+        events: Arc<dyn EngineEvents>,
+    ) -> Result<Self> {
         let engine_config = EngineConfig {
             data_dir: data_dir.to_path_buf(),
             resource_dir: None,
         };
-        let events: Arc<dyn EngineEvents> = Arc::new(NoopEvents);
         let engine = if config.semantic {
             Engine::open(engine_config, events)
         } else {

@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Status | Implemented |
-| Version | 0.1 |
+| Version | 0.2 |
 | Owner | Maintainer |
 | Phase / work packages | Phase 0 — WP-0.1 (boundaries also bind WP-0.2 and WP-0.3) |
 | Crates touched | new: `seeky-core`, `seeky-extract`, `seeky-infer`, `seeky-store`, `seeky-search`, `seeky-engine`, `seeky-provision`, `seeky-eval`; renamed: `apps/seeky` → `apps/desktop` |
@@ -215,6 +215,7 @@ The shell keeps no hardware tests after WP-0.2.
 | Location (after WP-0.2) | Code | Justification | Removal |
 |---|---|---|---|
 | `crates/seeky-infer/src/inference.rs`, runtime library path setup (`prepend_path`, reached from PoC `prepare_cuda_paths` and `prepare_openvino_path`) | `std::env::set_var("PATH", …)` | Needed for the PoC to locate CUDA/OpenVINO libraries from a Gety installation. `set_var` is unsound if another thread reads the environment concurrently; the `// SAFETY:` comment must state this residual risk (audit A9) | WP-2.1 loads provider libraries by explicit path and deletes this code |
+| `tools/seeky-bench/src/perf/platform.rs`, Windows `current_rss_bytes`, `total_memory_bytes`, `process_affinity` (WP-1.6) | `K32GetProcessMemoryInfo`, `GlobalMemoryStatusEx`, and `GetProcessAffinityMask` through `windows-sys` | SPEC-0003 R27/R28 need process RSS, installed memory, and the pinned CPU set on Windows; each call writes only into a live, zero-initialized local whose size it is given, on the always-valid current-process pseudo-handle. Internal tool, never shipped | None planned; remove if a reviewed process-metrics crate replaces it |
 
 ### 5.4 What does not change
 
@@ -266,3 +267,4 @@ measured in Phase 0 beyond the golden test.
 | 0.1 | 2026-11-27 | Accepted by the maintainer |
 | 0.1 | 2026-11-27 | WP-0.1 implemented R1–R12 and R14–R17. §4.4: `walkdir` ownership is checked in review instead of `cargo-deny` (Tauri build crates depend on it). R13 stays open until the shell drops the PoC's heavy dependencies |
 | 0.1 | 2026-11-27 | WP-0.2 implemented R13 and R18; §5.3 names `crates/seeky-infer/src/inference.rs` as the audited unsafe location. All requirements are implemented |
+| 0.2 | 2026-11-27 | §5.3 adds the `tools/seeky-bench/src/perf/platform.rs` windows-sys exemption (WP-1.6, maintainer-approved) |

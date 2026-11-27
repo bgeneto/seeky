@@ -226,6 +226,20 @@ fn parse_cpus(list: &str) -> Vec<u32> {
     cpus
 }
 
+/// Detected CPU feature names (`avx2`, `avx512f`, `vnni`) for the tier check.
+#[must_use]
+pub fn cpu_feature_names() -> Vec<String> {
+    cpu_features()
+        .as_array()
+        .map(|values| {
+            values
+                .iter()
+                .filter_map(|value| value.as_str().map(str::to_string))
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
 #[cfg(any(target_arch = "x86_64", target_arch = "x86"))]
 fn cpu_features() -> Value {
     let mut features = Vec::new();

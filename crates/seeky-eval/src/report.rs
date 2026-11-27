@@ -350,6 +350,17 @@ pub struct SearchMeasurement {
     pub latency_ms: LatencyMetrics,
 }
 
+/// Batch-1 query-embedding latency (SPEC-0003 section 4.10).
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct QueryEmbeddingMetrics {
+    /// Embedding batch size; always 1.
+    pub batch: u64,
+    /// Measured embedding calls after warm-up.
+    pub samples: u64,
+    /// Latency values.
+    pub latency_ms: LatencyMetrics,
+}
+
 /// Indexing throughput.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct IndexingMetrics {
@@ -401,10 +412,10 @@ pub struct InterferenceRatio {
 /// Resource metrics.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ResourceMetrics {
-    /// Idle RSS.
-    pub idle_rss_bytes: u64,
-    /// Peak RSS.
-    pub peak_rss_bytes: u64,
+    /// Idle RSS; null when the platform cannot sample process memory.
+    pub idle_rss_bytes: Option<u64>,
+    /// Peak RSS; null when the platform cannot sample process memory.
+    pub peak_rss_bytes: Option<u64>,
     /// Page-cache bytes when measurable.
     pub page_cache_bytes: Option<u64>,
     /// Index bytes.
@@ -440,7 +451,7 @@ pub struct PerformanceReport {
     /// Search measurements.
     pub search: Vec<SearchMeasurement>,
     /// Query-embedding latency.
-    pub query_embedding: Option<LatencyMetrics>,
+    pub query_embedding: Option<QueryEmbeddingMetrics>,
     /// Indexing throughput.
     pub indexing: Option<IndexingMetrics>,
     /// Time to searchable.
@@ -459,6 +470,9 @@ pub struct PerformanceReport {
     pub visual: Option<serde_json::Value>,
     /// Energy metrics.
     pub energy: Option<serde_json::Value>,
+    /// One entry per unavailable, undersampled, or not-budget-eligible value.
+    #[serde(default)]
+    pub warnings: Vec<String>,
 }
 
 /// One paired comparison report row.
@@ -922,13 +936,15 @@ pub fn render_markdown(report: &Report) -> String {
                 performance
                     .resources
                     .as_ref()
-                    .map(|value| value.idle_rss_bytes as f64)
+                    .and_then(|value| value.idle_rss_bytes)
+                    .map(|value| value as f64)
             ),
             format_metric(
                 performance
                     .resources
                     .as_ref()
-                    .map(|value| value.peak_rss_bytes as f64)
+                    .and_then(|value| value.peak_rss_bytes)
+                    .map(|value| value as f64)
             ),
             format_metric(
                 performance
@@ -938,6 +954,12 @@ pub fn render_markdown(report: &Report) -> String {
             )
         );
         let _ = writeln!(out);
+        for warning in &performance.warnings {
+            let _ = writeln!(out, "- Warning: {}", escape(warning));
+        }
+        if !performance.warnings.is_empty() {
+            let _ = writeln!(out);
+        }
     } else {
         let _ = writeln!(out, "### Performance\n\nNot measured in this run.\n");
     }
@@ -1224,6 +1246,58 @@ mod tests {
             .insert("recall_100".to_owned(), None);
         assert!(render_markdown(&report).contains("| system |"));
         assert!(render_markdown(&report).contains("—"));
+    }
+
+    #[test]
+    fn performance_payload_keeps_unavailable_values_null_with_warnings() {
+        // SPEC-0003-R27: unavailable values are null with a warning, never zero.
+        let performance = PerformanceReport {
+            tier: "T2".to_owned(),
+            qualifies_for_budget: false,
+            search: Vec::new(),
+            query_embedding: Some(QueryEmbeddingMetrics {
+                batch: 1,
+                samples: 10,
+                latency_ms: LatencyMetrics {
+                    p50: 1.0,
+                    p95: 2.0,
+                    p99: 3.0,
+                    ci95: BTreeMap::new(),
+                },
+            }),
+            indexing: None,
+            time_to_searchable: None,
+            interference_ratio: None,
+            resources: Some(ResourceMetrics {
+                idle_rss_bytes: None,
+                peak_rss_bytes: None,
+                page_cache_bytes: None,
+                index_bytes: 2_500,
+                disk_bytes_per_1k_passages: 2_500.0,
+                scope: "engine_headless".to_owned(),
+                sampling_interval_ms: 50,
+            }),
+            startup: None,
+            distribution: None,
+            ocr: None,
+            visual: None,
+            energy: None,
+            warnings: vec!["resources.idle_rss_bytes unavailable".to_owned()],
+        };
+        let value = serde_json::to_value(&performance).unwrap();
+        assert_eq!(value["query_embedding"]["batch"], 1);
+        assert_eq!(value["query_embedding"]["samples"], 10);
+        assert!(value["resources"]["idle_rss_bytes"].is_null());
+        assert!(value["resources"]["page_cache_bytes"].is_null());
+        let mut legacy = value.clone();
+        legacy.as_object_mut().unwrap().remove("warnings");
+        let parsed: PerformanceReport = serde_json::from_value(legacy).unwrap();
+        assert!(parsed.warnings.is_empty());
+
+        let mut report = quality_report();
+        report.performance = Some(performance);
+        let markdown = render_markdown(&report);
+        assert!(markdown.contains("- Warning: resources.idle_rss_bytes unavailable"));
     }
 
     #[test]

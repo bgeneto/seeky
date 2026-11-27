@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Status | Accepted (maintainer pre-approval in /goal) |
-| Version | 0.1 (Phase 1 quality, statistics, reporting, performance, CI smoke) |
+| Version | 0.2 (Phase 1 quality, statistics, reporting, performance, CI smoke) |
 | Owner | Maintainer |
 | Phase / work packages | Phase 1 — WP-1.1, WP-1.2, WP-1.5, WP-1.6, WP-1.8 |
 | Crates touched | `seeky-eval` (new implementation); `tools/seeky-bench` (new workspace tool); `bench/datasets/` and `bench/exposures/` data contracts |
@@ -85,10 +85,10 @@ All requirements are open. The WP column names the implementation owner.
 | SPEC-0003-R22 | WP-1.2 | The harness shall not write query text, document text, document file names, absolute paths, user names, or secrets to results, Markdown reports, logs, or diagnostics; committed reports for private datasets shall contain aggregate metrics only. | privacy scan of golden artifacts; `private_report_omits_per_query_and_paths`; logging review | Implemented (WP-1.2) |
 | SPEC-0003-R23 | WP-1.5 | Each public dataset shall have a versioned manifest in `bench/datasets/<dataset-id>/manifest.json` recording source revision/URLs, terms/license, expected hashes, local file hashes, split files, corpus layout, and transformation version; download scripts shall run offline after download, verify hashes and terms, and never commit or redistribute bulk data. | `dataset_manifest_requires_license_source_and_hashes`; `dataset_download_rejects_hash_or_terms_mismatch`; repository-size/license inspection | Implemented (WP-1.5) |
 | SPEC-0003-R24 | WP-1.5 | When a public dataset is prepared, the tools shall produce BEIR files with explicit `dev`/`test` mappings, stable query IDs, categories and language slices required by §4.2, deterministic constructed cross-lingual pairs, and a dataset fingerprint; the same inputs, transform version, and seed shall yield identical files and fingerprint. | `public_dataset_transform_is_byte_deterministic`; `constructed_cross_lingual_pairs_are_stable`; `manifest_splits_categories_and_languages_validate` | Implemented (WP-1.5; cross-lingual pin blocked, synthetic-fixture coverage) |
-| SPEC-0003-R25 | WP-1.6 | When `perf` measures search, it shall time each requested stage/condition on a fixed `dev` query set, discard warm-up, compute p50/p95/p99 with bootstrap confidence intervals, and require at least 1,000 query samples per stage or 30 repetitions of the fixed set before a value is budget-eligible. | `perf_latency_percentiles_match_reference`; `perf_bootstrap_ci_matches_fixed_seed_reference`; `undersampled_perf_is_marked_not_budget_eligible` | Open |
-| SPEC-0003-R26 | WP-1.6 | When `perf` runs indexing/interference suites, it shall measure query-embedding batch-1 latency, extraction files/s and MB/s, embedding passages/s, lexical and semantic time-to-searchable, and S5 interference ratio using the same query set and hardware as the idle run. | `perf_indexing_and_embedding_metrics_are_present`; `time_to_searchable_uses_first_matching_result`; `interference_ratio_matches_hand_calculation` | Open |
-| SPEC-0003-R27 | WP-1.6 | When `perf` runs resource/startup/distribution suites, it shall record idle and peak RSS with scope and sampling interval, separate page-cache bytes where available, index bytes per 1k passages, cold start to Instant- and semantic-capable, and optional installer/download/OCR/visual/energy fields without inventing unavailable measurements. | `perf_resources_match_reference_fixture`; `perf_startup_marks_cold_and_scope`; `unavailable_optional_metrics_are_explicit` | Open |
-| SPEC-0003-R28 | WP-1.6 | `perf` shall record the hardware tier and T1-emulated profile, reject a tier/emulation declaration that conflicts with the captured environment, use an explicit quiet-window check, and label every undersampled or synthetic measurement with `qualifies_for_budget = false`. | `perf_rejects_tier_emulation_conflict`; `perf_records_tier_emulation_and_quiet_window`; `perf_budget_eligibility_is_explicit` | Open |
+| SPEC-0003-R25 | WP-1.6 | When `perf` measures search, it shall time each requested stage/condition on a fixed `dev` query set, discard warm-up, compute p50/p95/p99 with bootstrap confidence intervals, and require at least 1,000 query samples per stage or 30 repetitions of the fixed set before a value is budget-eligible. | `perf_latency_percentiles_match_reference`; `perf_bootstrap_ci_matches_fixed_seed_reference`; `undersampled_perf_is_marked_not_budget_eligible` | Implemented (WP-1.6) |
+| SPEC-0003-R26 | WP-1.6 | When `perf` runs indexing/interference suites, it shall measure query-embedding batch-1 latency, extraction files/s and MB/s, embedding passages/s, lexical and semantic time-to-searchable, and S5 interference ratio using the same query set and hardware as the idle run. | `perf_indexing_and_embedding_metrics_are_present`; `time_to_searchable_uses_first_matching_result`; `interference_ratio_matches_hand_calculation` | Implemented (WP-1.6) |
+| SPEC-0003-R27 | WP-1.6 | When `perf` runs resource/startup/distribution suites, it shall record idle and peak RSS with scope and sampling interval, separate page-cache bytes where available, index bytes per 1k passages, cold start to Instant- and semantic-capable, and optional installer/download/OCR/visual/energy fields without inventing unavailable measurements. | `perf_resources_match_reference_fixture`; `perf_startup_marks_cold_and_scope`; `unavailable_optional_metrics_are_explicit` | Implemented (WP-1.6) |
+| SPEC-0003-R28 | WP-1.6 | `perf` shall record the hardware tier and T1-emulated profile, reject a tier/emulation declaration that conflicts with the captured environment, use an explicit quiet-window check, and label every undersampled or synthetic measurement with `qualifies_for_budget = false`. | `perf_rejects_tier_emulation_conflict`; `perf_records_tier_emulation_and_quiet_window`; `perf_budget_eligibility_is_explicit` | Implemented (WP-1.6) |
 | SPEC-0003-R29 | WP-1.8 | When `compare --gate wp1.8` runs, it shall require two clean `sdc-smoke-v1` `dev` evaluations in the default configuration with identical corpus, judgment set, config hash, query membership, OS family/architecture, and hardware tier; compare macro nDCG@10 over the eight non-code categories; and pass only when the candidate drop from the baseline is at most 1.0 nDCG point. | `wp18_gate_passes_at_exactly_one_point_drop`; `wp18_gate_fails_above_threshold`; `wp18_requires_eight_non_code_categories_and_same_config` | Open |
 | SPEC-0003-R30 | WP-1.8 | The WP-1.8 gate shall fail unless every `sdc-smoke-v1` query and judgment is human-verified or adjudicated, the judgment set is frozen with `test_exposure` not applicable, no source-code document or `code_search` query is present, and the baseline commit matches the supplied current-`main` SHA. | `wp18_rejects_unverified_or_draft_smoke_data`; `wp18_rejects_code_results`; `wp18_rejects_non_main_baseline` | Open |
 | SPEC-0003-R31 | WP-1.8 | Before passing WP-1.8, `compare` shall validate ranking invariants and rerun determinism: unique targets, contiguous ranks, finite nonincreasing scores, complete expected query coverage, only default documents, and identical target order in a second clean run of the same candidate. | `wp18_ranking_invariants_reject_bad_runs`; `wp18_requires_identical_repeat_order`; boundary tests for every invariant | Open |
@@ -658,7 +658,11 @@ For each metric and paired query ID set:
 
 Latency bootstrap uses the same primitive with purposes
 `latency-bootstrap` and keys `"<b>:<sample-index>"`; the resample statistic is
-the requested percentile. It is not a paired quality test.
+the requested percentile. It is not a paired quality test. The S5
+interference-ratio interval resamples the idle and indexing sample sets
+independently with the same purpose and keys `"idle:<b>:<sample-index>"` and
+`"indexing:<b>:<sample-index>"`; the resample statistic is
+`p95(indexing) / p95(idle)`.
 
 ### 4.6 Report JSON
 
@@ -1382,7 +1386,8 @@ latency arithmetic and CI fixture, observations `12,13,…,21` ms give
 An idle p95 of 20 ms and indexing p95 of 30 ms gives S5 interference ratio
 `1.5`, exactly the threshold boundary. A resource fixture with
 `index_bytes = 2_500_000_000` and `passage_count = 1_000_000` gives
-`disk_bytes_per_1k_passages = 2_500`. These values test arithmetic, schema, and
+`disk_bytes_per_1k_passages = 2_500_000` (§4.10 formula; 2,500 bytes per
+passage). These values test arithmetic, schema, and
 CI mechanics, not a hardware claim.
 
 #### E. WP-1.8 boundary
@@ -1574,6 +1579,7 @@ an error, never a quality result.
 
 | Version | Date | Change |
 |---|---|---|
+| 0.2 | 2026-11-27 | WP-1.6 implemented R25-R28: `seeky-bench perf` suites, the §4.10 performance shape (`query_embedding` batch/samples, optional RSS, `warnings`), tier/emulation validation, quiet window, and explicit budget eligibility. Errata approved by the maintainer: §5.8 D disk-per-1k reference corrected from 2,500 to 2,500,000 to match the §4.10 formula; §4.5 now names the interference-ratio bootstrap keys. R29-R31 remain with WP-1.8 |
 | 0.1 | 2026-11-27 | WP-1.2 implemented R15-R22 and R32: `seeky-bench` index, eval, perf skeleton, compare, and report; environment and config hashing; reproducible artifacts; fail-closed depth; test confirmation/exposure; exact filters with pushdown/post reporting. R23-R24 with WP-1.5, R25-R28 with WP-1.6, R29-R31 with WP-1.8 |
 | 0.1 | 2026-11-27 | WP-1.5 implemented R23-R24: offline `dataset-fetch` tooling and four pinned BEIR/MLDR manifests (SciFact, NFCorpus, FiQA, MLDR-pt) with upstream/local hashes, license notices, deterministic transforms, and fingerprints; the mMARCO cross-lingual pair and the largest sources remain unpinned |
 | 0.1 | 2026-11-27 | WP-1.1 implemented R1-R14: BEIR/SDC loaders, graded judgments, reference-checked metrics, duplicate/diversity metrics, seeded paired statistics, and deterministic JSON/Markdown reports; R15-R32 remain with WP-1.2, WP-1.5, WP-1.6, and WP-1.8 |
