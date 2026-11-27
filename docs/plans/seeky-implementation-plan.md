@@ -590,7 +590,7 @@ Rules:
 | 1.5 | Done | [SPEC-0003](../specs/SPEC-0003-evaluation-harness.md) R23–R24; `tools/dataset-fetch/` (stdlib-only Python 3.12, streaming corpus writer/hasher, 59 tool tests) and `bench/datasets/` pinning 11 public datasets (`beir-scifact`, `beir-nfcorpus`, `beir-fiqa`, `mldr-pt` with `files_root`; `beir-trec-covid`, `mldr-en`, `mmarco-pt`, `mmarco-pt-en`, `mmarco-en-pt`, `miracl-es`, `quati-pt` in Stage A `files_root: null` mode), offline `verify` on all 11, and real `seeky-eval` BEIR-loader parity; [PR #11](https://github.com/bgeneto/seeky/pull/11), [PR #25](https://github.com/bgeneto/seeky/pull/25); commits: `git log --grep "WP-1.5"` | Single-split upstream sources (`mmarco-*`, `miracl-*`, `quati-pt`, `beir-trec-covid`) use deterministic 50/50 SHA-256 carve-outs without tuning; TREC-COVID's two `-1` non-relevant grades map to `0` (recorded in lock); `miracl-{fr,de,en}` recipes are also implemented and ready to pin on demand |
 | 1.6 | Done | [SPEC-0003](../specs/SPEC-0003-evaluation-harness.md) R25–R28 (v0.2); `tools/seeky-bench/src/perf.rs` and `src/perf/` (search, embedding, indexing/time-to-searchable, interference, resources, startup suites; tier/quiet-window/eligibility); `crates/seeky-eval` §4.10 performance shape (`query_embedding {batch, samples, latency_ms}`, optional RSS, `warnings`); 13 perf acceptance tests in `tools/seeky-bench/tests/perf.rs` plus unit tests; SPEC-0001 §5.3 windows-sys exemption; [PR #18](https://github.com/bgeneto/seeky/pull/18); commits: `git log --grep "WP-1.6"` | Real T1/T1-emulated numbers are WP-1.7. Extraction and embedding throughput share one timed pass until the engine exposes indexing stage timings |
 | 1.7 | Not started | — | — |
-| 1.8 | In progress | [SPEC-0003](../specs/SPEC-0003-evaluation-harness.md) R29–R31 implemented: `tools/seeky-bench/src/smoke_gate.rs` (typed gate reasons, R30 provenance, R31 run invariants and repeat determinism), `compare --gate wp1.8` writes a `smoke_gate` report; tests `tools/seeky-bench/tests/wp18_gate.rs` (synthetic verified `sdc-smoke` fixture); dormant job `.github/workflows/smoke-gate.yml`; [PR #22](https://github.com/bgeneto/seeky/pull/22); commits: `git log --grep "WP-1.8"` | Activation: publish the H6-verified `sdc-smoke-v1` on `main`, confirm the first real run (PDFium/OCR absence on the runner), define the re-baseline path for intentional default changes, then make the job a required check |
+| 1.8 | In progress | [SPEC-0003](../specs/SPEC-0003-evaluation-harness.md) R29–R31 implemented: `tools/seeky-bench/src/smoke_gate.rs` (typed gate reasons, R30 provenance, R31 run invariants and repeat determinism, ADR-gated `--allow-config-change <ADR-NNNN>` re-baseline override), `compare --gate wp1.8` writes a `smoke_gate` report; tests `tools/seeky-bench/tests/wp18_gate.rs` (synthetic verified `sdc-smoke` fixture); dormant job `.github/workflows/smoke-gate.yml` (pinned Linux x64 PDFium `chromium/8179` with SHA-256 + cache, OCR absent until WP-3.8, `smoke-rebaseline` PR/dispatch path); runbook `docs/benchmarks/smoke-gate-activation.md`; [PR #22](https://github.com/bgeneto/seeky/pull/22), [PR #23](https://github.com/bgeneto/seeky/pull/23); commits: `git log --grep "WP-1.8"` | Remaining activation: publish the H6-verified `sdc-smoke-v1` on `main`, confirm the first active CI run on a PR, create the `smoke-rebaseline` label, and make the job a required check |
 | 2.1 | Not started | — | — |
 | 2.2 | Not started | — | — |
 | 2.3 | Not started | — | Conditional on a WP-0.6 kill criterion |
@@ -691,9 +691,11 @@ finished items and add the next ones, so this list never points at done work.
    drafts. H6 verification is next — by a model reviewer with the v1 review
    prompt since ADR-0026 — starting with the `sdc-smoke-v1` subset required by
    WP-1.8, after the drafter fixes the defects its pre-screen found.
-5. WP-1.8: after H6 publishes `sdc-smoke-v1`, confirm the first
-   `Smoke gate (WP-1.8)` run on a PR (decide on PDFium for the runner and a
-   re-baseline path for intentional default changes), then make it a
-   required check (WP-1.8 → Done).
+5. WP-1.8: runner PDFium (`chromium/8179`, Apache-2.0, SHA-256), OCR-absent
+   policy until WP-3.8, and the ADR-gated `--allow-config-change` re-baseline
+   path are merged ([PR #23](https://github.com/bgeneto/seeky/pull/23),
+   `docs/benchmarks/smoke-gate-activation.md`). After H6 publishes
+   `sdc-smoke-v1`, confirm the first active `Smoke gate (WP-1.8)` run on a PR
+   and make it a required check (WP-1.8 → Done).
 6. UX track: SPEC-0014 v1 is complete (WP-7.1 and WP-7.2 Done). WP-7.3 and
    later need SPEC-0014 v2 and WP-4.3 (progressive search).

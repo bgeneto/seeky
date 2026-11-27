@@ -12,6 +12,14 @@ roadmap (§6), with the date.
 ## Unreleased
 
 ### Added
+- WP-1.8 CI smoke gate activation prep (`Smoke gate (WP-1.8)`): pinned and
+  SHA-256-verified Linux x64 PDFium (`chromium/8179`, Apache-2.0) cached on
+  the runner via `SEEKY_PDFIUM_DLL`, documented OCR absence until WP-3.8,
+  and added `--allow-config-change <ADR-NNNN>` (plus maintainer-labeled
+  `smoke-rebaseline` PR/dispatch support and runbook
+  `docs/benchmarks/smoke-gate-activation.md`) for intentional default changes
+  while keeping repeat config equality, R30/R31 invariants, and the `<= 1.0`
+  nDCG@10 drop ceiling enforced.
 - WP-1.5 public evaluation datasets complete (SPEC-0003 R23–R24): pinned
   `beir-trec-covid`, `mldr-en`, `mmarco-pt`, `mmarco-pt-en`, `mmarco-en-pt`,
   `miracl-es`, and `quati-pt` (CC-BY-4.0) with real upstream/local SHA-256
