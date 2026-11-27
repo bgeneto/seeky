@@ -1,8 +1,8 @@
-mod db;
+pub mod db;
 mod extract;
-mod indexer;
-mod inference;
-mod search;
+pub mod indexer;
+pub mod inference;
+pub mod search;
 
 use anyhow::{Context, Result, anyhow};
 use db::{ChunkInput, Counts, DocumentView, FileSignature, Root};

@@ -1,0 +1,222 @@
+{
+  "poc_commit": "5943bc61a3354978fe93750af71c1a3a3d16eb44",
+  "backend": "lexical-only",
+  "seeky_version": "0.1.0",
+  "queries": [
+    {
+      "query": "renewal",
+      "hits": [
+        {
+          "rank": 1,
+          "path": "renewal.txt",
+          "start": 0,
+          "end": 130,
+          "page": null,
+          "matched": [
+            "bm25",
+            "filename"
+          ],
+          "score": 1.0
+        },
+        {
+          "rank": 2,
+          "path": "sample.docx",
+          "start": 0,
+          "end": 103,
+          "page": null,
+          "matched": [
+            "bm25"
+          ],
+          "score": 0.504
+        }
+      ]
+    },
+    {
+      "query": "written notice",
+      "hits": [
+        {
+          "rank": 1,
+          "path": "sample.docx",
+          "start": 0,
+          "end": 103,
+          "page": null,
+          "matched": [
+            "bm25"
+          ],
+          "score": 1.0
+        },
+        {
+          "rank": 2,
+          "path": "renewal.txt",
+          "start": 0,
+          "end": 130,
+          "page": null,
+          "matched": [
+            "bm25"
+          ],
+          "score": 0.984
+        }
+      ]
+    },
+    {
+      "query": "annual budget",
+      "hits": [
+        {
+          "rank": 1,
+          "path": "budget.md",
+          "start": 0,
+          "end": 107,
+          "page": null,
+          "matched": [
+            "bm25",
+            "filename"
+          ],
+          "score": 1.0
+        }
+      ]
+    },
+    {
+      "query": "semantic chunks",
+      "hits": [
+        {
+          "rank": 1,
+          "path": "project.md",
+          "start": 0,
+          "end": 131,
+          "page": null,
+          "matched": [
+            "bm25"
+          ],
+          "score": 1.0
+        }
+      ]
+    },
+    {
+      "query": "sample",
+      "hits": [
+        {
+          "rank": 1,
+          "path": "sample.docx",
+          "start": 0,
+          "end": 103,
+          "page": null,
+          "matched": [
+            "filename"
+          ],
+          "score": 1.0
+        }
+      ]
+    },
+    {
+      "query": "budget OR (atlas*",
+      "hits": [
+        {
+          "rank": 1,
+          "path": "budget.md",
+          "start": 0,
+          "end": 107,
+          "page": null,
+          "matched": [
+            "bm25",
+            "filename"
+          ],
+          "score": 1.0
+        },
+        {
+          "rank": 2,
+          "path": "project.md",
+          "start": 0,
+          "end": 131,
+          "page": null,
+          "matched": [
+            "bm25"
+          ],
+          "score": 0.492
+        }
+      ]
+    },
+    {
+      "query": "contrato",
+      "hits": []
+    },
+    {
+      "query": "orçamento anual",
+      "hits": []
+    },
+    {
+      "query": "Renovação",
+      "hits": []
+    },
+    {
+      "query": "local documents",
+      "hits": [
+        {
+          "rank": 1,
+          "path": "budget.md",
+          "start": 0,
+          "end": 107,
+          "page": null,
+          "matched": [
+            "bm25",
+            "filename"
+          ],
+          "score": 1.0
+        },
+        {
+          "rank": 2,
+          "path": "project.md",
+          "start": 0,
+          "end": 131,
+          "page": null,
+          "matched": [
+            "bm25",
+            "filename"
+          ],
+          "score": 1.0
+        },
+        {
+          "rank": 3,
+          "path": "renewal.txt",
+          "start": 0,
+          "end": 130,
+          "page": null,
+          "matched": [
+            "filename"
+          ],
+          "score": 0.488
+        },
+        {
+          "rank": 4,
+          "path": "sample.docx",
+          "start": 0,
+          "end": 103,
+          "page": null,
+          "matched": [
+            "filename"
+          ],
+          "score": 0.48
+        }
+      ]
+    },
+    {
+      "query": "thirty days",
+      "hits": [
+        {
+          "rank": 1,
+          "path": "renewal.txt",
+          "start": 0,
+          "end": 130,
+          "page": null,
+          "matched": [
+            "bm25"
+          ],
+          "score": 1.0
+        }
+      ]
+    },
+    {
+      "query": "zzyzx quaternion",
+      "hits": []
+    }
+  ]
+}
