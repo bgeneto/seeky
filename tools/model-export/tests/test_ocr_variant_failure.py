@@ -4,6 +4,16 @@ from seeky_model_export import ocr_run
 from seeky_model_export.artifacts import load_json
 
 
+_ASSETS = ocr_run.OcrAssets(
+    det=None,
+    rec=None,
+    keys=None,
+    det_mean=(0.485, 0.456, 0.406),
+    det_std=(0.229, 0.224, 0.225),
+    det_postprocess=(("thresh", 0.2),),
+)
+
+
 class _Engine:
     def __init__(self, name):
         self.name = name
@@ -36,6 +46,7 @@ def _setup(tmp_path, monkeypatch, failing):
     monkeypatch.setattr(ocr_run, "apply_profile", lambda profile: {"name": "test"})
     monkeypatch.setattr(ocr_run, "capture_environment", lambda: {})
     monkeypatch.setattr(ocr_run, "load_ocr_manifest", lambda workspace: (manifest, truth))
+    monkeypatch.setattr(ocr_run, "_load_assets", lambda workspace, deadline=None: _ASSETS)
     monkeypatch.setattr(ocr_run, "_prepare_variants", lambda *args, **kwargs: (variants, {}))
     monkeypatch.setattr(
         ocr_run,

@@ -19,7 +19,7 @@ from .models import (
     tokenize,
 )
 from .ocr_data import load_ocr_manifest
-from .ocr_run import _new_engine, _page_text
+from .ocr_run import _load_assets, _new_engine, _page_text
 from .system import RunningProfile, apply_profile, capture_environment
 
 
@@ -111,7 +111,7 @@ def run_t0_functional(
         gate_deadline.check("t0:ocr")
         manifest, _ = load_ocr_manifest(workspace)
         page = next(item for item in manifest["pages"] if item["kind"] == "text")
-        ocr = _new_engine(workspace / "models" / "ppocr", threads=profile.ort_threads)
+        ocr = _new_engine(_load_assets(workspace, deadline=gate_deadline), threads=profile.ort_threads)
         text = _page_text(ocr, workspace / "data" / "ocr" / page["image"])
         checks["ocr"] = {"passed": bool(text.strip()), "characters": len(text)}
 

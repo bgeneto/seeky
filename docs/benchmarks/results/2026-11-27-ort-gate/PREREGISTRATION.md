@@ -95,6 +95,46 @@ Rules for the amendment row:
   benchmark figure and its 8,192-token context are vendor claims, not
   measurements; this gate times 384-token pairs only.
 
+**Post-measurement amendment 4 (2026-11-27): PP-OCRv6 tiny replaces the OCR
+proxy.** Frozen after the PP-OCRv5 mobile row was measured and before any row
+below was run. Unlike amendments 2 and 3, this amendment **replaces** a proxy:
+the maintainer decided that the classic OCR role is represented by PP-OCRv6
+tiny, the current generation of the same detector + CTC recognizer family, and
+that the PP-OCRv5 mobile row is abandoned. Two facts are recorded so the change
+is not mistaken for selecting the more favorable result:
+
+- The PP-OCRv5 mobile row produced no clean timing. Its per-page samples were
+  steady near 2 s, with contiguous bursts of 4.6–12.7 s that coincide with
+  `cargo test` and dataset jobs another agent started during the timed series
+  (the quiet window is checked only before a series, §4.3). Its quality was
+  clean (fp32 CER 0.30%). Its result file is archived as superseded, is never
+  pooled with this row, and no K1 verdict is computed from it.
+- The decision was taken after that row was seen. This is a threat to validity
+  and the report states it.
+
+| Role | Model and revision | Why | License evidence |
+|---|---|---|---|
+| Classic OCR detection + recognition | `PaddlePaddle/PP-OCRv6_tiny_det_onnx` @ `2ba1506c0380b8f0b03dd142459aac66d4421f6c` (`inference.onnx`, SHA-256 `193bab7a04fca699a6c82e6abb5b81bdb28177f0abd4062552b04908dafb19f8`) + `PaddlePaddle/PP-OCRv6_tiny_rec_onnx` @ `2612ab37152ae0a677521bae4e1e3d4fb4cf7c30` (`inference.onnx`, SHA-256 `9ef676d6ed3c88256a2d92c640c44f25b0c40947e111b14b8be8f594091563e6`) | DB detector + CTC recognizer, the smallest PP-OCRv6 tier (about 1.5M parameters); one multilingual recognizer whose dictionary covers Portuguese, including every pt diacritic | Apache-2.0 in both upstream model cards |
+
+Rules for the replacement row:
+
+- **Data, profile, parity, timing, statistics, and verdict:** exactly §3.2,
+  §4, §5, and §6 for OCR, on the same rendered pages; K1 for OCR (O1–O3) is
+  computed from this row alone. The T0 functional OCR check is rerun on it.
+- **Recipe:** the official Paddle ONNX exports, not a third-party conversion.
+  Detector normalization (mean/std) and DB post-processing (`thresh`,
+  `box_thresh`, `unclip_ratio`, `max_candidates`) are read from each
+  repository's `inference.yml`; the recognizer dictionary is its
+  `character_dict`, checked against the recognizer's output class count. The
+  vendor config states no resize rule, so detector resizing (shorter side 736)
+  and recognizer input shape (3×48×320) stay as in the PP-OCRv5 row. Runtime:
+  the same RapidOCR 3.10.0 pipeline, without the angle classifier.
+- **Variants:** `fp32` (the published graphs), `int8-dynamic` and
+  `int8-static-qdq` derived exactly as §2. A variant that cannot be quantized
+  or run is a reported result.
+- **Outside the amendment:** no embedder, reranker, Florence, NPU, or K4 row
+  changes. The vendor's accuracy table is a claim, not a measurement.
+
 ## 1. Fixed proxy portfolio
 
 Only license-Allowed models under ADR-0022 are included. Revisions are immutable
