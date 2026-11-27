@@ -52,10 +52,11 @@ engineering and source reports — context only) and
 ```text
 AGENTS.md / CLAUDE.md     this manual (CLAUDE.md imports it)
 Cargo.toml                workspace root (members: crates/*, apps/desktop/src-tauri)
-crates/                   engine crates seeky-{core,extract,infer,store,search,engine,provision,eval} (stubs until WP-0.2)
-apps/desktop/             Tauri 2 + React 19 shell; still holds the PoC engine until WP-0.2/WP-0.3
+crates/                   engine crates seeky-{core,extract,infer,store,search,engine};
+                          seeky-{provision,eval} remain Phase 1/6 stubs
+apps/desktop/             Tauri 2 + React 19 shell; commands and event forwarding only
   src/                    React/TypeScript UI
-  src-tauri/src/          PoC engine + shell (lib.rs, indexer.rs, search.rs, inference.rs, db.rs, extract.rs)
+  src-tauri/src/          thin shell (lib.rs, main.rs); engine lives in crates/
   demo/                   five-file smoke corpus
 docs/
   product/vision.md       principles, scope, product decisions

@@ -46,7 +46,7 @@ closed, the Status field above becomes `Closed`.
 
 | Area | Deviation | Rule | Closed by |
 |---|---|---|---|
-| Structure | Engine logic and Tauri commands live in one crate (`lib.rs`) | [ADR-0015](../adr/0015-engine-first-architecture.md) | WP-0.1–WP-0.3 |
+| Structure | Engine logic and Tauri commands live in one crate (`lib.rs`) | [ADR-0015](../adr/0015-engine-first-architecture.md) | **Closed** (WP-0.2): engine code moved to the workspace crates; the Tauri crate only wires commands and events |
 | Models | `DIM = 384`, output tensor names, max tokens, and pad id hardcoded; model found by scanning a Gety installation | [ADR-0019](../adr/0019-single-inference-engine.md) | WP-2.1 |
 | Runtimes | Two engines: ONNX Runtime and the native OpenVINO API | ADR-0019 | WP-0.6, WP-5.2 |
 | Distribution | Runtime, model, and PDFium read from a Gety installation; OpenVINO IR bundled through Git LFS | [ADR-0011](../adr/0011-slim-first-run-provisioning.md), [ADR-0007](../adr/0007-temporary-lfs-model-asset.md) | WP-6.4 |
@@ -55,7 +55,7 @@ closed, the Status field above becomes `Closed`.
 | Indexing | One pass per file (extract, embed, store); no durable queue or resource governor | [indexing](../architecture/indexing.md) | WP-3.1, WP-3.2 |
 | UI | Dark theme only; English strings hardcoded | [ADR-0012](../adr/0012-two-themes-minimal-ui-en-pt.md) | WP-7.1, WP-7.2 |
 | Webview | Content Security Policy is `null` | ADR-0006 | WP-7.9 |
-| Libraries | `anyhow` in library code; no `tracing` spans | AGENTS.md §6 | WP-0.2 |
+| Libraries | `anyhow` in library code; no `tracing` spans | AGENTS.md §6 | **Closed** (WP-0.2): `thiserror` errors in libraries and stage spans without content or paths |
 
 ## 4. Findings of this audit
 
@@ -69,7 +69,7 @@ closed, the Status field above becomes `Closed`.
 | A6 | `start_index` initializes the embedding engine first: without a model nothing is indexed, not even lexically | [ADR-0018](../adr/0018-lexical-first-availability.md) | Open → WP-3.2, WP-6.3 |
 | A7 | One `Mutex<Engine>` and one `Mutex<Connection>`: query embedding waits for the indexer's per-file embedding call (all chunks of a file), search waits for database writes, and the first search can wait for model load or NPU compilation | AGENTS.md §6 (search never waits for indexing); interference budget S5 | Open → WP-2.1 (separate latency session), WP-2.4 (WAL readers, single writer), WP-3.1 |
 | A8 | `open_local_file` accepts any path from the webview and opens it with the OS default handler (including executables), with CSP `null` | ADR-0006 (narrow webview capabilities) | Open → WP-0.3 (open by document ID, defined in SPEC-0002), WP-7.9 |
-| A9 | `unsafe { std::env::set_var("PATH", …) }` without a `// SAFETY:` comment, in a multithreaded process | AGENTS.md §6 | Open → WP-0.2 (document or remove), WP-2.1 (load provider libraries by explicit path) |
+| A9 | `unsafe { std::env::set_var("PATH", …) }` in `crates/seeky-infer/src/inference.rs` (`prepend_path`), documented with `// SAFETY:` but still unsound in a multithreaded process (SPEC-0001 §5.3) | AGENTS.md §6 | Open → WP-2.1 (load provider libraries by explicit path) |
 | A10 | No `query:`/`passage:` prefixes for an E5-derived model, and no measurement of the choice | [research note](../research/gety/models-and-inference.md) | Open → WP-1.7 (B0 ablation) |
 | A11 | Silent truncation: the NPU path truncates at 256 tokens while chunks are 1,200 characters, often longer | [inference and models §3](../architecture/inference-and-models.md) | Open → WP-2.10 (chunking), WP-5.2 (shape buckets) |
 | A12 | Source code is indexed by default, and a result can be opened with the OS default handler, which executes some source types (`.js`, `.py`, `.bat`) | [ADR-0024](../adr/0024-source-code-indexing-opt-in.md) | Open → WP-0.3 (source files are revealed, never opened; SPEC-0002 R7), WP-3.4 + WP-7.6 ("Index source code" setting, off by default) |
@@ -77,7 +77,8 @@ closed, the Status field above becomes `Closed`.
 ## 5. Implications for Phase 0
 
 - The WP-0.2 golden test is captured on the post-pre-flight code.
-- WP-0.2 preserves the open deviations on purpose; they are closed by the
-  listed work packages, not patched in the PoC.
+- WP-0.2 closes the structure and library findings; the remaining deviations
+  stay open on purpose and are closed by the listed work packages, not patched
+  in the PoC.
 - SPEC-0002 must define file opening by document ID (A8) and must not expose
   raw paths as a command input.

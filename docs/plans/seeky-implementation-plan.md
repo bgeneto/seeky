@@ -567,7 +567,7 @@ Rules:
 |---|---|---|
 | M0 Runnable PoC | Done | 0.1.0 |
 | M1 Live incremental index | Done | 0.1.0 |
-| Phase 0 | In progress | WP-0.1 and WP-0.5 done; WP-0.4 implementation complete and awaiting H4 approval (§15.3). Pre-flight fixes done outside any WP: fmt, clippy `-D warnings`, `hw-tests` feature, HTML fix, Auto is CPU-only until the NPU is validated ([conformance audit](../validation/poc-conformance-audit.md)). SPEC-0001 and SPEC-0002 v1 Accepted |
+| Phase 0 | In progress | WP-0.1, WP-0.2, and WP-0.5 done; WP-0.3 open, WP-0.4 implementation complete and awaiting H4 approval, WP-0.6 open (§15.3). Pre-flight fixes done outside any WP: fmt, clippy `-D warnings`, `hw-tests` feature, HTML fix, Auto is CPU-only until the NPU is validated ([conformance audit](../validation/poc-conformance-audit.md)). SPEC-0001 Implemented; SPEC-0002 v1 Accepted (11/16 implemented) |
 | Phases 1–9 | Not started | — |
 | Phase 10 | Not started | Planned per ADR-0023, accepted 2026-11-27 (optional visual pack; off the 1.0 critical path) |
 
@@ -576,7 +576,7 @@ Rules:
 | WP | Status | Evidence | Notes |
 |---|---|---|---|
 | 0.1 | Done | [SPEC-0001](../specs/SPEC-0001-workspace-and-crate-boundaries.md) v0.1 (R1–R12, R14–R17); root `Cargo.toml`, `rust-toolchain.toml`, `clippy.toml`, `deny.toml`, `crates/seeky-*` stubs, `apps/desktop`; commits: `git log --grep "WP-0.1"` | R13 completes when WP-0.2/WP-0.3 remove the PoC's heavy dependencies from the shell; R18 lands with WP-0.2 |
-| 0.2 | Not started | — | — |
+| 0.2 | Done | [SPEC-0002](../specs/SPEC-0002-engine-api.md) v0.2 (R2–R4, R9–R16); [SPEC-0001](../specs/SPEC-0001-workspace-and-crate-boundaries.md) v0.1 (R13, R18); engine crates `crates/seeky-{core,extract,infer,store,search,engine}`, thin `apps/desktop/src-tauri` shell; golden snapshots `crates/seeky-engine/tests/golden/`; [PR #4](https://github.com/bgeneto/seeky/pull/4); commits: `git log --grep "WP-0.2"` | WP-0.3 still owns `open_document`, the open allowlist, R1/R6 shell halves, and R5/R7/R8; the existing-index manual check remains for Phase 0 exit |
 | 0.3 | Not started | — | — |
 | 0.4 | In progress | `.github/workflows/ci.yml` (`format`, `lint`, `test`, `deny`, `web`, `compile`), `.githooks/pre-commit`, `deny.toml`; [PR #1](https://github.com/bgeneto/seeky/pull/1) CI and local AGENTS §5 checks | Done: rustfmt + Prettier, clippy `-D warnings` with and without `hw-tests`, hardware-free tests on Windows/Linux, cargo-deny bans/licenses/advisories/sources, TypeScript build, and Windows/Linux/macOS compile jobs. Remaining: maintainer approval of the disclosed license exceptions and advisory ignores (H4), then mark Done |
 | 0.5 | Done | `AGENTS.md`, `CLAUDE.md`, `docs/adr/_template.md`, `docs/specs/_template.md`, `docs/benchmarks/_report-template.md`, `.github/pull_request_template.md` | Repository reorganization |
@@ -670,17 +670,17 @@ finished items and add the next ones, so this list never points at done work.
 
 1. Maintainer reviews and accepts this plan (the
    [vision](../product/vision.md) and ADR-0015 to ADR-0023 are Accepted).
-2. Execute WP-0.2 → WP-0.3; run **WP-0.6 (ORT validation gate, priority zero)**
-   alongside — it needs no corpus or judgments, only T1 (or T1-emulated) time.
-   WP-0.4 awaits maintainer approval of its disclosed license exceptions and
-   advisory ignores (H4).
+2. Execute WP-0.3 (thin shell, open by document ID); run **WP-0.6 (ORT
+   validation gate, priority zero)** alongside — it needs no corpus or
+   judgments, only T1 (or T1-emulated) time. WP-0.4 awaits maintainer approval
+   of its disclosed license exceptions and advisory ignores (H4).
 3. Draft and accept the **SPEC-0002 v1.1 evaluation extension** required by
    WP-1.2/WP-1.6; secure access to a T1 reference laptop (or define the
    T1-emulated profile). SPEC-0003 and SPEC-0004 are Accepted with maintainer
    pre-approval in /goal.
-4. Start WP-1.3 (corpus generator) when WP-0.2 merges (SPEC-0004 is Accepted);
-   schedule human time for WP-1.4 judgments, including the `sdc-smoke-v1`
-   subset required by WP-1.8.
+4. Start WP-1.1 (`seeky-eval`, SPEC-0003 is Accepted) and WP-1.3 (corpus
+   generator, SPEC-0004 is Accepted); schedule human time for WP-1.4 judgments,
+   including the `sdc-smoke-v1` subset required by WP-1.8.
 5. In parallel (UX track): WP-7.1 and WP-7.2 on the existing UI after Phase 0.
 6. Start the OCR **Stage 0 paper screen now** (no code needed,
    [candidates §5](../benchmarks/candidates.md)): confirm the OCRia variant
