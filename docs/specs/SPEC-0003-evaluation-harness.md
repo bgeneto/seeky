@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Status | Accepted (maintainer pre-approval in /goal) |
-| Version | 0.1 (Phase 1 quality, statistics, reporting, performance, CI smoke) |
+| Version | 0.2 (Phase 1 quality, statistics, reporting, performance, CI smoke) |
 | Owner | Maintainer |
 | Phase / work packages | Phase 1 — WP-1.1, WP-1.2, WP-1.5, WP-1.6, WP-1.8 |
 | Crates touched | `seeky-eval` (new implementation); `tools/seeky-bench` (new workspace tool); `bench/datasets/` and `bench/exposures/` data contracts |
@@ -658,7 +658,11 @@ For each metric and paired query ID set:
 
 Latency bootstrap uses the same primitive with purposes
 `latency-bootstrap` and keys `"<b>:<sample-index>"`; the resample statistic is
-the requested percentile. It is not a paired quality test.
+the requested percentile. It is not a paired quality test. The S5
+interference-ratio interval resamples the idle and indexing sample sets
+independently with the same purpose and keys `"idle:<b>:<sample-index>"` and
+`"indexing:<b>:<sample-index>"`; the resample statistic is
+`p95(indexing) / p95(idle)`.
 
 ### 4.6 Report JSON
 
@@ -1382,7 +1386,8 @@ latency arithmetic and CI fixture, observations `12,13,…,21` ms give
 An idle p95 of 20 ms and indexing p95 of 30 ms gives S5 interference ratio
 `1.5`, exactly the threshold boundary. A resource fixture with
 `index_bytes = 2_500_000_000` and `passage_count = 1_000_000` gives
-`disk_bytes_per_1k_passages = 2_500`. These values test arithmetic, schema, and
+`disk_bytes_per_1k_passages = 2_500_000` (§4.10 formula; 2,500 bytes per
+passage). These values test arithmetic, schema, and
 CI mechanics, not a hardware claim.
 
 #### E. WP-1.8 boundary
@@ -1574,6 +1579,7 @@ an error, never a quality result.
 
 | Version | Date | Change |
 |---|---|---|
+| 0.2 | 2026-11-27 | WP-1.6 implemented R25-R28: `seeky-bench perf` suites, the §4.10 performance shape (`query_embedding` batch/samples, optional RSS, `warnings`), tier/emulation validation, quiet window, and explicit budget eligibility. Errata approved by the maintainer: §5.8 D disk-per-1k reference corrected from 2,500 to 2,500,000 to match the §4.10 formula; §4.5 now names the interference-ratio bootstrap keys. R29-R31 remain with WP-1.8 |
 | 0.1 | 2026-11-27 | WP-1.2 implemented R15-R22 and R32: `seeky-bench` index, eval, perf skeleton, compare, and report; environment and config hashing; reproducible artifacts; fail-closed depth; test confirmation/exposure; exact filters with pushdown/post reporting. R23-R24 with WP-1.5, R25-R28 with WP-1.6, R29-R31 with WP-1.8 |
 | 0.1 | 2026-11-27 | WP-1.5 implemented R23-R24: offline `dataset-fetch` tooling and four pinned BEIR/MLDR manifests (SciFact, NFCorpus, FiQA, MLDR-pt) with upstream/local hashes, license notices, deterministic transforms, and fingerprints; the mMARCO cross-lingual pair and the largest sources remain unpinned |
 | 0.1 | 2026-11-27 | WP-1.1 implemented R1-R14: BEIR/SDC loaders, graded judgments, reference-checked metrics, duplicate/diversity metrics, seeded paired statistics, and deterministic JSON/Markdown reports; R15-R32 remain with WP-1.2, WP-1.5, WP-1.6, and WP-1.8 |

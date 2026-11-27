@@ -300,11 +300,9 @@ fn interference_ratio_matches_hand_calculation() {
 
 // --- R27 -------------------------------------------------------------------
 
-/// SPEC-0003-R27, sections 4.10 and 5.8 D: 2.5 GB over 1 M passages with the
-/// normative formula `index_bytes * 1000 / passage_count` is 2,500,000 bytes
-/// per 1k passages (section 5.8 D prints 2,500, the per-passage value; the
-/// conflict is reported in the WP-1.6 PR). RSS peak is the maximum sample and
-/// idle the last idle sample.
+/// SPEC-0003-R27, sections 4.10 and 5.8 D (v0.2): 2.5 GB over 1 M passages is
+/// 2,500,000 bytes per 1k passages. RSS peak is the maximum sample and idle the
+/// last idle sample.
 #[test]
 fn perf_resources_match_reference_fixture() {
     close(
