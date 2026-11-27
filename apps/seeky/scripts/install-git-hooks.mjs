@@ -1,6 +1,7 @@
 // Points Git at the repository's versioned hooks (.githooks/) so the
 // pre-commit format check runs for every contributor. Runs from the npm
-// `prepare` script; it never fails an install.
+// `prepare` script; it never fails an install. core.hooksPath replaces
+// .git/hooks, so .githooks/ also carries the Git LFS hooks.
 import { execFileSync } from "node:child_process";
 
 const HOOKS_PATH = ".githooks";

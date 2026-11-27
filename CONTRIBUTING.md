@@ -49,7 +49,10 @@ cargo check
 `npm install` enables a pre-commit hook (`.githooks/pre-commit`) that checks
 rustfmt and Prettier formatting without rewriting files; CI runs the same
 checks on every pull request. Formatting rules live in `rustfmt.toml` and
-`apps/seeky/.prettierrc.json`.
+`apps/seeky/.prettierrc.json`. Because `core.hooksPath` replaces
+`.git/hooks`, `.githooks/` also carries the standard Git LFS hooks
+(`pre-push`, `post-checkout`, `post-commit`, `post-merge`); without them
+pushes would skip uploading LFS objects.
 
 `cargo test --lib` is hardware-free. Tests that need local models, PDFium, CUDA,
 or an NPU run with `cargo test --lib --features hw-tests -- --test-threads=1`
