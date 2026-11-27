@@ -29,6 +29,30 @@ class NpuRunError(RuntimeError):
     """The NPU session or parity probe failed."""
 
 
+NPU_QUERIES = 8
+NPU_SEQUENCE = 32
+
+
+def npu_inputs_path(workspace: Path) -> Path:
+    """Tokenized probe queries, written by the CPU environment.
+
+    The OpenVINO environment has neither PyTorch nor Transformers, so the
+    prepare step (CPU venv) freezes the exact token IDs the NPU gate feeds.
+    """
+    return workspace / "variants" / "e5-small" / "npu-inputs.npz"
+
+
+def load_npu_inputs(workspace: Path) -> dict[str, np.ndarray]:
+    path = npu_inputs_path(workspace)
+    if not path.is_file():
+        raise NpuRunError("tokenized NPU probe is missing; run the prepare step in the CPU environment")
+    with np.load(path) as stored:
+        encoded = {name: np.asarray(stored[name], dtype=np.int64) for name in stored.files}
+    if "input_ids" not in encoded or encoded["input_ids"].shape != (NPU_QUERIES, NPU_SEQUENCE):
+        raise NpuRunError("tokenized NPU probe has an unexpected shape")
+    return encoded
+
+
 def prepare_npu_embedder(
     workspace: Path,
     *,
@@ -68,24 +92,31 @@ def prepare_npu_embedder(
             for index in range(128)
         ]
         quantize_static_model(fp32, quantized, ArrayCalibrationReader(fp32, rows))
+    probe = npu_inputs_path(workspace)
+    if not probe.exists():
+        tokenizer = load_tokenizer(source_dir)
+        view = embedding_view(load_frozen(workspace), "e5-small")
+        encoded = tokenize(
+            tokenizer,
+            [row["text"] for row in view["queries"][:NPU_QUERIES]],
+            max_length=NPU_SEQUENCE,
+            pad_to_max=True,
+        )
+        np.savez(probe, **encoded)
     return fp32, quantized
 
 
 def _cpu_vectors(
-    workspace: Path,
     path: Path,
     profile: RunningProfile,
-    query_texts: list[str],
+    encoded: dict[str, np.ndarray],
     *,
     deadline: Deadline | None = None,
     stage: str = "npu:cpu",
 ) -> np.ndarray:
-    spec = ENCODER_SPECS["e5-small"]
-    tokenizer = load_tokenizer(model_directory(workspace, spec))
     session = create_ort_session(path, profile)
     rows = []
-    encoded = tokenize(tokenizer, query_texts, max_length=32, pad_to_max=True)
-    for index in range(len(query_texts)):
+    for index in range(len(encoded["input_ids"])):
         if deadline is not None:
             deadline.check(f"{stage}:item-{index}")
         batch = {name: value[index : index + 1] for name, value in encoded.items()}
@@ -116,12 +147,7 @@ def run_npu_gate(
             profile=selected_profile,
             deadline=gate_deadline,
         )
-        spec = ENCODER_SPECS["e5-small"]
-        tokenizer = load_tokenizer(model_directory(workspace, spec))
-        frozen = load_frozen(workspace)
-        view = embedding_view(frozen, "e5-small")
-        query_texts = [row["text"] for row in view["queries"][:8]]
-        encoded = tokenize(tokenizer, query_texts, max_length=32, pad_to_max=True)
+        encoded = load_npu_inputs(workspace)
 
         provider_options = {
             "device_type": "NPU",
@@ -160,7 +186,7 @@ def run_npu_gate(
                 continue
             cold_load = time.perf_counter() - started
             outputs = []
-            for index in range(len(query_texts)):
+            for index in range(len(encoded["input_ids"])):
                 gate_deadline.check(f"npu:{variant}:item-{index}")
                 batch = {name: value[index : index + 1] for name, value in encoded.items()}
                 inputs = complete_graph_inputs(session, batch)
@@ -179,10 +205,9 @@ def run_npu_gate(
             else:
                 npu_vectors = np.asarray(outputs, dtype=np.float32)
                 cpu_vectors = _cpu_vectors(
-                    workspace,
                     path,
                     selected_profile,
-                    query_texts,
+                    encoded,
                     deadline=gate_deadline,
                     stage=f"npu:{variant}:cpu-parity",
                 )

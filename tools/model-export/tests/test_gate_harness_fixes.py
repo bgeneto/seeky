@@ -156,3 +156,24 @@ def test_static_embedder_export_traces_the_padded_static_shape(tmp_path, monkeyp
     graph = onnx.load(destination).graph
     dims = [d.dim_value for d in graph.input[0].type.tensor_type.shape.dim]
     assert dims == [1, 32]
+
+
+def test_npu_probe_is_frozen_tokens_the_openvino_env_can_read(tmp_path):
+    # The OpenVINO environment has no Transformers: the gate reads the token
+    # IDs the CPU prepare step froze, and refuses to run without them.
+    from seeky_model_export import npu_run
+
+    with pytest.raises(npu_run.NpuRunError):
+        npu_run.load_npu_inputs(tmp_path)
+    path = npu_run.npu_inputs_path(tmp_path)
+    path.parent.mkdir(parents=True)
+    ids = np.arange(npu_run.NPU_QUERIES * npu_run.NPU_SEQUENCE).reshape(npu_run.NPU_QUERIES, -1)
+    np.savez(path, input_ids=ids, attention_mask=np.ones_like(ids))
+
+    encoded = npu_run.load_npu_inputs(tmp_path)
+
+    assert encoded["input_ids"].dtype == np.int64
+    assert np.array_equal(encoded["input_ids"], ids)
+    np.savez(path, input_ids=ids[:, :4], attention_mask=np.ones_like(ids[:, :4]))
+    with pytest.raises(npu_run.NpuRunError):
+        npu_run.load_npu_inputs(tmp_path)
