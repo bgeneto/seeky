@@ -25,6 +25,15 @@ serde.workspace = true
 serde_json.workspace = true
 sha2.workspace = true
 
+# Audited process facts for `perf` (SPEC-0001 section 5.3, SPEC-0003 R27).
+# MIT OR Apache-2.0; already in Cargo.lock; seeky-bench never ships.
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.61", features = [
+    "Win32_System_ProcessStatus",
+    "Win32_System_SystemInformation",
+    "Win32_System_Threading",
+] }
+
 [dev-dependencies]
 tempfile.workspace = true
 

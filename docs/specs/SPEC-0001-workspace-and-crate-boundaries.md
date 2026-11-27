@@ -215,6 +215,7 @@ The shell keeps no hardware tests after WP-0.2.
 | Location (after WP-0.2) | Code | Justification | Removal |
 |---|---|---|---|
 | `crates/seeky-infer/src/inference.rs`, runtime library path setup (`prepend_path`, reached from PoC `prepare_cuda_paths` and `prepare_openvino_path`) | `std::env::set_var("PATH", …)` | Needed for the PoC to locate CUDA/OpenVINO libraries from a Gety installation. `set_var` is unsound if another thread reads the environment concurrently; the `// SAFETY:` comment must state this residual risk (audit A9) | WP-2.1 loads provider libraries by explicit path and deletes this code |
+| `tools/seeky-bench/src/perf/platform.rs`, Windows `current_rss_bytes`, `total_memory_bytes`, `process_affinity` (WP-1.6) | `K32GetProcessMemoryInfo`, `GlobalMemoryStatusEx`, and `GetProcessAffinityMask` through `windows-sys` | SPEC-0003 R27/R28 need process RSS, installed memory, and the pinned CPU set on Windows; each call writes only into a live, zero-initialized local whose size it is given, on the always-valid current-process pseudo-handle. Internal tool, never shipped | None planned; remove if a reviewed process-metrics crate replaces it |
 
 ### 5.4 What does not change
 
