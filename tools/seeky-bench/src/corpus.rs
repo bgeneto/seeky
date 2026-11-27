@@ -116,6 +116,7 @@ impl Corpus {
 struct SdcManifest {
     schema_version: u32,
     corpus_id: String,
+    corpus_hash: String,
     default_roots: Vec<String>,
     code_enabled_roots: Vec<String>,
 }
@@ -337,4 +338,194 @@ pub fn load_dataset(
                 .map_err(|error| Failure::dataset(error.to_string()))
         }
     }
+}
+
+/// Minimal dataset metadata and fixed dev queries needed by `seeky-bench perf`.
+#[derive(Clone, Debug)]
+pub struct PerfDataset {
+    /// Report dataset metadata.
+    pub info: seeky_eval::DatasetInfo,
+    /// Fixed dev query texts in deterministic ID order.
+    pub queries: Vec<String>,
+}
+
+impl PerfDataset {
+    /// Construct from a full loaded dataset (requires `Split::Dev`).
+    pub fn from_dataset(dataset: &Dataset, visibility: &str) -> Result<Self> {
+        if dataset.split != Split::Dev {
+            return Err(Failure::dataset("perf only measures the dev split"));
+        }
+        Ok(Self {
+            info: crate::dataset_info(dataset, visibility),
+            queries: dataset
+                .queries()
+                .iter()
+                .map(|query| query.text.clone())
+                .collect(),
+        })
+    }
+}
+
+#[derive(Debug, Deserialize)]
+struct DraftQueryRow {
+    #[serde(rename = "_id")]
+    id: String,
+    text: String,
+    split: String,
+    configuration: String,
+    category: String,
+    #[serde(default)]
+    language: Option<String>,
+    #[serde(default)]
+    target_languages: Vec<String>,
+    #[serde(default)]
+    language_slice: Option<String>,
+    #[serde(default)]
+    filters: Option<serde_json::Value>,
+}
+
+/// Load only `dev` queries from a SPEC-0004 JSONL queries file for `perf`
+/// without requiring frozen/verified qrels (SPEC-0003 R21, R25, R28).
+///
+/// Rejects files that appear to target the `test` split, rejects malformed
+/// rows, filters strictly to `split == "dev"` matching `configuration`, and
+/// never passes any `test` query to the engine.
+pub fn load_perf_queries_file(
+    corpus: &Corpus,
+    queries_file: &Path,
+    configuration: EvaluationConfiguration,
+) -> Result<PerfDataset> {
+    use crate::environment::sha256_hex;
+
+    if corpus.kind != CorpusKind::Sdc {
+        return Err(Failure::usage(
+            "--queries-file is supported only for SDC corpora (BEIR corpora load dev directly)",
+        ));
+    }
+    let file_name = queries_file
+        .file_name()
+        .and_then(|name| name.to_str())
+        .unwrap_or_default()
+        .to_ascii_lowercase();
+    if file_name.contains("test") {
+        return Err(Failure::usage(
+            "TEST_NOT_ALLOWED: perf --queries-file refuses files named for the test split",
+        ));
+    }
+    let manifest_text = std::fs::read_to_string(&corpus.manifest_path)
+        .map_err(|error| Failure::dataset(format!("cannot read corpus manifest: {error}")))?;
+    let manifest: SdcManifest = serde_json::from_str(&manifest_text)
+        .map_err(|error| Failure::dataset(format!("invalid corpus manifest: {error}")))?;
+    if manifest.corpus_hash.len() != 64
+        || !manifest
+            .corpus_hash
+            .bytes()
+            .all(|byte| byte.is_ascii_hexdigit())
+    {
+        return Err(Failure::dataset(
+            "SDC manifest corpus_hash must be 64 hex characters",
+        ));
+    }
+
+    let raw_bytes = std::fs::read(queries_file)
+        .map_err(|error| Failure::dataset(format!("cannot read --queries-file: {error}")))?;
+    let queries_file_sha256 = sha256_hex(&raw_bytes);
+    let raw_text = String::from_utf8(raw_bytes)
+        .map_err(|error| Failure::dataset(format!("--queries-file is not UTF-8: {error}")))?;
+
+    let mut seen_ids = std::collections::BTreeSet::new();
+    let mut selected: Vec<(String, serde_json::Value, String)> = Vec::new();
+    for (index, line) in raw_text.lines().enumerate() {
+        let line_no = index + 1;
+        if line.trim().is_empty() {
+            continue;
+        }
+        let row: DraftQueryRow = serde_json::from_str(line).map_err(|error| {
+            Failure::dataset(format!("invalid --queries-file line {line_no}: {error}"))
+        })?;
+        if row.id.trim().is_empty() || row.text.trim().is_empty() {
+            return Err(Failure::dataset(format!(
+                "--queries-file line {line_no} has empty _id or text"
+            )));
+        }
+        if !seen_ids.insert(row.id.clone()) {
+            return Err(Failure::dataset(format!(
+                "--queries-file line {line_no} duplicates query ID {}",
+                row.id
+            )));
+        }
+        match row.split.as_str() {
+            "dev" => {}
+            "test" => continue,
+            other => {
+                return Err(Failure::dataset(format!(
+                    "--queries-file line {line_no} has unknown split {other:?}"
+                )));
+            }
+        }
+        let include = match (configuration, row.configuration.as_str()) {
+            (EvaluationConfiguration::Default, "default") => row.category != "code_search",
+            (EvaluationConfiguration::Default, "code_enabled") => false,
+            (EvaluationConfiguration::CodeEnabled, "default" | "code_enabled") => true,
+            (_, other) => {
+                return Err(Failure::dataset(format!(
+                    "--queries-file line {line_no} has unknown configuration {other:?}"
+                )));
+            }
+        };
+        if !include {
+            continue;
+        }
+        let canonical_row = serde_json::json!({
+            "id": row.id,
+            "text": row.text,
+            "language": row.language,
+            "target_languages": row.target_languages,
+            "language_slice": row.language_slice,
+            "category": row.category,
+            "configuration": row.configuration,
+            "split": "dev",
+            "filters": row.filters,
+        });
+        selected.push((row.id, canonical_row, row.text));
+    }
+
+    if selected.is_empty() {
+        return Err(Failure::dataset(
+            "--queries-file contains no eligible dev queries for this configuration",
+        ));
+    }
+    selected.sort_by(|left, right| left.0.cmp(&right.0));
+    let canonical_rows: Vec<serde_json::Value> =
+        selected.iter().map(|(_, value, _)| value.clone()).collect();
+    let canonical_json = serde_json::to_string(&canonical_rows)
+        .map_err(|error| Failure::dataset(format!("cannot serialize query set: {error}")))?;
+    let query_set_sha256 = sha256_hex(canonical_json.as_bytes());
+    let judgment_set_id = "dev-queries-only".to_string();
+    let fingerprint_input = serde_json::json!({
+        "corpus_hash": manifest.corpus_hash,
+        "judgment_set_id": judgment_set_id,
+        "judgment_set_hash": queries_file_sha256,
+        "query_set_sha256": query_set_sha256,
+    });
+    let fingerprint_json = serde_json::to_string(&fingerprint_input)
+        .map_err(|error| Failure::dataset(format!("cannot serialize fingerprint: {error}")))?;
+    let fingerprint = sha256_hex(fingerprint_json.as_bytes());
+
+    let queries = selected.into_iter().map(|(_, _, text)| text).collect();
+    Ok(PerfDataset {
+        info: seeky_eval::DatasetInfo {
+            id: corpus.id.clone(),
+            split: Split::Dev,
+            configuration,
+            corpus_hash: manifest.corpus_hash,
+            fingerprint,
+            judgment_set_id,
+            judgment_set_hash: queries_file_sha256,
+            query_count: canonical_rows.len() as u64,
+            query_set_sha256,
+            visibility: corpus.visibility.clone(),
+        },
+        queries,
+    })
 }

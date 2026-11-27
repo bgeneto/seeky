@@ -779,3 +779,154 @@ fn fixture_perf_run(fixture: &support::Fixture, extra: &[&str]) -> std::path::Pa
     .expect("perf");
     output
 }
+
+/// SPEC-0003-R21, R25, R28: `perf --queries-file` measures an SDC corpus using
+/// only `dev` queries without requiring frozen qrels (unblocks WP-1.7 perf on
+/// `sdc-s` before H6 publishes `sdc-v1`) and excludes `test` and `code_search`
+/// rows.
+#[test]
+fn perf_queries_file_runs_sdc_without_frozen_qrels() {
+    let fixture = support::sdc::build();
+    // Remove the published judgment set so load_sdc cannot succeed.
+    let qrels_dir = support::sdc::qrels_dir(&fixture);
+    std::fs::remove_dir_all(&qrels_dir).unwrap();
+
+    let draft_queries = fixture.work.join("queries.draft.jsonl");
+    let lines = [
+        r#"{"_id":"q-dev-1","category":"known_item","configuration":"default","filters":null,"language":"en","language_slice":"en","split":"dev","target_languages":["en"],"text":"contract alpha"}"#,
+        r#"{"_id":"q-dev-2","category":"conceptual","configuration":"default","filters":null,"language":"pt","language_slice":"pt","split":"dev","target_languages":["pt"],"text":"relatorio financeiro"}"#,
+        r#"{"_id":"q-dev-code","category":"code_search","configuration":"code_enabled","filters":null,"language":"en","language_slice":"en","split":"dev","target_languages":["en"],"text":"fn main"}"#,
+        r#"{"_id":"q-test-1","category":"known_item","configuration":"default","filters":null,"language":"en","language_slice":"en","split":"test","target_languages":["en"],"text":"never used in perf"}"#,
+    ];
+    support::write(&draft_queries, &format!("{}\n", lines.join("\n")));
+
+    let paths = BenchPaths::at(fixture.root.clone());
+    let data = fixture.data_dir("sdc-perf");
+    let config = fixture.root.join("bench/configs/default.json");
+    run_with_paths(
+        &paths,
+        [
+            "index",
+            "--corpus",
+            "sdc-smoke",
+            "--data-dir",
+            data.to_str().unwrap(),
+            "--config",
+            config.to_str().unwrap(),
+            "--output",
+            fixture.output("sdc-perf-index").to_str().unwrap(),
+        ]
+        .into_iter()
+        .map(str::to_string)
+        .collect(),
+    )
+    .expect("index sdc-smoke");
+
+    let output = fixture.output("sdc-perf-out");
+    run_with_paths(
+        &paths,
+        [
+            "perf",
+            "--corpus",
+            "sdc-smoke",
+            "--config",
+            config.to_str().unwrap(),
+            "--data-dir",
+            data.to_str().unwrap(),
+            "--output",
+            output.to_str().unwrap(),
+            "--queries-file",
+            draft_queries.to_str().unwrap(),
+            "--suite",
+            "search",
+            "--repetitions",
+            "2",
+            "--tier",
+            "T2",
+        ]
+        .into_iter()
+        .map(str::to_string)
+        .collect(),
+    )
+    .expect("perf with --queries-file");
+
+    let report = read_json(&output.join("results.json"));
+    assert_eq!(report["kind"], "performance");
+    assert_eq!(report["dataset"]["id"], "sdc-smoke");
+    assert_eq!(report["dataset"]["split"], "dev");
+    assert_eq!(report["dataset"]["judgment_set_id"], "dev-queries-only");
+    assert_eq!(report["dataset"]["query_count"], 2);
+    assert_eq!(report["performance"]["search"][0]["samples"], 4);
+}
+
+/// SPEC-0003-R21: `--queries-file` refuses test-named files and files with no
+/// dev queries before touching the engine.
+#[test]
+fn perf_queries_file_rejects_test_only_or_test_named_files() {
+    let fixture = support::sdc::build();
+    let paths = BenchPaths::at(fixture.root.clone());
+    let data = fixture.work.join("never-opened");
+    let config = fixture.root.join("bench/configs/default.json");
+
+    let test_named = fixture.work.join("queries.test.jsonl");
+    support::write(
+        &test_named,
+        "{\"_id\":\"q1\",\"category\":\"known_item\",\"configuration\":\"default\",\"split\":\"dev\",\"text\":\"hi\"}\n",
+    );
+    let err = run_with_paths(
+        &paths,
+        [
+            "perf",
+            "--corpus",
+            "sdc-smoke",
+            "--config",
+            config.to_str().unwrap(),
+            "--data-dir",
+            data.to_str().unwrap(),
+            "--output",
+            fixture.output("out-test-named").to_str().unwrap(),
+            "--queries-file",
+            test_named.to_str().unwrap(),
+            "--suite",
+            "search",
+            "--tier",
+            "T2",
+        ]
+        .into_iter()
+        .map(str::to_string)
+        .collect(),
+    )
+    .expect_err("test-named queries file must be rejected");
+    assert_eq!(err.code, 2);
+
+    let test_only = fixture.work.join("queries.draft.jsonl");
+    support::write(
+        &test_only,
+        "{\"_id\":\"q1\",\"category\":\"known_item\",\"configuration\":\"default\",\"split\":\"test\",\"text\":\"hi\"}\n",
+    );
+    let err = run_with_paths(
+        &paths,
+        [
+            "perf",
+            "--corpus",
+            "sdc-smoke",
+            "--config",
+            config.to_str().unwrap(),
+            "--data-dir",
+            data.to_str().unwrap(),
+            "--output",
+            fixture.output("out-test-only").to_str().unwrap(),
+            "--queries-file",
+            test_only.to_str().unwrap(),
+            "--suite",
+            "search",
+            "--tier",
+            "T2",
+        ]
+        .into_iter()
+        .map(str::to_string)
+        .collect(),
+    )
+    .expect_err("test-only queries file must be rejected");
+    assert_eq!(err.code, 3);
+}
