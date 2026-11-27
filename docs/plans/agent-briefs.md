@@ -855,6 +855,64 @@ new dependency, a Tauri capability beyond section 4.5, or any change
 outside the owned paths.
 ```
 
+### Lane M: WP-1.8, CI smoke gate (code first, activation after H6)
+
+```text
+WORK PACKAGE: WP-1.8 per SPEC-0003 R29-R31 (4.8-4.11 for compare and the
+gate result shape). BRANCH: wp/1.8-smoke-gate. STARTS: now for the code
+and hermetic tests (maintainer, 2026-11-27); the CI job is activated only
+after `sdc-smoke-v1` is human-verified and published (H6, SPEC-0004 R26).
+STARTING POINT: WP-1.2 already wired `compare --gate wp1.8`
+(tools/seeky-bench/src/gate.rs, wp18_gate): one candidate,
+--repeat-candidate, --baseline-commit, same config, macro nDCG@10, repeat
+determinism. Complete it; do not rewrite eval/compare/report behavior
+that other requirements cover.
+OWNED PATHS: tools/seeky-bench/ (gate.rs and helpers, tests under
+tools/seeky-bench/tests/, small synthetic fixtures); .github/workflows/
+(one new smoke-gate job or workflow); SPEC-0003 Status cells R29-R31. Do
+not touch bench/qrels/, bench/corpora/, tools/sdc-generator/,
+tools/qrels-drafter/ (the H6 agent works there), crates/, apps/, root
+Cargo files, deny.toml, the plan or its indexes, CHANGELOG.md, the audit,
+or other spec text; propose records in the PR.
+CONTENT: R29 two clean sdc-smoke-v1 dev evaluations in the default
+configuration with identical corpus, judgment set, config hash, query
+membership, OS family/architecture and tier; macro nDCG@10 over the eight
+non-code categories; pass only at a drop of at most 1.0 point (exactly
+1.0 passes). R30 fail unless every query and judgment is human-verified
+or adjudicated, the set is frozen with test_exposure not applicable, no
+source-code document or code_search query is present, and the baseline
+commit equals the supplied current-main SHA. R31 unique targets,
+contiguous ranks, finite nonincreasing scores, complete expected query
+coverage, only default documents, identical target order in a second
+clean run. Every failure is a typed gate result with a reason.
+CI JOB: hardware-free (lexical or the CI-safe configuration the spec
+allows; no model download, no network beyond checkout). It builds the
+baseline at the main SHA and the candidate at the PR head, runs eval
+twice for the candidate, and runs compare --gate wp1.8. Until
+bench/qrels/sdc/sdc-smoke-v1 exists as a published, verified set, the job
+must skip with an explicit "sdc-smoke-v1 not published (H6)" notice and
+succeed; it must never pass the gate on draft data. Never make the
+existing CI jobs depend on it until the maintainer enables it.
+TESTS FIRST: wp18_gate_passes_at_exactly_one_point_drop,
+wp18_gate_fails_above_threshold,
+wp18_requires_eight_non_code_categories_and_same_config,
+wp18_rejects_unverified_or_draft_smoke_data, wp18_rejects_code_results,
+wp18_rejects_non_main_baseline, wp18_ranking_invariants_reject_bad_runs,
+wp18_requires_identical_repeat_order, and boundary tests for every R31
+invariant; hermetic synthetic verified fixtures (never copies of the real
+drafts), no network, no user paths.
+GREEN: AGENTS 5; the workflow file passes a YAML/actionlint-style review
+in the PR (no new tool dependency).
+DONE: R29-R31 Implemented with the tests above and the dormant CI job;
+PR "WP-1.8: CI smoke gate" with PROPOSED RECORDS (SPEC-0003 R29-R31
+status and index count, plan WP-1.8 row as In progress until the job runs
+on real verified data, CHANGELOG). Keep WP-1.8 In progress: activation
+after H6 is the remaining item.
+STOP: SPEC-0003 leaves a gate rule undecided, a rule needs data or a
+field the SPEC-0004 judgment format does not have, a new dependency, or a
+change outside the owned paths.
+```
+
 ## 7. Where the unattended run ends
 
 With the gates answered as they come up, the run can reach:
