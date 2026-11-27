@@ -16,6 +16,7 @@ from .verdicts import (
 )
 
 RUNTIME_INSTALLED_BYTES = 14_877_304
+K4_EMBEDDER = "e5-small"
 RESULT_FILES = {
     "encoders-e5-small": "encoders-e5-small.json",
     "encoders-granite-modernbert": "encoders-granite-modernbert.json",
@@ -37,6 +38,22 @@ SUPPLEMENTARY_EMBEDDER_KEYS = {
 }
 SUPPLEMENTARY_RERANKER_KEYS = {"hs-rerank-1": "reranker-hs-rerank-1"}
 
+
+
+def k4_embedder_bytes(embedders: dict[str, Any]) -> int:
+    """Smallest parity-passing e5-class variant (PREREGISTRATION §6 K4).
+
+    ModernBERT and optional packs never join the default-path arithmetic.
+    """
+    result = embedders.get(K4_EMBEDDER) or {}
+    return min(
+        (
+            variant["model_bytes"]
+            for variant in result.get("variants", {}).values()
+            if variant.get("parity_passed") and variant.get("model_bytes")
+        ),
+        default=0,
+    )
 
 def _read_optional(workspace: Path, filename: str) -> dict[str, Any] | None:
     path = workspace / "results" / filename
@@ -127,15 +144,7 @@ def export_results(workspace: Path, destination: Path) -> dict[str, Any]:
     if loaded["npu"] is not None:
         verdicts["k3"] = k3_verdict(loaded["npu"])
 
-    embedder_bytes = min(
-        (
-            variant["model_bytes"]
-            for result in embedders.values()
-            for variant in result.get("variants", {}).values()
-            if variant.get("parity_passed") and variant.get("model_bytes")
-        ),
-        default=0,
-    )
+    embedder_bytes = k4_embedder_bytes(embedders)
     reranker_bytes = 0
     if loaded["reranker"] is not None:
         reranker_bytes = min(

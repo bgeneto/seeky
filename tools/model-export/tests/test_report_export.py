@@ -55,3 +55,16 @@ def test_newer_timeout_artifact_blocks_a_partial_verdict(tmp_path):
     assert summary["incomplete_sources"] == ["reranker"]
     assert "k1_reranker" not in summary["verdicts"]
     assert not (tmp_path / "out" / "raw-results" / "reranker.json").exists()
+
+
+def test_k4_counts_only_the_e5_class_embedder():
+    # PREREGISTRATION §6 K4: ModernBERT is never added to the default path,
+    # even when its parity-passing variant is smaller than e5's.
+    from seeky_model_export import report_export
+
+    embedders = {
+        "e5-small": {"variants": {"fp32": {"parity_passed": True, "model_bytes": 470}}},
+        "granite-modernbert": {"variants": {"fp32": {"parity_passed": True, "model_bytes": 390}}},
+    }
+
+    assert report_export.k4_embedder_bytes(embedders) == 470
