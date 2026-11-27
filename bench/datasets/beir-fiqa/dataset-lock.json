@@ -1,0 +1,148 @@
+{
+  "categories": {
+    "conceptual": 1148
+  },
+  "corpus_sha256": "5cbb5c1aff058e08209660f4bb56f94f193aec4d7502ac70e99d5f0c9ef48544",
+  "counts": {
+    "documents": 57600,
+    "splits": {
+      "dev": {
+        "categories": {
+          "conceptual": 500
+        },
+        "language_slices": {
+          "en": 500
+        },
+        "positive_qrels": 1236,
+        "qrels": 1236,
+        "queries": 500
+      },
+      "test": {
+        "categories": {
+          "conceptual": 648
+        },
+        "language_slices": {
+          "en": 648
+        },
+        "positive_qrels": 1705,
+        "qrels": 1705,
+        "queries": 648
+      }
+    }
+  },
+  "dataset_id": "beir-fiqa",
+  "fingerprint": "5eb927312d7f75885f3da3cab6840c1b98b3b1777781eed5d6e6bc42e1555d06",
+  "language_slices": {
+    "en": 1148
+  },
+  "layout": "beir",
+  "license": {
+    "id": "CC-BY-SA-4.0",
+    "redistribution": "download-only",
+    "terms_sha256": "aa8389d527feaffdf7ac73b708914155df2781ad9d2a8d146287f1abc7fc762f",
+    "terms_url": "https://huggingface.co/datasets/BeIR/fiqa/raw/979c07a7cb5ccc6ca009792241fa1250b98055dd/README.md",
+    "url": "https://creativecommons.org/licenses/by-sa/4.0/"
+  },
+  "local_file_count": 57605,
+  "notes": {
+    "dev_split_source": "https://huggingface.co/datasets/mteb/fiqa/resolve/5e59eeb3a7df6b85882112b747008547c21587ea/qrels/dev.tsv",
+    "empty_documents_omitted": 38,
+    "qrels_dropped_for_empty_documents": {
+      "dev": 2,
+      "test": 1
+    },
+    "queries_dropped_for_empty_documents": {
+      "dev": 0,
+      "test": 0
+    },
+    "query_filter": "queries with at least one qrel in the split",
+    "source_format": "mteb-beir",
+    "test_split_source": "https://huggingface.co/datasets/mteb/fiqa/resolve/5e59eeb3a7df6b85882112b747008547c21587ea/qrels/test.tsv",
+    "transform_seed": "dataset-transform-v1"
+  },
+  "parsed": {
+    "categories": {
+      "conceptual": 1148
+    },
+    "corpus_sha256": "5cbb5c1aff058e08209660f4bb56f94f193aec4d7502ac70e99d5f0c9ef48544",
+    "counts": {
+      "documents": 57600,
+      "splits": {
+        "dev": {
+          "categories": {
+            "conceptual": 500
+          },
+          "language_slices": {
+            "en": 500
+          },
+          "positive_qrels": 1236,
+          "qrels": 1236,
+          "queries": 500
+        },
+        "test": {
+          "categories": {
+            "conceptual": 648
+          },
+          "language_slices": {
+            "en": 648
+          },
+          "positive_qrels": 1705,
+          "qrels": 1705,
+          "queries": 648
+        }
+      }
+    },
+    "documents": 57600,
+    "language_slices": {
+      "en": 1148
+    }
+  },
+  "query_set_sha256": {
+    "dev": "83fd82b8d50977c28c9d213a15a20a5bd620ba65a3adddfcca44236272a521cd",
+    "test": "dba970f0ddd49b28061ef0ec5df61b6c9daa575b9ad7a73dec88db08cb50812b"
+  },
+  "reproduce": {
+    "command": "python -m dataset_fetch prepare --dataset beir-fiqa --cache <cache>",
+    "offline_verify": "python -m dataset_fetch verify --dataset beir-fiqa"
+  },
+  "schema_version": 1,
+  "source": {
+    "files": [
+      {
+        "sha256": "a5e31bffdcbab9dbe0ff849faa170a6e71b60587ff3a99a4272584183e64d729",
+        "size_bytes": 47027289,
+        "url": "https://huggingface.co/datasets/mteb/fiqa/resolve/5e59eeb3a7df6b85882112b747008547c21587ea/corpus.jsonl"
+      },
+      {
+        "sha256": "95edd2939eda9de0b5bdae18352eb9b677a133d5965ec55dc911c863f9af7bb9",
+        "size_bytes": 599879,
+        "url": "https://huggingface.co/datasets/mteb/fiqa/resolve/5e59eeb3a7df6b85882112b747008547c21587ea/queries.jsonl"
+      },
+      {
+        "sha256": "03b27e547cd29dc721c3b93ce8ddd70df6b2d0ce954d8ef3659d386e8cd72c11",
+        "size_bytes": 18327,
+        "url": "https://huggingface.co/datasets/mteb/fiqa/resolve/5e59eeb3a7df6b85882112b747008547c21587ea/qrels/dev.tsv"
+      },
+      {
+        "sha256": "6adc2a640dcdd22bb8b3858f89107adef2a7c3db20a63550dfa7a0f71e379e44",
+        "size_bytes": 25256,
+        "url": "https://huggingface.co/datasets/mteb/fiqa/resolve/5e59eeb3a7df6b85882112b747008547c21587ea/qrels/test.tsv"
+      }
+    ],
+    "revision": "5e59eeb3a7df6b85882112b747008547c21587ea"
+  },
+  "terms": {
+    "sha256": "aa8389d527feaffdf7ac73b708914155df2781ad9d2a8d146287f1abc7fc762f",
+    "size_bytes": 10413,
+    "url": "https://huggingface.co/datasets/BeIR/fiqa/raw/979c07a7cb5ccc6ca009792241fa1250b98055dd/README.md"
+  },
+  "tool": {
+    "name": "dataset-fetch",
+    "version": "0.1.0"
+  },
+  "transform": {
+    "script": "tools/dataset-fetch",
+    "seed": "dataset-transform-v1",
+    "version": 1
+  }
+}

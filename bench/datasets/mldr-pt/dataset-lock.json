@@ -1,0 +1,144 @@
+{
+  "categories": {
+    "conceptual": 400
+  },
+  "corpus_sha256": "4ebb4f421afa897a35b95b6c0390fea20a4d42b2d0fd114684f41ee9b25f87f3",
+  "counts": {
+    "documents": 6569,
+    "splits": {
+      "dev": {
+        "categories": {
+          "conceptual": 200
+        },
+        "language_slices": {
+          "pt": 200
+        },
+        "positive_qrels": 200,
+        "qrels": 200,
+        "queries": 200
+      },
+      "test": {
+        "categories": {
+          "conceptual": 200
+        },
+        "language_slices": {
+          "pt": 200
+        },
+        "positive_qrels": 200,
+        "qrels": 200,
+        "queries": 200
+      }
+    }
+  },
+  "dataset_id": "mldr-pt",
+  "fingerprint": "471e4f47af3cca3559de978c77736ee5ffdbf4ac5618893fb340b97eb96bb7c9",
+  "language_slices": {
+    "pt": 400
+  },
+  "layout": "beir",
+  "license": {
+    "id": "MIT",
+    "redistribution": "download-only",
+    "terms_sha256": "6e86f341c878310299c0bea404e7941fba4d499da07476c0fc3780210b90a97c",
+    "terms_url": "https://huggingface.co/datasets/Shitao/MLDR/raw/d67138e705d963e346253a80e59676ddb418810a/README.md",
+    "url": "https://spdx.org/licenses/MIT.html"
+  },
+  "local_file_count": 6574,
+  "notes": {
+    "source_format": "mldr",
+    "source_language": "pt",
+    "split_source": "native dev and test",
+    "title_mode": "body-only; MLDR articles start with their title",
+    "transform_seed": "dataset-transform-v1"
+  },
+  "parsed": {
+    "categories": {
+      "conceptual": 400
+    },
+    "corpus_sha256": "4ebb4f421afa897a35b95b6c0390fea20a4d42b2d0fd114684f41ee9b25f87f3",
+    "counts": {
+      "documents": 6569,
+      "splits": {
+        "dev": {
+          "categories": {
+            "conceptual": 200
+          },
+          "language_slices": {
+            "pt": 200
+          },
+          "positive_qrels": 200,
+          "qrels": 200,
+          "queries": 200
+        },
+        "test": {
+          "categories": {
+            "conceptual": 200
+          },
+          "language_slices": {
+            "pt": 200
+          },
+          "positive_qrels": 200,
+          "qrels": 200,
+          "queries": 200
+        }
+      }
+    },
+    "documents": 6569,
+    "language_slices": {
+      "pt": 400
+    }
+  },
+  "query_set_sha256": {
+    "dev": "6aecb2df874b4b8c23961dc1c4e423658853e22598e6b72c8f946e8e5d12abde",
+    "test": "7144c4b9862d76d481db26d05c607184e479a8ac5089c9db9d000a49b154563b"
+  },
+  "reproduce": {
+    "command": "python -m dataset_fetch prepare --dataset mldr-pt --cache <cache>",
+    "offline_verify": "python -m dataset_fetch verify --dataset mldr-pt"
+  },
+  "schema_version": 1,
+  "source": {
+    "files": [
+      {
+        "sha256": "b6e3f7920972ba93fa9bd131bfe8e4c3686082c0c09910a878ca3e07be34ea45",
+        "size_bytes": 77507951,
+        "url": "https://huggingface.co/datasets/Shitao/MLDR/resolve/d67138e705d963e346253a80e59676ddb418810a/mldr-v1.0-pt/corpus.jsonl.gz"
+      },
+      {
+        "sha256": "3a713eb7280fd3005af60e9b17beec758ac9b0ed6c79d5d4c9c75d0d60e255de",
+        "size_bytes": 9032019,
+        "url": "https://huggingface.co/datasets/Shitao/MLDR/resolve/d67138e705d963e346253a80e59676ddb418810a/mldr-v1.0-pt/dev.jsonl.gz"
+      },
+      {
+        "sha256": "ca989c96fafa068c496f404bb5d2de52685419b6497601319edb2fc17be019e1",
+        "size_bytes": 9078225,
+        "url": "https://huggingface.co/datasets/Shitao/MLDR/resolve/d67138e705d963e346253a80e59676ddb418810a/mldr-v1.0-pt/test.jsonl.gz"
+      },
+      {
+        "sha256": "716196e322067ee1eb20d7ea3400db985e8391020e3218c5fd569b160b946622",
+        "size_bytes": 5224,
+        "url": "https://huggingface.co/datasets/Shitao/MLDR/resolve/d67138e705d963e346253a80e59676ddb418810a/qrels/qrels.mldr-v1.0-pt-dev.tsv"
+      },
+      {
+        "sha256": "b5ea28baa89328c7089ddcdb0cef19a37ef35adb12cb41ece73bfe88337a075b",
+        "size_bytes": 5198,
+        "url": "https://huggingface.co/datasets/Shitao/MLDR/resolve/d67138e705d963e346253a80e59676ddb418810a/qrels/qrels.mldr-v1.0-pt-test.tsv"
+      }
+    ],
+    "revision": "d67138e705d963e346253a80e59676ddb418810a"
+  },
+  "terms": {
+    "sha256": "6e86f341c878310299c0bea404e7941fba4d499da07476c0fc3780210b90a97c",
+    "size_bytes": 4784,
+    "url": "https://huggingface.co/datasets/Shitao/MLDR/raw/d67138e705d963e346253a80e59676ddb418810a/README.md"
+  },
+  "tool": {
+    "name": "dataset-fetch",
+    "version": "0.1.0"
+  },
+  "transform": {
+    "script": "tools/dataset-fetch",
+    "seed": "dataset-transform-v1",
+    "version": 1
+  }
+}

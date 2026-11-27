@@ -1,0 +1,139 @@
+{
+  "categories": {
+    "conceptual": 1109
+  },
+  "corpus_sha256": "52fd2923f7f6942f38dfc583645ac50ee558c9ce488ad9792971abd18ad1d17f",
+  "counts": {
+    "documents": 5183,
+    "splits": {
+      "dev": {
+        "categories": {
+          "conceptual": 809
+        },
+        "language_slices": {
+          "en": 809
+        },
+        "positive_qrels": 919,
+        "qrels": 919,
+        "queries": 809
+      },
+      "test": {
+        "categories": {
+          "conceptual": 300
+        },
+        "language_slices": {
+          "en": 300
+        },
+        "positive_qrels": 339,
+        "qrels": 339,
+        "queries": 300
+      }
+    }
+  },
+  "dataset_id": "beir-scifact",
+  "fingerprint": "07305042eaf2792854974f90bf553d6529a0126d130a93922aed896ec7e3387f",
+  "language_slices": {
+    "en": 1109
+  },
+  "layout": "beir",
+  "license": {
+    "id": "CC-BY-SA-4.0",
+    "redistribution": "download-only",
+    "terms_sha256": "b5f57be1839fdb75867073986a019a78afe0a149950f79d1165509efc5e5cf2f",
+    "terms_url": "https://huggingface.co/datasets/BeIR/scifact/raw/b3b5335604bf5ee3c4447671af975ea25143d4f5/README.md",
+    "url": "https://creativecommons.org/licenses/by-sa/4.0/"
+  },
+  "local_file_count": 5188,
+  "notes": {
+    "dev_split_source": "https://huggingface.co/datasets/mteb/scifact/resolve/cf10ab6856b15b0e670ef8ae5dae4e266c12d035/qrels/train.tsv",
+    "query_filter": "queries with at least one qrel in the split",
+    "source_format": "mteb-beir",
+    "test_split_source": "https://huggingface.co/datasets/mteb/scifact/resolve/cf10ab6856b15b0e670ef8ae5dae4e266c12d035/qrels/test.tsv",
+    "transform_seed": "dataset-transform-v1"
+  },
+  "parsed": {
+    "categories": {
+      "conceptual": 1109
+    },
+    "corpus_sha256": "52fd2923f7f6942f38dfc583645ac50ee558c9ce488ad9792971abd18ad1d17f",
+    "counts": {
+      "documents": 5183,
+      "splits": {
+        "dev": {
+          "categories": {
+            "conceptual": 809
+          },
+          "language_slices": {
+            "en": 809
+          },
+          "positive_qrels": 919,
+          "qrels": 919,
+          "queries": 809
+        },
+        "test": {
+          "categories": {
+            "conceptual": 300
+          },
+          "language_slices": {
+            "en": 300
+          },
+          "positive_qrels": 339,
+          "qrels": 339,
+          "queries": 300
+        }
+      }
+    },
+    "documents": 5183,
+    "language_slices": {
+      "en": 1109
+    }
+  },
+  "query_set_sha256": {
+    "dev": "d47e272c77c9c554112b05a7410c6897781d2698ab623e0171a0caee4a97c835",
+    "test": "57c8b8daee72963be5b293e0ce4d30fed97fd13cd94eb1d32c6437bdb1d097f1"
+  },
+  "reproduce": {
+    "command": "python -m dataset_fetch prepare --dataset beir-scifact --cache <cache>",
+    "offline_verify": "python -m dataset_fetch verify --dataset beir-scifact"
+  },
+  "schema_version": 1,
+  "source": {
+    "files": [
+      {
+        "sha256": "f0d32db0d156b526d75921ed7a76f2cb912902631c87248c5c97c617bad0b60c",
+        "size_bytes": 8023638,
+        "url": "https://huggingface.co/datasets/mteb/scifact/resolve/cf10ab6856b15b0e670ef8ae5dae4e266c12d035/corpus.jsonl"
+      },
+      {
+        "sha256": "9db7df096f7414435d52bafcbacf814c30cea50eb565c1e8fa6d11440759bba8",
+        "size_bytes": 129085,
+        "url": "https://huggingface.co/datasets/mteb/scifact/resolve/cf10ab6856b15b0e670ef8ae5dae4e266c12d035/queries.jsonl"
+      },
+      {
+        "sha256": "a53f2114831916c096b6c37d9e54da68cef4efdcdbd5ed46533601af972acf1d",
+        "size_bytes": 14502,
+        "url": "https://huggingface.co/datasets/mteb/scifact/resolve/cf10ab6856b15b0e670ef8ae5dae4e266c12d035/qrels/train.tsv"
+      },
+      {
+        "sha256": "0864bb985e0ca2367ba217977e72004d549054b2b06666ed9d4825ac7c21284c",
+        "size_bytes": 5389,
+        "url": "https://huggingface.co/datasets/mteb/scifact/resolve/cf10ab6856b15b0e670ef8ae5dae4e266c12d035/qrels/test.tsv"
+      }
+    ],
+    "revision": "cf10ab6856b15b0e670ef8ae5dae4e266c12d035"
+  },
+  "terms": {
+    "sha256": "b5f57be1839fdb75867073986a019a78afe0a149950f79d1165509efc5e5cf2f",
+    "size_bytes": 10407,
+    "url": "https://huggingface.co/datasets/BeIR/scifact/raw/b3b5335604bf5ee3c4447671af975ea25143d4f5/README.md"
+  },
+  "tool": {
+    "name": "dataset-fetch",
+    "version": "0.1.0"
+  },
+  "transform": {
+    "script": "tools/dataset-fetch",
+    "seed": "dataset-transform-v1",
+    "version": 1
+  }
+}
