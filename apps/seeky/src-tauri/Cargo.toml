@@ -1,8 +1,9 @@
 [package]
 name = "seeky"
 version = "0.1.0"
-description = "Local-first semantic file search"
+description = "Local neural information retrieval engine and semantic desktop search"
 authors = ["Seeky contributors"]
+license = "MIT"
 edition = "2024"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

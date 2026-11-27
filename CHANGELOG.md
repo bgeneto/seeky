@@ -2,6 +2,24 @@
 
 All notable changes to Seeky are recorded here.
 
+## Unreleased
+
+### Product decisions
+
+- Seeky source is now MIT-licensed; no account or commercial license key is
+  required.
+- Target distribution is a slim installer with first-run downloads of runtimes,
+  model weights, tokenizers, and native libraries from the public seeky
+  Cloudflare R2 bucket.
+- UI target is limited to light and dark themes (OS default), with English and
+  Portuguese locales from the start.
+- UI direction is minimal search-first, with backend/model internals behind an
+  advanced diagnostics surface.
+- Retrieval target is SOTA multilingual hierarchical neural IR: passage ranking,
+  document aggregation, per-document limits, diversity, near-duplicate handling,
+  and length-bias correction.
+- Added architecture, model strategy, and provisioning documents.
+
 ## 0.1.0 — 2026-11-26
 
 ### Added

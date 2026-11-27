@@ -1,21 +1,27 @@
 # Seeky
 
-**A high-performance, local-first semantic file search engine. No cloud, no chatbots, no agents. Just search.**
+**A Local Neural Information Retrieval Engine and Semantic Desktop Search Engine.**
 
-Seeky is the first PoC built from the Gety reverse-engineering notes in
-`docs/research/`. It is intentionally narrow: index local files, embed their chunks
-with Gety's published embedding model, retrieve with BM25 + filename/path + dense
-vectors + RRF, and show cited passages.
+Seeky is an open-source, local-first desktop application for semantic file
+search. It indexes local files, ranks passages and documents with a multilingual
+hybrid retrieval pipeline, and shows cited passages. The current PoC is built
+from the Gety reverse-engineering research in `docs/research/`.
 
-- Tauri **2.12.7** desktop app (latest 2.x line)
+- Tauri **2.12.7** desktop app
 - React 19 + Vite + TypeScript frontend
 - Rust backend, SQLite/FTS5, `tokenizers`, ONNX Runtime, OpenVINO
-- **CPU, CUDA and Intel NPU** inference using `gety-embed-v0`
+- **CPU, CUDA and Intel NPU** inference in the current PoC; AMD validation is a target
 - Live filesystem watching with debounced, incremental per-file reindexing
-- PDF, DOCX, TXT, Markdown, HTML, CSV, JSON and source-code extraction
-- No network calls, no telemetry, no connectors, no MCP, no chat
+- MIT-licensed source; no account or commercial license key
+- Target: slim first-run provisioning from Cloudflare R2
+- Target: light/dark themes and English/Portuguese UI
+- Target: SOTA multilingual hierarchical retrieval
 
 ![Seeky home](../../docs/assets/screenshots/seeky/home.png)
+
+See [`docs/product/seeky-product-decisions.md`](../../docs/product/seeky-product-decisions.md)
+for the accepted product direction. The current PoC still depends on a local Gety
+installation, ships a temporary OpenVINO IR, and has a dark, English-only UI.
 
 ---
 
@@ -41,6 +47,12 @@ vectors + RRF, and show cited passages.
 | CUDA inference | ✅ ONNX Runtime FP16, RTX 3090 tested |
 | NPU inference | ✅ OpenVINO 2026.2 on Intel AI Boost |
 | Tauri UI: search, preview, folder manager, backend selector | ✅ |
+| Open-source source code (MIT) | ✅ |
+| No account or license key | ✅ |
+| Slim first-run provisioning | ⏳ target |
+| Two themes (light/dark) | ⏳ target |
+| English/Portuguese UI | ⏳ target |
+| SOTA hierarchical multilingual retrieval | ⏳ target |
 | Reranker / pruner / OCR | ⏳ next |
 
 Validated on Windows 11 x64 with an RTX 3090 and Intel AI Boost NPU. The final
@@ -53,22 +65,28 @@ for commands and observed output.
 
 ---
 
-## 2. Scope (from `docs/product/seeky-scope.md`)
+## 2. Scope
 
-**In:** local filesystem search, semantic embeddings, hybrid retrieval, RRF,
-embedded vector storage, incremental live indexing, metadata filters via
-paths/extensions, semantic snippets, progressive-ish result rendering,
-cross-platform desktop.
+Seeky is a **Local Neural Information Retrieval Engine** and **Semantic Desktop
+Search Engine**. It is optimized for retrieval quality, latency, indexing speed,
+and computational efficiency.
 
-**Out:** MCP, public REST API, public CLI, connector SDK/marketplace, external
-connectors, cloud sync, AI-client integrations, API keys, LAN access, chat,
-generative LLM, multiuser, plugins.
+**In scope:** local filesystem search, multilingual semantic embeddings, hybrid
+and hierarchical retrieval, document/passage ranking, RRF, reranking, per-document
+limits, near-duplicate handling, cross-document diversity, length-bias correction,
+embedded vector storage, live incremental indexing, metadata filters, semantic
+snippets, light/dark themes, English/Portuguese UI, and slim first-run
+provisioning from Cloudflare R2.
 
-Seeky keeps the retrieval core and drops the platform around it.
+**Out of scope:** accounts, license keys, cloud sync, MCP, public REST API or CLI,
+connector SDK/marketplace, external connectors, AI-client integrations, LAN
+access, generative chat, agents, multiuser support, plugin marketplaces, and theme
+customization.
 
-The PoC now covers indexing, live incremental updates, hybrid retrieval, RRF,
-storage and preview. Metadata filters, progressive rendering and reranking are
-in scope but remain next steps.
+The full product record is in
+[`docs/product/seeky-product-decisions.md`](../../docs/product/seeky-product-decisions.md).
+The target retrieval contract is in
+[`docs/architecture/retrieval-engine.md`](../../docs/architecture/retrieval-engine.md).
 
 ---
 
@@ -91,7 +109,7 @@ Rust backend
         └─ Gety OpenVINO IR: resources/.../openvino/model.xml|bin
 ```
 
-### Retrieval
+### Retrieval (current PoC)
 
 1. FTS5 BM25 over `chunks_fts` (top 80).
 2. Filename/path matching over document titles and paths (top 40).
@@ -104,6 +122,11 @@ Rust backend
 This is a deliberate improvement over Gety's fixed `0.2 * BM25 + 0.8 * cosine`
 score fusion: RRF needs no score calibration.
 
+The **target** SOTA pipeline adds passage reranking, document-level aggregation,
+hierarchical retrieval, per-document limits, diversity, near-duplicate handling,
+and length-bias correction. See
+[`docs/architecture/retrieval-engine.md`](../../docs/architecture/retrieval-engine.md).
+
 ---
 
 ## 4. Requirements
@@ -112,11 +135,17 @@ score fusion: RRF needs no score calibration.
 - Node.js 20+ and npm
 - Rust stable (MSVC toolchain) and Visual Studio Build Tools
 - WebView2 (installed with Windows 11)
-- **Gety installed** at `C:\Users\bernh\AppData\Local\Gety` for CPU/CUDA model
-  files and PDFium; or set the env vars below.
+- **Gety installed** at `C:\Users\bernh\AppData\Local\Gety` for the current PoC's
+  CPU/CUDA model files, PDFium, and runtimes; or set the env vars below.
 - NVIDIA driver + CUDA/cuDNN DLLs for CUDA (Gety downloads them under
   `%APPDATA%\ai.gety\data\third_party_libs\cuda`)
 - Intel NPU driver + Gety's OpenVINO runtime for NPU
+
+**Target slim setup:** the installed application will not require Gety. Required
+runtimes, model weights, tokenizers, and native libraries will be downloaded on
+first run from the seeky Cloudflare R2 bucket, verified, and cached for offline
+use. See
+[`docs/architecture/distribution-and-provisioning.md`](../../docs/architecture/distribution-and-provisioning.md).
 
 Backend availability is determined by model and runtime files. Actual device
 support is confirmed when the engine loads; selecting NPU on a machine without
@@ -132,9 +161,11 @@ an Intel NPU fails with a clear error instead of silently falling back.
 | PDFium | `%LOCALAPPDATA%\Gety\lib\pdfium.dll` | `SEEKY_PDFIUM_DLL` |
 | NPU IR | bundled in `src-tauri/resources/models/gety-embed-v0/openvino` | `SEEKY_NPU_DIR` |
 
-The 119 MB OpenVINO IR is included under `src-tauri/resources/models` so the
-NPU path works without a download. CPU/CUDA model files are read from the local
-Gety installation and are not duplicated.
+The 118.6 MB OpenVINO IR is temporarily included under
+`src-tauri/resources/models` so the current NPU path works without a download.
+CPU/CUDA model files are read from the local Gety installation. This is
+transitional; the target slim setup downloads verified assets from R2 and
+removes the bundled IR.
 
 ---
 
@@ -229,29 +260,41 @@ copy. See
   are skipped. A full Reindex also prunes documents whose files disappeared.
 - **Permissions:** the webview gets only Tauri core + dialog capabilities.
   Opening a file is a narrow Rust command, not a broad `opener` path allowlist.
-- **Privacy:** no outbound network calls or analytics.
+- **Privacy:** the current PoC has no outbound network calls or analytics. The
+  target slim setup uses network only for approved R2 asset provisioning.
+- **License:** Seeky source is MIT-licensed. No account, activation, or commercial
+  license key is required. Third-party assets keep their own licenses.
+- **Target models:** the current `gety-embed-v0` integration is a compatibility
+  baseline. Multilingual model selection is benchmark-gated; see
+  [`docs/architecture/model-strategy.md`](../../docs/architecture/model-strategy.md).
 
 ### Gety materials and licenses
 
+- Seeky source code is **MIT-licensed**; see [`LICENSE`](../../LICENSE).
+- No account, activation, or commercial license key is required.
 - `gety-embed-v0` model card declares **MIT**:
   <https://huggingface.co/gety-ai/gety-embed-v0>
 - The Gety application itself is proprietary; Seeky reads the installed model
   files locally and does not redistribute Gety binaries.
-- The OpenVINO IR in `resources/` is the published `gety-ai/gety-embed-v0`
-  OpenVINO export. Verify the model license before redistribution.
+- The temporary OpenVINO IR in `resources/` is the published
+  `gety-ai/gety-embed-v0` OpenVINO export. Verify the model license before
+  redistribution.
 - Gety's OCR weights are encrypted/private and are **not** used by Seeky.
 
 ---
 
 ## 8. Next steps
 
-1. Add a cross-encoder reranker (Qwen3-Reranker-0.6B or bge-reranker-v2-m3)
-   over the RRF top 30.
-2. Add a heuristic pruner (dedupe/MMR/token budget) and a future learned pruner.
-3. Add metadata filters (folder, extension, modified date) to the UI.
-4. Add XLSX/PPTX fixtures and richer PDF page metadata.
-5. Add `sqlite-vec`/USearch only if exact cosine stops meeting latency targets.
-6. Add an optional extractive/LLM answer layer (see the parent docs).
+1. Build the multilingual golden set and evaluate SOTA embedding/reranker
+   candidates.
+2. Implement hierarchical retrieval: passage ranking, document aggregation,
+   per-document limits, diversity, near-duplicate detection, and length-bias
+   correction.
+3. Add light/dark themes, English/Portuguese locales, and the minimal UI pass.
+4. Add first-run R2 provisioning and remove the Gety/bundled-IR dependency.
+5. Add AMD DirectML validation and scale/ANN evaluation.
+6. Add an optional extractive/LLM answer layer only after an explicit scope
+   change.
 
 ---
 

@@ -1,9 +1,9 @@
 # Models
 
-## Runtime resolution
+## Current PoC resolution
 
-Seeky never downloads models. It reads Gety's installed model files and supports
-environment overrides.
+Seeky never downloads models in the current PoC. It reads Gety's installed model
+files and supports environment overrides.
 
 | Purpose | Default | Override |
 |---|---|---|
@@ -21,5 +21,16 @@ development.
 - Tokenizer: `tokenizer.json`
 - NPU IR: `model.xml` + `model.bin`
 
-The 118.6 MB NPU `model.bin` is tracked with Git LFS. Install Git LFS before
-cloning if you need the NPU path.
+The 118.6 MB NPU `model.bin` is tracked with Git LFS for the current PoC.
+
+## Target slim setup
+
+The shipped product will not require Gety. First run downloads verified runtimes,
+models, tokenizers, and native libraries from the seeky Cloudflare R2 bucket,
+caches them under the app data directory, and runs offline afterward. No account
+or license key is required.
+
+See
+[`docs/architecture/distribution-and-provisioning.md`](../docs/architecture/distribution-and-provisioning.md)
+and
+[`docs/architecture/model-strategy.md`](../docs/architecture/model-strategy.md).

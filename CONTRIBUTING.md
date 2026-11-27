@@ -38,13 +38,25 @@ Frontend build and pure Rust tests must pass without optional hardware.
 - Do not add a sidecar service, local HTTP API, or a second backend runtime.
 - Keep the webview capability surface minimal; add explicit Rust commands for
   filesystem actions.
-- Do not add telemetry or outbound network calls.
-- Keep CPU/CUDA/NPU embeddings compatible; a backend switch must not require
-  reindexing.
+- Do not add accounts, activation, license-key checks, or telemetry.
+- Do not add outbound network calls except the approved first-run/update asset
+  fetch from the seeky R2 bucket.
+- Keep CPU/CUDA/AMD/NPU embeddings compatible; a backend switch must not require
+  reindexing for the same model.
+- Do not bundle large model/runtime assets in the installer; provision and verify
+  them through the asset pipeline.
+- Keep UI strings in locale catalogs and support only the light/dark themes.
 - Update `docs/plans/seeky-implementation-plan.md` when a milestone or contract
   changes.
 - Add runtime evidence under `docs/validation/` or `docs/audits/`.
+- Add retrieval evaluation evidence before changing ranking behavior.
 - Update `CHANGELOG.md` for user-visible changes.
+
+## License
+
+Seeky is MIT-licensed. Contributions are accepted under the same license.
+Third-party libraries and model weights keep their own licenses; do not add an
+asset without recording its license and redistribution terms.
 
 ## Commit style
 

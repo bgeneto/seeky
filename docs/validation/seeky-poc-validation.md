@@ -1,8 +1,13 @@
-# Seeky — PoC validation
+# Seeky - PoC validation
 
-This file records the commands and observed results that show the PoC is
-runnable and that CPU, CUDA and NPU inference work through Gety's own model
-files.
+This file records the commands and observed results for the current **transitional
+PoC**. The target slim first-run provisioning, light/dark themes,
+English/Portuguese UI, and SOTA hierarchical retrieval are not implemented yet;
+their contracts are in `docs/product/seeky-product-decisions.md`,
+`docs/architecture/`, and `docs/plans/seeky-implementation-plan.md`.
+
+This validation shows that the PoC is runnable and that CPU, CUDA and NPU
+inference work through Gety's model files.
 
 **Environment**
 
@@ -330,13 +335,21 @@ indexing (`../assets/screenshots/seeky/files.png`).
 - The first full index of a folder is still user-triggered; after that the
   watcher applies live changes. Changes made while Seeky is closed require
   **Reindex** (unchanged files are skipped).
+- The current PoC requires the local Gety installation and ships a temporary
+  OpenVINO IR. The target slim first-run R2 provisioning is not implemented.
+- The current UI is dark-only and English-only. Light/dark themes and
+  English/Portuguese localization are target milestone work.
+- The retrieval pipeline is chunk-level BM25 + filename/path + dense + RRF. The
+  required hierarchical, aggregation, diversity, near-duplicate, and length-bias
+  stages are not implemented yet.
+- No cross-encoder reranker or pruner is wired yet.
+- No embedded multilingual model evaluation or golden-set harness exists yet.
+- AMD GPU acceleration is not validated in the current PoC.
 - Filesystem events are OS-dependent and can be coalesced. Rename handling
   covers notify's both/from/to/any modes; unusual network filesystems may
   degrade to a later manual Reindex.
 - PDF and DOCX are supported; XLSX/PPTX extractors are compiled but not yet
   exercised by the demo.
-- No cross-encoder reranker is wired yet; retrieval is BM25 + filename/path +
-  dense + RRF.
 - No OCR in the PoC; Gety's OCR weights are encrypted/private.
 - NPU first load compiles the OpenVINO model and can take tens of seconds; later
   searches are fast.

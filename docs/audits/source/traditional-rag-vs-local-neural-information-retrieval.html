@@ -1,0 +1,858 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Traditional RAG vs. Local Neural Information Retrieval Engine</title><style>*{box-sizing:border-box}html{scroll-behavior:smooth}body{font:16px/1.65 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#252b32;background:#fff;margin:0}main{max-width:960px;margin:auto;padding:38px 30px 60px}h1{font-size:2rem;line-height:1.2;letter-spacing:-.035em;margin:0 0 16px}h2{font-size:1.45rem;line-height:1.35;border-bottom:1px solid #d8dce1;padding-bottom:7px;margin:2.2em 0 .8em;scroll-margin-top:12px}h3{font-size:1.16rem;margin:1.7em 0 .6em}h4{font-size:1.04rem;margin:.3em 0 .8em}p{margin:.8em 0}a{color:#205f83;text-underline-offset:3px}nav{border:1px solid #d8dce1;padding:12px 20px;margin:28px 0}nav h2{margin:0;font-size:1.1rem;border:0}nav ol{list-style:none;padding:0;margin:4px 0;columns:2;column-gap:25px}nav li{break-inside:avoid;margin:6px 0}nav a{text-decoration:none;font-size:.9rem}ul,ol{padding-left:1.5em}li{margin:.2em 0}table{border-collapse:collapse;width:100%;margin:1.1em 0;font-size:.9rem;line-height:1.45}th,td{border:1px solid #d9dee3;text-align:left;padding:8px 10px;vertical-align:top}th{background:#f0f2f4;font-weight:650}tbody tr:nth-child(even){background:#fafbfc}code{font-family:ui-monospace,monospace;font-size:.89em;overflow-wrap:anywhere}figure{margin:1.5em auto;text-align:center;max-width:740px}svg{display:block;width:100%;height:auto}figcaption,.note{font-size:.85rem;color:#56616d;line-height:1.5;margin:.6em 0} .equation{text-align:center;font-family:Georgia,serif;font-size:1.25em;margin:1.5em 0;overflow-x:auto;white-space:nowrap}.fraction,.sum{display:inline-flex;vertical-align:middle;flex-direction:column;align-items:center;line-height:1.05;margin:0 .12em}.fraction span:first-child{border-bottom:1px solid;padding:0 5px 2px}.fraction span:last-child{padding-top:2px}.sum{font-size:1.4em}.sum sup,.sum sub{font-size:.48em}.simulator{border:1px solid #d9dee3;padding:16px;margin:1.4em 0}.simulator input{display:block;width:100%;accent-color:#386d73;margin:10px 0 0}.range-labels{display:flex;justify-content:space-between;font-size:.8rem;color:#56616d}.simulator output{font-weight:bold}footer{border-top:1px solid #d9dee3;color:#56616d;font-size:.8rem;margin-top:30px;padding-top:10px}@media(max-width:650px){main{padding:22px 14px 40px}h1{font-size:1.65rem}nav ol{columns:1}table{display:block;overflow-x:auto}th,td{padding:6px}figure{margin:1em 0}}@media print{body{font-size:10.5pt;color:#000}main{max-width:none;padding:0}nav{break-inside:avoid}h2,h3,h4{break-after:avoid}figure,.simulator{break-inside:avoid}tr{break-inside:avoid}thead{display:table-header-group}a{color:inherit}svg{max-height:145mm}input,.range-labels{display:none!important}@page{margin:16mm}}</style></head><body><main><h1>Traditional RAG vs. Local Neural Information Retrieval Engine</h1>
+<p><strong>Relatório técnico — arquitetura, indexação e recuperação de informação</strong><br />
+26 de novembro de 2026</p>
+<nav aria-label="Sumário"><h2>Sumário</h2><ol><li><a href="#sec-1">Resumo executivo</a></li><li><a href="#sec-2">1. Diferença fundamental de objetivo</a></li><li><a href="#sec-3">2. Comparação arquitetural</a></li><li><a href="#sec-4">3. A maior diferença está na indexação</a></li><li><a href="#sec-5">4. O problema da granularidade: arquivos versus chunks</a></li><li><a href="#sec-6">5. Estratégia de chunking diferente</a></li><li><a href="#sec-7">6. Diferença nos modelos de embeddings</a></li><li><a href="#sec-8">7. Diferença no reranking</a></li><li><a href="#sec-9">8. Diferença no pruner</a></li><li><a href="#sec-10">9. Diferença na escolha do banco vetorial</a></li><li><a href="#sec-11">10. O que não importar de um RAG SOTA</a></li><li><a href="#sec-12">11. Avaliação: como demonstrar que o buscador é SOTA?</a></li><li><a href="#sec-13">12. Arquitetura ideal proposta</a></li><li><a href="#sec-14">13. Referências conceituais mais adequadas que RAGFlow</a></li><li><a href="#sec-15">Conclusão</a></li></ol></nav><h2 id="sec-1">Resumo executivo</h2>
+<p>Existe uma distinção fundamental de objetivo, arquitetura, granularidade, estratégia de indexação e otimização de desempenho entre um sistema como Gety e uma plataforma RAG tradicional como RAGFlow.</p>
+<p>Embora ambos compartilhem componentes de Information Retrieval (IR), como embeddings, chunking, bancos vetoriais, busca híbrida e reranking, eles resolvem problemas diferentes.</p>
+<p>Um buscador semântico de arquivos sem LLM generativo não é propriamente RAG. A denominação tecnicamente mais adequada é <strong>Local Neural Information Retrieval Engine</strong> ou <strong>Semantic Desktop Search Engine</strong>. RAG significa <em>Retrieval-Augmented Generation</em>. Sem a etapa de geração, temos um sistema de recuperação de informação neural.</p>
+<p>Este relatório considera um mecanismo local especializado em busca de arquivos, sem agentes, conectores externos ou geração de respostas. As arquiteturas propostas são recomendações de engenharia, não descrições verificadas dos algoritmos internos proprietários do Gety.</p>
+<h2 id="sec-2">1. Diferença fundamental de objetivo</h2>
+<figure><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 340" role="img" aria-label="Fluxos conceituais: Gety em modo de busca e RAGFlow em modo de Q&amp;A. O desenho não representa implementações internas verificadas."><defs><marker id="arrow680340" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0 0L7 3L0 6Z" fill="#64748b"/></marker></defs><text x="170" y="22" text-anchor="middle" font-size="17" fill="#263442">Semantic File Search</text><rect x="40" y="38" width="260" height="38" rx="5" fill="#f5f6f8" stroke="#a7afb9"/><text x="170.0" y="62.0" text-anchor="middle" font-size="14" fill="#263442">User query</text><path d="M170 76 L170 92" fill="none" stroke="#64748b" stroke-width="1.4"/><rect x="40" y="92" width="260" height="38" rx="5" fill="#f5f6f8" stroke="#a7afb9"/><text x="170.0" y="116.0" text-anchor="middle" font-size="14" fill="#263442">Hybrid retrieval</text><path d="M170 130 L170 146" fill="none" stroke="#64748b" stroke-width="1.4"/><rect x="40" y="146" width="260" height="38" rx="5" fill="#f5f6f8" stroke="#a7afb9"/><text x="170.0" y="170.0" text-anchor="middle" font-size="14" fill="#263442">Neural reranking</text><path d="M170 184 L170 200" fill="none" stroke="#64748b" stroke-width="1.4"/><rect x="40" y="200" width="260" height="38" rx="5" fill="#f5f6f8" stroke="#a7afb9"/><text x="170.0" y="224.0" text-anchor="middle" font-size="14" fill="#263442">Document ranking</text><path d="M170 238 L170 254" fill="none" stroke="#64748b" stroke-width="1.4"/><rect x="40" y="254" width="260" height="38" rx="5" fill="#eef5f5" stroke="#568181"/><text x="170.0" y="278.0" text-anchor="middle" font-size="14" fill="#263442">Semantic snippets</text><text x="170" y="325" text-anchor="middle" font-size="13" fill="#263442">Arquivos e trechos originais</text><text x="510" y="22" text-anchor="middle" font-size="17" fill="#263442">Traditional RAG</text><rect x="380" y="38" width="260" height="38" rx="5" fill="#f5f6f8" stroke="#a7afb9"/><text x="510.0" y="62.0" text-anchor="middle" font-size="14" fill="#263442">User question</text><path d="M510 76 L510 92" fill="none" stroke="#64748b" stroke-width="1.4"/><rect x="380" y="92" width="260" height="38" rx="5" fill="#f5f6f8" stroke="#a7afb9"/><text x="510.0" y="116.0" text-anchor="middle" font-size="14" fill="#263442">Hybrid retrieval</text><path d="M510 130 L510 146" fill="none" stroke="#64748b" stroke-width="1.4"/><rect x="380" y="146" width="260" height="38" rx="5" fill="#f5f6f8" stroke="#a7afb9"/><text x="510.0" y="170.0" text-anchor="middle" font-size="14" fill="#263442">Neural reranking</text><path d="M510 184 L510 200" fill="none" stroke="#64748b" stroke-width="1.4"/><rect x="380" y="200" width="260" height="38" rx="5" fill="#f5f6f8" stroke="#a7afb9"/><text x="510.0" y="224.0" text-anchor="middle" font-size="14" fill="#263442">Context assembly</text><path d="M510 238 L510 254" fill="none" stroke="#64748b" stroke-width="1.4"/><rect x="380" y="254" width="260" height="38" rx="5" fill="#eef5f5" stroke="#568181"/><text x="510.0" y="278.0" text-anchor="middle" font-size="14" fill="#263442">LLM generation</text><text x="510" y="325" text-anchor="middle" font-size="13" fill="#263442">Resposta sintetizada</text></svg><figcaption>Fluxos conceituais: Gety em modo de busca e RAGFlow em modo de Q&A. O desenho não representa implementações internas verificadas.</figcaption></figure>
+
+<p>Um buscador semântico precisa encontrar os melhores <strong>documentos</strong>. Um RAG tradicional precisa encontrar as melhores <strong>evidências para responder a uma pergunta</strong>. Essa diferença aparentemente pequena altera praticamente todas as decisões de engenharia.</p>
+<h2 id="sec-3">2. Comparação arquitetural</h2>
+<table>
+<thead>
+<tr>
+  <th>Dimensão</th>
+  <th>Semantic File Search</th>
+  <th>RAG tradicional</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Objetivo</td>
+  <td>Encontrar arquivos</td>
+  <td>Responder perguntas</td>
+</tr>
+<tr>
+  <td>Unidade de recuperação</td>
+  <td>Chunk e documento</td>
+  <td>Chunk ou evidência</td>
+</tr>
+<tr>
+  <td>Unidade de apresentação</td>
+  <td>Arquivo</td>
+  <td>Resposta sintetizada</td>
+</tr>
+<tr>
+  <td>Corpus</td>
+  <td>Filesystem dinâmico</td>
+  <td>Knowledge base</td>
+</tr>
+<tr>
+  <td>Ingestão</td>
+  <td>Automática e contínua</td>
+  <td>Geralmente organizada em datasets</td>
+</tr>
+<tr>
+  <td>Indexação</td>
+  <td>Incremental e transparente</td>
+  <td>Pipelines de processamento</td>
+</tr>
+<tr>
+  <td>Latência desejável</td>
+  <td>Milissegundos a centenas de ms</td>
+  <td>Centenas de ms a segundos para retrieval</td>
+</tr>
+<tr>
+  <td>Embedding model</td>
+  <td>Otimizado para qualidade/latência</td>
+  <td>Frequentemente otimizado para qualidade</td>
+</tr>
+<tr>
+  <td>Reranking</td>
+  <td>Interativo, com orçamento rígido de latência</td>
+  <td>Maior tolerância à latência</td>
+</tr>
+<tr>
+  <td>Pruning</td>
+  <td>Legibilidade humana</td>
+  <td>Compressão de contexto</td>
+</tr>
+<tr>
+  <td>Chunking</td>
+  <td>Localização precisa de conteúdo</td>
+  <td>Completude da evidência</td>
+</tr>
+<tr>
+  <td>Metadados</td>
+  <td>Caminho, extensão, data, tamanho</td>
+  <td>Fonte, domínio, permissões e atributos</td>
+</tr>
+<tr>
+  <td>Deduplicação</td>
+  <td>Arquivos e conteúdos repetidos</td>
+  <td>Evidências redundantes</td>
+</tr>
+<tr>
+  <td>Query rewriting</td>
+  <td>Geralmente dispensável</td>
+  <td>Frequentemente útil</td>
+</tr>
+<tr>
+  <td>Knowledge graph</td>
+  <td>Geralmente dispensável</td>
+  <td>Potencialmente útil</td>
+</tr>
+<tr>
+  <td>LLM generativo</td>
+  <td>Desnecessário</td>
+  <td>Fundamental</td>
+</tr>
+<tr>
+  <td>Context window</td>
+  <td>Irrelevante para a saída</td>
+  <td>Restrição arquitetural importante</td>
+</tr>
+<tr>
+  <td>Banco vetorial</td>
+  <td>Preferencialmente embedded</td>
+  <td>Frequentemente server-based</td>
+</tr>
+<tr>
+  <td>Avaliação</td>
+  <td>Recall, nDCG, MRR, latência</td>
+  <td>Retrieval, faithfulness, answer correctness</td>
+</tr>
+</tbody>
+</table>
+<p>Essas são tendências arquiteturais, não limitações intrínsecas dos sistemas. O <a href="https://github.com/infiniflow/ragflow">RAGFlow</a>, por exemplo, também permite executar buscas independentes da geração, testar a recuperação, configurar pesos de similaridade, reranking e pipelines customizadas de ingestão. Portanto, seu subsistema de retrieval pode ser utilizado como buscador. A diferença está principalmente em como o produto inteiro é otimizado.</p>
+<h2 id="sec-4">3. A maior diferença está na indexação</h2>
+<p>Essa é provavelmente a distinção mais importante para o desenvolvimento de um buscador semântico local.</p>
+<h3>3.1. RAG tradicional: knowledge-centric indexing</h3>
+<p>Um RAG tradicional geralmente trabalha com um conjunto relativamente delimitado de documentos, selecionados por sua relevância para determinado domínio. Por exemplo:</p>
+<ul>
+<li>500 manuais técnicos.</li>
+<li>2.000 artigos científicos.</li>
+<li>300 contratos jurídicos.</li>
+<li>Uma base de documentação corporativa.</li>
+</ul>
+<p>É aceitável gastar mais tempo processando cada documento para extrair tabelas, identificar estruturas, gerar summaries, reconhecer entidades e construir representações enriquecidas. O RAGFlow oferece, por exemplo, reconhecimento de layout, reconhecimento estrutural de tabelas, OCR e pipelines configuráveis de chunking e extração.</p>
+<h3>3.2. Semantic File Search: filesystem-centric indexing</h3>
+<p>Um buscador desktop precisa lidar com uma população de arquivos muito mais heterogênea e dinâmica:</p>
+<ul>
+<li>Centenas de milhares de arquivos.</li>
+<li>Documentos com poucas palavras ou milhares de páginas.</li>
+<li>Arquivos constantemente modificados.</li>
+<li>Código-fonte, documentos acadêmicos, planilhas e apresentações.</li>
+<li>Arquivos duplicados, temporários, corrompidos ou inacessíveis.</li>
+<li>Diretórios movimentados ou renomeados.</li>
+</ul>
+<p>O usuário não deveria precisar preparar uma knowledge base, configurar manualmente o chunking ou importar documentos. O <a href="https://gety.ai">Gety</a> adota justamente esse paradigma de indexação local, evitando a necessidade de uploads e preparação manual de bases de conhecimento.</p>
+<p>Isso exige uma arquitetura de indexação mais próxima de um mecanismo de busca tradicional do que de uma pipeline RAG convencional.</p>
+<figure><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 348" role="img" aria-label="Indexação incremental orientada ao filesystem — arquitetura recomendada."><defs><marker id="arrow680348" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0 0L7 3L0 6Z" fill="#64748b"/></marker></defs><rect x="210" y="8" width="260" height="38" rx="5" fill="#f5f6f8" stroke="#a7afb9"/><text x="340.0" y="32.0" text-anchor="middle" font-size="14" fill="#263442">Filesystem event</text><path d="M340 46 L110 68" fill="none" stroke="#64748b" stroke-width="1.4"/><rect x="8" y="68" width="204" height="34" rx="5" fill="#f5f6f8" stroke="#a7afb9"/><text x="110.0" y="90.0" text-anchor="middle" font-size="14" fill="#263442">Created</text><path d="M110 102 L110 121" fill="none" stroke="#64748b" stroke-width="1.4"/><rect x="8" y="121" width="204" height="50" rx="5" fill="#f5f6f8" stroke="#a7afb9"/><text x="110.0" y="142.5" text-anchor="middle" font-size="14" fill="#263442">Extract text</text><text x="110.0" y="159.5" text-anchor="middle" font-size="12" fill="#263442">Chunk + embed</text><path d="M110 171 L340 195" fill="none" stroke="#64748b" stroke-width="1.4"/><path d="M340 46 L340 68" fill="none" stroke="#64748b" stroke-width="1.4"/><rect x="238" y="68" width="204" height="34" rx="5" fill="#f5f6f8" stroke="#a7afb9"/><text x="340.0" y="90.0" text-anchor="middle" font-size="14" fill="#263442">Modified</text><path d="M340 102 L340 121" fill="none" stroke="#64748b" stroke-width="1.4"/><rect x="238" y="121" width="204" height="50" rx="5" fill="#f5f6f8" stroke="#a7afb9"/><text x="340.0" y="142.5" text-anchor="middle" font-size="14" fill="#263442">Detect changes</text><text x="340.0" y="159.5" text-anchor="middle" font-size="12" fill="#263442">Reuse embeddings</text><path d="M340 171 L340 195" fill="none" stroke="#64748b" stroke-width="1.4"/><path d="M340 46 L570 68" fill="none" stroke="#64748b" stroke-width="1.4"/><rect x="468" y="68" width="204" height="34" rx="5" fill="#f5f6f8" stroke="#a7afb9"/><text x="570.0" y="90.0" text-anchor="middle" font-size="14" fill="#263442">Deleted</text><path d="M570 102 L570 121" fill="none" stroke="#64748b" stroke-width="1.4"/><rect x="468" y="121" width="204" height="50" rx="5" fill="#f5f6f8" stroke="#a7afb9"/><text x="570.0" y="142.5" text-anchor="middle" font-size="14" fill="#263442">Remove entries</text><text x="570.0" y="159.5" text-anchor="middle" font-size="12" fill="#263442">Garbage collection</text><path d="M570 171 L340 195" fill="none" stroke="#64748b" stroke-width="1.4"/><rect x="185" y="195" width="310" height="52" rx="5" fill="#eef5f5" stroke="#568181"/><text x="340.0" y="217.5" text-anchor="middle" font-size="14" fill="#263442">Atomic index update</text><text x="340.0" y="234.5" text-anchor="middle" font-size="12" fill="#263442">Consistent index generation</text><path d="M340 247 L110 269" fill="none" stroke="#64748b" stroke-width="1.4"/><rect x="8" y="269" width="204" height="36" rx="5" fill="#f5f6f8" stroke="#a7afb9"/><text x="110.0" y="292.0" text-anchor="middle" font-size="14" fill="#263442">Vector index</text><path d="M340 247 L340 269" fill="none" stroke="#64748b" stroke-width="1.4"/><rect x="238" y="269" width="204" height="36" rx="5" fill="#f5f6f8" stroke="#a7afb9"/><text x="340.0" y="292.0" text-anchor="middle" font-size="14" fill="#263442">Lexical index</text><path d="M340 247 L570 269" fill="none" stroke="#64748b" stroke-width="1.4"/><rect x="468" y="269" width="204" height="36" rx="5" fill="#f5f6f8" stroke="#a7afb9"/><text x="570.0" y="292.0" text-anchor="middle" font-size="14" fill="#263442">Metadata</text><text x="340" y="333" text-anchor="middle" font-size="14" fill="#263442">Search remains available during indexing</text></svg><figcaption>Indexação incremental orientada ao filesystem — arquitetura recomendada.</figcaption></figure>
+
+<p>Um diferencial importante seria utilizar <strong>content-addressable embedding caching</strong>: calcular hashes dos chunks e reaproveitar embeddings sempre que o conteúdo permanecer inalterado.</p>
+<p>Renomear um arquivo de 500 páginas, por exemplo, jamais deveria exigir uma nova inferência de embeddings, desde que o caminho ou nome não componha a entrada do embedding. Alterar um único parágrafo também deveria exigir, idealmente, apenas a reindexação dos chunks afetados. A reutilização depende da estabilidade da segmentação e da versão do modelo, tokenizer e configuração do embedding.</p>
+<h2 id="sec-5">4. O problema da granularidade: arquivos versus chunks</h2>
+<p>Considere o seguinte corpus fictício:</p>
+<table>
+<thead>
+<tr>
+  <th>Arquivo</th>
+  <th style="text-align:right">Páginas</th>
+  <th style="text-align:right">Chunks</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>physics_textbook.pdf</code></td>
+  <td style="text-align:right">1.200</td>
+  <td style="text-align:right">3.600</td>
+</tr>
+<tr>
+  <td><code>experiment_report.pdf</code></td>
+  <td style="text-align:right">15</td>
+  <td style="text-align:right">45</td>
+</tr>
+<tr>
+  <td><code>lecture_notes.md</code></td>
+  <td style="text-align:right">3</td>
+  <td style="text-align:right">9</td>
+</tr>
+<tr>
+  <td><code>research_paper.pdf</code></td>
+  <td style="text-align:right">12</td>
+  <td style="text-align:right">36</td>
+</tr>
+</tbody>
+</table>
+<p>Uma busca vetorial convencional pode retornar muitos chunks provenientes de um único documento.</p>
+<h3>Resultado de uma mesma busca</h3>
+<table>
+<thead>
+<tr>
+  <th>Chunk-centric retrieval (RAG)</th>
+  <th style="text-align:right">Score</th>
+  <th>Document-centric retrieval (file search)</th>
+  <th style="text-align:right">Score</th>
+  <th style="text-align:right">Passagens relevantes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Textbook — chunk 891</td>
+  <td style="text-align:right">0,95</td>
+  <td>Textbook.pdf</td>
+  <td style="text-align:right">0,95</td>
+  <td style="text-align:right">4</td>
+</tr>
+<tr>
+  <td>Textbook — chunk 892</td>
+  <td style="text-align:right">0,94</td>
+  <td>Report.pdf</td>
+  <td style="text-align:right">0,91</td>
+  <td style="text-align:right">1</td>
+</tr>
+<tr>
+  <td>Textbook — chunk 910</td>
+  <td style="text-align:right">0,92</td>
+  <td>Paper.pdf</td>
+  <td style="text-align:right">0,89</td>
+  <td style="text-align:right">1</td>
+</tr>
+<tr>
+  <td>Report — chunk 12</td>
+  <td style="text-align:right">0,91</td>
+  <td>Lecture_notes.md</td>
+  <td style="text-align:right">0,85</td>
+  <td style="text-align:right">1</td>
+</tr>
+<tr>
+  <td>Textbook — chunk 890</td>
+  <td style="text-align:right">0,90</td>
+  <td></td>
+  <td style="text-align:right"></td>
+  <td style="text-align:right"></td>
+</tr>
+<tr>
+  <td>Paper — chunk 23</td>
+  <td style="text-align:right">0,89</td>
+  <td></td>
+  <td style="text-align:right"></td>
+  <td style="text-align:right"></td>
+</tr>
+</tbody>
+</table>
+<p><em>Scores fictícios para demonstrar a diferença de granularidade; o resultado por documento considera candidatos adicionais além dos seis chunks exibidos.</em></p>
+<p>Para um RAG, recuperar quatro passagens do mesmo documento pode ser perfeitamente adequado se elas contiverem evidências complementares. Para um buscador de arquivos, retornar quatro vezes o mesmo arquivo seria um defeito evidente da interface.</p>
+<p>Isso significa que um buscador semântico SOTA precisa implementar mecanismos como:</p>
+<ul>
+<li>Document-level score aggregation.</li>
+<li>Passage-level ranking.</li>
+<li>Per-document candidate limits.</li>
+<li>Cross-document diversity.</li>
+<li>Near-duplicate detection.</li>
+<li>Length bias correction.</li>
+<li>Hierarchical document retrieval.</li>
+</ul>
+<h3>4.1. Agregação de relevância</h3>
+<p>Uma abordagem inicial seria calcular o score de um documento a partir dos seus melhores chunks:</p>
+<div class="equation" role="math" aria-label="S de D e q igual a alfa vezes s máximo mais um menos alfa vezes a média dos k melhores scores">S(D,q) = α s<sub>max</sub> + (1 − α) <span class="fraction"><span>1</span><span>k</span></span> <span class="sum"><sup>k</sup>∑<sub>i=1</sub></span> s<sub>i</sub></div>
+
+<p>Em que:</p>
+<ul>
+<li>D é o documento.</li>
+<li>q é a consulta.</li>
+<li>s<sub>i</sub> são os scores dos melhores chunks.</li>
+<li>k é a quantidade de chunks considerados.</li>
+<li>α controla a importância da melhor passagem individual.</li>
+</ul>
+<section class="simulator" aria-label="Simulador de ranking por documento"><h4>Simulador de document-level ranking</h4><label for="alpha">Peso do melhor chunk (α): <output id="alpha-value" for="alpha">0,70</output></label><input type="range" min="0" max="1" step="0.05" value="0.7" id="alpha"><div class="range-labels"><span>Média (0)</span><span>Máximo (1)</span></div><table><thead><tr><th>Documento</th><th>Chunk scores</th><th>Score agregado</th></tr></thead><tbody id="ranking"><tr><td>Report.pdf</td><td>0,92 · 0,90 · 0,88</td><td>0,914</td></tr><tr><td>Paper.pdf</td><td>0,94 · 0,83 · 0,79</td><td>0,914</td></tr><tr><td>Textbook.pdf</td><td>0,96 · 0,72 · 0,61</td><td>0,901</td></tr></tbody></table><noscript>O ajuste interativo requer JavaScript. A tabela mostra os valores de exemplo para α = 0,70.</noscript><p class="note">Modelo ilustrativo; scores fictícios. Ajuste α para observar como o peso da melhor passagem altera o ranking.</p></section>
+
+<p>Esse tipo de otimização é muito mais central para file search do que para um RAG convencional. O modelo é ilustrativo. Uma implementação real também deve lidar com viés associado ao tamanho dos documentos, cobertura temática e redundância entre chunks. Os scores precisam ser comparáveis e não devem ser interpretados como probabilidades de relevância sem calibração.</p>
+<h2 id="sec-6">5. Estratégia de chunking diferente</h2>
+<p>Em RAG tradicional, normalmente desejamos que um chunk seja suficientemente autocontido para que o LLM consiga interpretá-lo corretamente. Em file search, desejamos que o chunk seja suficientemente discriminativo para localizar uma informação específica. Esses objetivos nem sempre coincidem.</p>
+<table>
+<thead>
+<tr>
+  <th>Estratégia</th>
+  <th>RAG tradicional</th>
+  <th>File Search</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Chunks pequenos</td>
+  <td>Podem perder contexto</td>
+  <td>Excelente granularidade</td>
+</tr>
+<tr>
+  <td>Chunks grandes</td>
+  <td>Preservam contexto para o LLM</td>
+  <td>Podem diluir a similaridade</td>
+</tr>
+<tr>
+  <td>Overlap</td>
+  <td>Preservação de evidências</td>
+  <td>Pode aumentar redundância no índice</td>
+</tr>
+<tr>
+  <td>Parent-child chunking</td>
+  <td>Recuperar contexto ampliado</td>
+  <td>Localizar trechos precisos</td>
+</tr>
+<tr>
+  <td>Hierarchical chunking</td>
+  <td>Contexto em diferentes escalas</td>
+  <td>Ranking de arquivo, seção e passagem</td>
+</tr>
+<tr>
+  <td>LLM-generated summaries</td>
+  <td>Frequentemente úteis</td>
+  <td>Geralmente custo desnecessário</td>
+</tr>
+<tr>
+  <td>Contextual enrichment</td>
+  <td>Melhora interpretação</td>
+  <td>Pode ser caro para indexação massiva</td>
+</tr>
+</tbody>
+</table>
+<h3>5.1. Multi-resolution indexing</h3>
+<p>Para um buscador semântico avançado, uma estratégia de indexação multirresolução, também conhecida como hierarchical ou multi-granularity retrieval, merece investigação.</p>
+<figure><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 286" role="img" aria-label="Indexação multirresolução. Tamanhos de chunks ilustrativos, sujeitos a benchmarking."><defs><marker id="arrow680286" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0 0L7 3L0 6Z" fill="#64748b"/></marker></defs><rect x="205" y="5" width="270" height="50" rx="5" fill="#eef5f5" stroke="#568181"/><text x="340.0" y="26.5" text-anchor="middle" font-size="14" fill="#263442">Document representation</text><text x="340.0" y="43.5" text-anchor="middle" font-size="12" fill="#263442">Título + representação global</text><path d="M340 55 L170 75" fill="none" stroke="#64748b" stroke-width="1.4"/><rect x="8" y="75" width="324" height="46" rx="5" fill="#f5f6f8" stroke="#a7afb9"/><text x="170.0" y="94.5" text-anchor="middle" font-size="14" fill="#263442">Section 1</text><text x="170.0" y="111.5" text-anchor="middle" font-size="12" fill="#263442">512–1024 tokens</text><path d="M170 121 L87 145" fill="none" stroke="#64748b" stroke-width="1.4"/><rect x="8" y="145" width="158" height="47" rx="5" fill="#f5f6f8" stroke="#a7afb9"/><text x="87.0" y="165.0" text-anchor="middle" font-size="14" fill="#263442">Passage 1</text><text x="87.0" y="182.0" text-anchor="middle" font-size="12" fill="#263442">128–256 tokens</text><path d="M87 192 L87 214" fill="none" stroke="#64748b" stroke-width="1.4"/><rect x="20" y="214" width="134" height="34" rx="5" fill="#f5f6f8" stroke="#a7afb9"/><text x="87.0" y="236.0" text-anchor="middle" font-size="14" fill="#263442">Sentences</text><path d="M170 121 L253 145" fill="none" stroke="#64748b" stroke-width="1.4"/><rect x="174" y="145" width="158" height="47" rx="5" fill="#f5f6f8" stroke="#a7afb9"/><text x="253.0" y="165.0" text-anchor="middle" font-size="14" fill="#263442">Passage 2</text><text x="253.0" y="182.0" text-anchor="middle" font-size="12" fill="#263442">128–256 tokens</text><path d="M253 192 L253 214" fill="none" stroke="#64748b" stroke-width="1.4"/><rect x="186" y="214" width="134" height="34" rx="5" fill="#f5f6f8" stroke="#a7afb9"/><text x="253.0" y="236.0" text-anchor="middle" font-size="14" fill="#263442">Sentences</text><path d="M340 55 L510 75" fill="none" stroke="#64748b" stroke-width="1.4"/><rect x="348" y="75" width="324" height="46" rx="5" fill="#f5f6f8" stroke="#a7afb9"/><text x="510.0" y="94.5" text-anchor="middle" font-size="14" fill="#263442">Section 2</text><text x="510.0" y="111.5" text-anchor="middle" font-size="12" fill="#263442">512–1024 tokens</text><path d="M510 121 L427 145" fill="none" stroke="#64748b" stroke-width="1.4"/><rect x="348" y="145" width="158" height="47" rx="5" fill="#f5f6f8" stroke="#a7afb9"/><text x="427.0" y="165.0" text-anchor="middle" font-size="14" fill="#263442">Passage 3</text><text x="427.0" y="182.0" text-anchor="middle" font-size="12" fill="#263442">128–256 tokens</text><path d="M427 192 L427 214" fill="none" stroke="#64748b" stroke-width="1.4"/><rect x="360" y="214" width="134" height="34" rx="5" fill="#f5f6f8" stroke="#a7afb9"/><text x="427.0" y="236.0" text-anchor="middle" font-size="14" fill="#263442">Sentences</text><path d="M510 121 L593 145" fill="none" stroke="#64748b" stroke-width="1.4"/><rect x="514" y="145" width="158" height="47" rx="5" fill="#f5f6f8" stroke="#a7afb9"/><text x="593.0" y="165.0" text-anchor="middle" font-size="14" fill="#263442">Passage 4</text><text x="593.0" y="182.0" text-anchor="middle" font-size="12" fill="#263442">128–256 tokens</text><path d="M593 192 L593 214" fill="none" stroke="#64748b" stroke-width="1.4"/><rect x="526" y="214" width="134" height="34" rx="5" fill="#f5f6f8" stroke="#a7afb9"/><text x="593.0" y="236.0" text-anchor="middle" font-size="14" fill="#263442">Sentences</text><text x="340" y="273" text-anchor="middle" font-size="13" fill="#263442">Different representations for different retrieval stages</text></svg><figcaption>Indexação multirresolução. Tamanhos de chunks ilustrativos, sujeitos a benchmarking.</figcaption></figure>
+
+<p>Cada nível tem uma finalidade específica:</p>
+<table>
+<thead>
+<tr>
+  <th>Nível</th>
+  <th>Finalidade</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Documento</td>
+  <td>Encontrar arquivos relacionados a um tema amplo</td>
+</tr>
+<tr>
+  <td>Seção</td>
+  <td>Encontrar partes relevantes de documentos extensos</td>
+</tr>
+<tr>
+  <td>Passagem</td>
+  <td>Encontrar informações específicas</td>
+</tr>
+<tr>
+  <td>Frase</td>
+  <td>Semantic highlighting e snippet extraction</td>
+</tr>
+</tbody>
+</table>
+<p>Porém, não indexaria necessariamente embeddings em todos esses níveis. Isso poderia multiplicar o custo de indexação e armazenamento sem ganhos proporcionais. Uma solução mais econômica seria indexar passagens e representações de documentos, deixando a classificação de frases para o pruner durante a busca.</p>
+<h2 id="sec-7">6. Diferença nos modelos de embeddings</h2>
+<p>Não é necessário utilizar uma família completamente diferente de modelos de embeddings. O que muda é o critério de seleção.</p>
+<p>Em RAG, frequentemente escolhemos o modelo com maior qualidade de recuperação, desde que a latência seja aceitável dentro da aplicação. Em um buscador desktop, a escolha deveria considerar uma função de otimização multiobjetivo.</p>
+<figure><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 292" role="img" aria-label="Relação conceitual entre qualidade e latência; não representa resultados medidos de modelos específicos."><defs><marker id="arrow680292" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0 0L7 3L0 6Z" fill="#64748b"/></marker></defs><path d="M62 16V250H656" fill="none" stroke="#64748b" stroke-width="1.5"/><rect x="65" y="18" width="195" height="106" rx="5" fill="#eef5f5" stroke="#568181" stroke-dasharray="5 4"/><text x="163" y="38" text-anchor="middle" font-size="15" fill="#263442">Ideal para search</text><path d="M95 218Q180 56 340 48T620 27" fill="none" stroke="#64748b" stroke-dasharray="5 4" stroke-width="1.5"/><circle cx="95" cy="218" r="5" fill="#386d73"/><text x="103" y="235" fill="#263442" font-size="12">Tiny encoder</text><circle cx="195" cy="112" r="5" fill="#386d73"/><text x="203" y="129" fill="#263442" font-size="12">Optimized encoder</text><circle cx="330" cy="62" r="5" fill="#386d73"/><text x="338" y="79" fill="#263442" font-size="12">Medium model</text><circle cx="545" cy="34" r="5" fill="#386d73"/><text x="553" y="51" fill="#263442" font-size="12">Large model</text><text x="355" y="280" text-anchor="middle" font-size="14" fill="#263442">Inference latency →</text><text transform="translate(22 135) rotate(-90)" text-anchor="middle" fill="#263442" font-size="14">Retrieval quality →</text></svg><figcaption>Relação conceitual entre qualidade e latência; não representa resultados medidos de modelos específicos.</figcaption></figure>
+
+<p>O melhor modelo para esse produto não é necessariamente aquele que está em primeiro lugar no leaderboard MTEB. É aquele que oferece a melhor combinação de:</p>
+<table>
+<thead>
+<tr>
+  <th>Métrica</th>
+  <th>Importância</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>nDCG@10</td>
+  <td>Muito alta</td>
+</tr>
+<tr>
+  <td>Multilingual retrieval quality</td>
+  <td>Muito alta</td>
+</tr>
+<tr>
+  <td>Query embedding latency</td>
+  <td>Muito alta</td>
+</tr>
+<tr>
+  <td>Document embedding throughput</td>
+  <td>Muito alta</td>
+</tr>
+<tr>
+  <td>Quantization fidelity</td>
+  <td>Alta</td>
+</tr>
+<tr>
+  <td>Dimensionality</td>
+  <td>Alta</td>
+</tr>
+<tr>
+  <td>Memory footprint</td>
+  <td>Alta</td>
+</tr>
+<tr>
+  <td>Maximum context length</td>
+  <td>Moderada</td>
+</tr>
+<tr>
+  <td>Classification performance</td>
+  <td>Baixa</td>
+</tr>
+<tr>
+  <td>Clustering performance</td>
+  <td>Baixa</td>
+</tr>
+</tbody>
+</table>
+<p>Um modelo encoder pequeno e especializado em retrieval pode ser uma escolha melhor que um embedding model derivado de um LLM muito maior.</p>
+<p>Também é necessário separar claramente dois benchmarks:</p>
+<p><strong>Indexing throughput:</strong> tokens ou chunks processados por segundo, utilizando batching elevado.</p>
+<p><strong>Query latency:</strong> tempo para gerar um único embedding, com batch size 1.</p>
+<p>Um modelo pode ser excelente no primeiro benchmark e relativamente ruim no segundo.</p>
+<h2 id="sec-8">7. Diferença no reranking</h2>
+<p>O reranker de um RAG tradicional pode gastar centenas de milissegundos refinando dezenas ou centenas de chunks, pois ainda haverá uma etapa de geração que pode consumir vários segundos. No file search, o reranker pode ser o maior gargalo perceptível da aplicação.</p>
+<p>A recomendação é utilizar um sistema de <strong>cascaded retrieval</strong>, com estágios de custo computacional progressivamente maior.</p>
+<figure><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 310" role="img" aria-label="Multistage retrieval funnel. Quantidades ilustrativas e ajustáveis dinamicamente conforme hardware, consulta e corpus."><defs><marker id="arrow680310" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0 0L7 3L0 6Z" fill="#64748b"/></marker></defs><rect x="35.0" y="8" width="610" height="48" rx="5" fill="#f5f6f8" stroke="#a7afb9"/><text x="340.0" y="28.5" text-anchor="middle" font-size="14" fill="#263442">Initial hybrid retrieval</text><text x="340.0" y="45.5" text-anchor="middle" font-size="12" fill="#263442">200 candidates</text><path d="M340 56 L340 70" fill="none" stroke="#64748b" stroke-width="1.4"/><rect x="85.0" y="70" width="510" height="48" rx="5" fill="#f5f6f8" stroke="#a7afb9"/><text x="340.0" y="90.5" text-anchor="middle" font-size="14" fill="#263442">Fast score refinement</text><text x="340.0" y="107.5" text-anchor="middle" font-size="12" fill="#263442">80 candidates</text><path d="M340 118 L340 132" fill="none" stroke="#64748b" stroke-width="1.4"/><rect x="135.0" y="132" width="410" height="48" rx="5" fill="#eef5f5" stroke="#568181"/><text x="340.0" y="152.5" text-anchor="middle" font-size="14" fill="#263442">Lightweight neural reranker</text><text x="340.0" y="169.5" text-anchor="middle" font-size="12" fill="#263442">30 candidates</text><path d="M340 180 L340 194" fill="none" stroke="#64748b" stroke-width="1.4"/><rect x="175.0" y="194" width="330" height="48" rx="5" fill="#eef5f5" stroke="#568181"/><text x="340.0" y="214.5" text-anchor="middle" font-size="14" fill="#263442">Document aggregation</text><text x="340.0" y="231.5" text-anchor="middle" font-size="12" fill="#263442">10–20 files</text><path d="M340 242 L340 256" fill="none" stroke="#64748b" stroke-width="1.4"/><rect x="205.0" y="256" width="270" height="48" rx="5" fill="#eef5f5" stroke="#568181"/><text x="340.0" y="276.5" text-anchor="middle" font-size="14" fill="#263442">Semantic snippet extraction</text><text x="340.0" y="293.5" text-anchor="middle" font-size="12" fill="#263442">5 visible files</text></svg><figcaption>Multistage retrieval funnel. Quantidades ilustrativas e ajustáveis dinamicamente conforme hardware, consulta e corpus.</figcaption></figure>
+
+<p>Há ainda a possibilidade de utilizar <strong>early exiting</strong> ou adaptive reranking. Por exemplo, quando a busca inicial encontra um arquivo com nome exatamente correspondente à consulta, talvez nem seja necessário executar o cross-encoder. Consultas conceituais e ambíguas, por outro lado, receberiam um orçamento computacional maior.</p>
+<p>Essa capacidade de adaptar o custo da busca à sua dificuldade seria um excelente diferencial tecnológico.</p>
+<h2 id="sec-9">8. Diferença no pruner</h2>
+<p>São praticamente duas classes diferentes de componentes.</p>
+<table>
+<thead>
+<tr>
+  <th>Característica</th>
+  <th>RAG pruner</th>
+  <th>File Search pruner</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Consumidor</td>
+  <td>LLM</td>
+  <td>Ser humano</td>
+</tr>
+<tr>
+  <td>Unidade de remoção</td>
+  <td>Tokens, frases ou chunks</td>
+  <td>Frases e passagens</td>
+</tr>
+<tr>
+  <td>Legibilidade</td>
+  <td>Secundária</td>
+  <td>Fundamental</td>
+</tr>
+<tr>
+  <td>Preservação gramatical</td>
+  <td>Opcional</td>
+  <td>Fundamental</td>
+</tr>
+<tr>
+  <td>Compressão</td>
+  <td>Objetivo principal</td>
+  <td>Objetivo secundário</td>
+</tr>
+<tr>
+  <td>Highlighting</td>
+  <td>Dispensável</td>
+  <td>Muito importante</td>
+</tr>
+<tr>
+  <td>Source offsets</td>
+  <td>Úteis</td>
+  <td>Essenciais</td>
+</tr>
+<tr>
+  <td>Context budget</td>
+  <td>Definido em tokens</td>
+  <td>Definido pela interface</td>
+</tr>
+<tr>
+  <td>Saída</td>
+  <td>Contexto comprimido</td>
+  <td>Trechos originais relevantes</td>
+</tr>
+</tbody>
+</table>
+<p>Para o buscador, o termo <strong>Query-Aware Extractive Snippet Engine</strong> é mais adequado do que simplesmente <em>context pruner</em>.</p>
+<p>Sua função não seria resumir nem reescrever o documento, mas localizar as melhores evidências dentro dele, preservando suas posições originais. Isso permite abrir o arquivo diretamente na página, linha ou seção em que a informação foi encontrada, quando o formato do arquivo e o visualizador permitirem.</p>
+<h2 id="sec-10">9. Diferença na escolha do banco vetorial</h2>
+<p>O perfil de workload também é diferente.</p>
+<table>
+<thead>
+<tr>
+  <th>Característica</th>
+  <th>File Search</th>
+  <th>RAG tradicional</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Deployment</td>
+  <td>Desktop embedded</td>
+  <td>Server ou embedded</td>
+</tr>
+<tr>
+  <td>Concorrência</td>
+  <td>Geralmente um usuário</td>
+  <td>Potencialmente muitos usuários</td>
+</tr>
+<tr>
+  <td>Escritas</td>
+  <td>Frequentes e pequenas</td>
+  <td>Frequentemente em batches</td>
+</tr>
+<tr>
+  <td>Updates</td>
+  <td>Orientados por eventos</td>
+  <td>Orientados por ingestão</td>
+</tr>
+<tr>
+  <td>Deletes</td>
+  <td>Frequentes</td>
+  <td>Dependentes da base</td>
+</tr>
+<tr>
+  <td>Metadata filters</td>
+  <td>Muito frequentes</td>
+  <td>Dependentes da aplicação</td>
+</tr>
+<tr>
+  <td>Cold startup</td>
+  <td>Crítico</td>
+  <td>Menos crítico</td>
+</tr>
+<tr>
+  <td>RAM footprint</td>
+  <td>Crítico</td>
+  <td>Dependente da infraestrutura</td>
+</tr>
+<tr>
+  <td>Background compaction</td>
+  <td>Não pode prejudicar a UI</td>
+  <td>Geralmente mais tolerável</td>
+</tr>
+<tr>
+  <td>Distribuição</td>
+  <td>Dispensável</td>
+  <td>Pode ser necessária</td>
+</tr>
+</tbody>
+</table>
+<p>Por isso, o banco vetorial ideal para RAGFlow não é necessariamente o banco vetorial ideal para um produto semelhante ao Gety.</p>
+<p>Para file search, é importante dar maior peso aos seguintes aspectos:</p>
+<ul>
+<li>Embedded Rust/C++ integration.</li>
+<li>Memory-mapped indexes.</li>
+<li>Fast incremental inserts and deletes.</li>
+<li>SIMD-accelerated distance computation.</li>
+<li>Scalar e binary quantization.</li>
+<li>Metadata pre-filtering eficiente.</li>
+<li>Persistência robusta e recuperação após falhas.</li>
+<li>Baixo impacto de compaction durante buscas.</li>
+<li>Inicialização rápida.</li>
+</ul>
+<p>O benchmark relevante não é apenas quantos QPS o banco consegue atingir, mas sua latência enquanto o índice está sendo continuamente atualizado.</p>
+<h2 id="sec-11">10. O que não importar de um RAG SOTA</h2>
+<p>Existem várias técnicas avançadas de RAG desnecessárias para esse produto, pelo menos inicialmente.</p>
+<table>
+<thead>
+<tr>
+  <th>Técnica</th>
+  <th>Utilidade para File Search</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>GraphRAG</td>
+  <td>Baixa</td>
+</tr>
+<tr>
+  <td>RAPTOR</td>
+  <td>Baixa a moderada</td>
+</tr>
+<tr>
+  <td>HyDE</td>
+  <td>Baixa para busca instantânea</td>
+</tr>
+<tr>
+  <td>Agentic RAG</td>
+  <td>Desnecessária</td>
+</tr>
+<tr>
+  <td>Self-RAG</td>
+  <td>Desnecessária</td>
+</tr>
+<tr>
+  <td>Corrective RAG</td>
+  <td>Desnecessária como pipeline generativa</td>
+</tr>
+<tr>
+  <td>Multi-hop reasoning</td>
+  <td>Desnecessária inicialmente</td>
+</tr>
+<tr>
+  <td>LLM-based query rewriting</td>
+  <td>Custo geralmente injustificado</td>
+</tr>
+<tr>
+  <td>LLM-generated contextual chunks</td>
+  <td>Potencialmente útil, mas caro</td>
+</tr>
+<tr>
+  <td>Knowledge graph construction</td>
+  <td>Geralmente desnecessária</td>
+</tr>
+<tr>
+  <td>Prompt compression</td>
+  <td>Desnecessária</td>
+</tr>
+<tr>
+  <td>Answer synthesis</td>
+  <td>Fora do escopo</td>
+</tr>
+<tr>
+  <td>Hallucination detection</td>
+  <td>Fora do escopo</td>
+</tr>
+<tr>
+  <td>Conversation memory</td>
+  <td>Fora do escopo</td>
+</tr>
+</tbody>
+</table>
+<p>Em contrapartida, algumas técnicas de recuperação modernas são extremamente interessantes:</p>
+<table>
+<thead>
+<tr>
+  <th>Técnica</th>
+  <th>Utilidade</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Dense retrieval</td>
+  <td>Essencial</td>
+</tr>
+<tr>
+  <td>Learned sparse retrieval</td>
+  <td>Alta</td>
+</tr>
+<tr>
+  <td>BM25</td>
+  <td>Essencial</td>
+</tr>
+<tr>
+  <td>Reciprocal Rank Fusion</td>
+  <td>Alta</td>
+</tr>
+<tr>
+  <td>Cross-encoder reranking</td>
+  <td>Muito alta</td>
+</tr>
+<tr>
+  <td>Late interaction — ColBERT-like</td>
+  <td>Potencialmente muito alta</td>
+</tr>
+<tr>
+  <td>Matryoshka embeddings</td>
+  <td>Muito alta</td>
+</tr>
+<tr>
+  <td>Hierarchical retrieval</td>
+  <td>Alta</td>
+</tr>
+<tr>
+  <td>Quantized ANN</td>
+  <td>Muito alta</td>
+</tr>
+<tr>
+  <td>Semantic passage extraction</td>
+  <td>Muito alta</td>
+</tr>
+<tr>
+  <td>Adaptive candidate selection</td>
+  <td>Muito alta</td>
+</tr>
+<tr>
+  <td>Document-level ranking</td>
+  <td>Essencial</td>
+</tr>
+<tr>
+  <td>Incremental embedding reuse</td>
+  <td>Essencial</td>
+</tr>
+</tbody>
+</table>
+<h2 id="sec-12">11. Avaliação: como demonstrar que o buscador é SOTA?</h2>
+<p>Não utilizaria benchmarks tradicionais de RAG, como métricas de faithfulness, answer relevancy ou answer correctness, pois não existe resposta gerada. A recomendação é construir uma suíte específica de avaliação de <strong>Semantic Desktop Search</strong>.</p>
+<table>
+<thead>
+<tr>
+  <th>Categoria</th>
+  <th>Métricas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Document retrieval</td>
+  <td>nDCG@10, MRR@10, Recall@K</td>
+</tr>
+<tr>
+  <td>Passage retrieval</td>
+  <td>Passage Recall@K, passage nDCG</td>
+</tr>
+<tr>
+  <td>Snippet extraction</td>
+  <td>Precision, Recall, F1 sobre trechos anotados</td>
+</tr>
+<tr>
+  <td>Search latency</td>
+  <td>p50, p95, p99</td>
+</tr>
+<tr>
+  <td>Indexing speed</td>
+  <td>MB/s, files/s, chunks/s</td>
+</tr>
+<tr>
+  <td>Incremental updates</td>
+  <td>Tempo até o arquivo tornar-se pesquisável</td>
+</tr>
+<tr>
+  <td>Index freshness</td>
+  <td>Percentual de documentos corretamente atualizados</td>
+</tr>
+<tr>
+  <td>Resource consumption</td>
+  <td>RAM, VRAM, CPU, disk usage</td>
+</tr>
+<tr>
+  <td>ANN quality</td>
+  <td>Recall em relação à busca exata</td>
+</tr>
+<tr>
+  <td>Search diversity</td>
+  <td>Quantidade de documentos distintos relevantes</td>
+</tr>
+<tr>
+  <td>Startup</td>
+  <td>Cold start e warm start</td>
+</tr>
+</tbody>
+</table>
+<p>Também é importante criar categorias de consultas específicas:</p>
+<table>
+<thead>
+<tr>
+  <th>Consulta</th>
+  <th>Exemplo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Known-item search</td>
+  <td>Encontrar um arquivo específico cujo nome foi esquecido</td>
+</tr>
+<tr>
+  <td>Conceptual search</td>
+  <td>Documentos que discutem indução eletromagnética</td>
+</tr>
+<tr>
+  <td>Exact identifier</td>
+  <td>Uma chave UUID ou código de produto</td>
+</tr>
+<tr>
+  <td>Cross-language search</td>
+  <td>Consulta em português, documento em inglês</td>
+</tr>
+<tr>
+  <td>Needle-in-a-haystack</td>
+  <td>Encontrar um parágrafo em um livro de 1.500 páginas</td>
+</tr>
+<tr>
+  <td>Exploratory search</td>
+  <td>Encontrar documentos sobre determinado assunto</td>
+</tr>
+<tr>
+  <td>Mixed search</td>
+  <td>Conceito semântico combinado com extensão e data</td>
+</tr>
+<tr>
+  <td>Code search</td>
+  <td>Encontrar implementações de determinada funcionalidade</td>
+</tr>
+</tbody>
+</table>
+<p>Um benchmark puramente baseado em question answering não representa adequadamente esses casos de uso.</p>
+<h2 id="sec-13">12. Arquitetura ideal proposta</h2>
+<p>O núcleo do software seria um <strong>High-Performance Local Neural Retrieval Engine</strong>, dividido em cinco subsistemas independentes.</p>
+<figure><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 333" role="img" aria-label="Cinco subsistemas independentes propostos para um motor de recuperação neural local."><defs><marker id="arrow680333" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0 0L7 3L0 6Z" fill="#64748b"/></marker></defs><rect x="65" y="6" width="550" height="52" rx="5" fill="#f5f6f8" stroke="#a7afb9"/><text x="340.0" y="28.5" text-anchor="middle" font-size="14" fill="#263442">01 — Filesystem Intelligence</text><text x="340.0" y="45.5" text-anchor="middle" font-size="12" fill="#263442">Scanning · Watching · Change detection</text><path d="M340 58 L340 72" fill="none" stroke="#64748b" stroke-width="1.4"/><rect x="65" y="72" width="550" height="52" rx="5" fill="#f5f6f8" stroke="#a7afb9"/><text x="340.0" y="94.5" text-anchor="middle" font-size="14" fill="#263442">02 — Document Intelligence</text><text x="340.0" y="111.5" text-anchor="middle" font-size="12" fill="#263442">Parsing · OCR · Chunking · Source offsets</text><path d="M340 124 L340 138" fill="none" stroke="#64748b" stroke-width="1.4"/><rect x="65" y="138" width="550" height="52" rx="5" fill="#f5f6f8" stroke="#a7afb9"/><text x="340.0" y="160.5" text-anchor="middle" font-size="14" fill="#263442">03 — Indexing Engine</text><text x="340.0" y="177.5" text-anchor="middle" font-size="12" fill="#263442">Dense · Sparse · BM25 · Metadata</text><path d="M340 190 L340 204" fill="none" stroke="#64748b" stroke-width="1.4"/><rect x="65" y="204" width="550" height="52" rx="5" fill="#eef5f5" stroke="#568181"/><text x="340.0" y="226.5" text-anchor="middle" font-size="14" fill="#263442">04 — Neural Retrieval Engine</text><text x="340.0" y="243.5" text-anchor="middle" font-size="12" fill="#263442">ANN · Fusion · Reranking · Document ranking</text><path d="M340 256 L340 270" fill="none" stroke="#64748b" stroke-width="1.4"/><rect x="65" y="270" width="550" height="52" rx="5" fill="#eef5f5" stroke="#568181"/><text x="340.0" y="292.5" text-anchor="middle" font-size="14" fill="#263442">05 — Semantic Presentation Engine</text><text x="340.0" y="309.5" text-anchor="middle" font-size="12" fill="#263442">Extractive snippets · Highlights · Navigation</text></svg><figcaption>Cinco subsistemas independentes propostos para um motor de recuperação neural local.</figcaption></figure>
+
+<p>O núcleo de retrieval poderia ser uma biblioteca Rust independente da interface gráfica. Isso permitiria executar benchmarks diretamente sobre o motor de busca, sem interferência do frontend ou do WebView.</p>
+<p>Não seria necessário criar um servidor HTTP, framework de agentes ou infraestrutura de RAG.</p>
+<h2 id="sec-14">13. Referências conceituais mais adequadas que RAGFlow</h2>
+<p>Para estudar a arquitetura desse produto, as seguintes referências são particularmente relevantes:</p>
+<table>
+<thead>
+<tr>
+  <th>Projeto / tecnologia</th>
+  <th>O que estudar</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><a href="https://www.voidtools.com/">Everything</a></td>
+  <td>Filesystem indexing e instant search</td>
+</tr>
+<tr>
+  <td><a href="https://lucene.apache.org/">Apache Lucene</a></td>
+  <td>Information retrieval e document ranking</td>
+</tr>
+<tr>
+  <td><a href="https://github.com/quickwit-oss/tantivy">Tantivy</a></td>
+  <td>Full-text search embedded em Rust</td>
+</tr>
+<tr>
+  <td><a href="https://vespa.ai/">Vespa</a></td>
+  <td>Multistage ranking e hybrid retrieval</td>
+</tr>
+<tr>
+  <td><a href="https://github.com/stanford-futuredata/ColBERT">ColBERT</a></td>
+  <td>Late-interaction retrieval</td>
+</tr>
+<tr>
+  <td><a href="https://github.com/unum-cloud/usearch">USearch</a></td>
+  <td>ANN de alto desempenho</td>
+</tr>
+<tr>
+  <td><a href="https://github.com/lancedb/lancedb">LanceDB</a></td>
+  <td>Embedded multimodal indexing</td>
+</tr>
+<tr>
+  <td><a href="https://github.com/beir-cellar/beir">BEIR</a></td>
+  <td>Avaliação de retrieval</td>
+</tr>
+<tr>
+  <td><a href="https://github.com/embeddings-benchmark/mteb">MTEB</a></td>
+  <td>Avaliação de embeddings</td>
+</tr>
+</tbody>
+</table>
+<p>Essas referências são mais diretamente relacionadas aos problemas de engenharia que precisam ser resolvidos do que frameworks de orquestração RAG.</p>
+<h2 id="sec-15">Conclusão</h2>
+<p><strong>RAG SOTA = Retrieval + Context Engineering + Generation.</strong></p>
+<p><strong>Semantic File Search SOTA = Filesystem Intelligence + Neural Information Retrieval + Semantic Presentation.</strong></p>
+<p>Os dois sistemas podem compartilhar exatamente os mesmos modelos de embeddings, rerankers e índices vetoriais. Entretanto, a forma de organizar e otimizar esses componentes deveria ser substancialmente diferente.</p>
+<p>Não desenvolveria o produto como um RAG simplificado ou um RAGFlow sem chatbot. Desenvolveria um motor de busca especializado, utilizando técnicas modernas de neural information retrieval.</p>
+<p>A ambição tecnológica seria combinar:</p>
+<ul>
+<li>A velocidade e transparência de indexação do Everything.</li>
+<li>A maturidade de recuperação de informação do Lucene.</li>
+<li>A qualidade semântica dos melhores modelos neurais de retrieval.</li>
+<li>A eficiência computacional de bancos vetoriais embedded.</li>
+<li>A precisão de um mecanismo de extração semântica de passagens.</li>
+</ul>
+<p>Essa é uma categoria de software com identidade própria. E, ao contrário de um RAG tradicional, <strong>cada milissegundo economizado no retrieval contribui diretamente para a experiência final do usuário</strong>, pois a busca em si é o produto.</p>
+<p><strong>Ressalva:</strong> as arquiteturas propostas são recomendações de engenharia, não uma descrição dos algoritmos proprietários do Gety. A classificação SOTA só poderia ser sustentada após benchmarks comparativos reproduzíveis. Todos os scores, tamanhos de chunk, quantidades de candidatos e relações qualidade-latência ilustrados são conceituais, não resultados de medições.</p>
+<h3>Documentação dos produtos citados</h3>
+<ul>
+<li><a href="https://gety.ai">Gety — website oficial</a> e <a href="https://docs.gety.ai/">documentação</a>.</li>
+<li><a href="https://github.com/infiniflow/ragflow">RAGFlow — repositório oficial</a> e <a href="https://ragflow.io/docs/">documentação</a>.</li>
+</ul>
+<p><em>Relatório derivado da análise anterior, sem nova pesquisa independente ou execução de benchmarks. Os links permitem consultar a documentação original dos projetos.</em></p>
+<footer>Relatório técnico · 26 de novembro de 2026</footer></main><script>const input=document.getElementById('alpha'),out=document.getElementById('alpha-value'),tbody=document.getElementById('ranking');const docs=[['Textbook.pdf',[.96,.72,.61]],['Report.pdf',[.92,.90,.88]],['Paper.pdf',[.94,.83,.79]]];const fmt=(v,n)=>v.toFixed(n).replace('.',',');function rank(){const a=Number(input.value);out.textContent=fmt(a,2);tbody.replaceChildren();docs.map(([name,values])=>({name,values,score:a*Math.max(...values)+(1-a)*values.reduce((p,c)=>p+c,0)/values.length})).sort((x,y)=>y.score-x.score).forEach(d=>{const tr=document.createElement('tr');[d.name,d.values.map(v=>fmt(v,2)).join(' · '),fmt(d.score,3)].forEach(s=>{const td=document.createElement('td');td.textContent=s;tr.appendChild(td)});tbody.appendChild(tr)})}input.addEventListener('input',rank);rank();</script></body></html>

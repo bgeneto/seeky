@@ -8,7 +8,9 @@ documentation.
 | Document | Purpose |
 |---|---|
 | [`plans/seeky-implementation-plan.md`](plans/seeky-implementation-plan.md) | Active implementation plan, milestones, architecture, targets |
-| [`product/seeky-scope.md`](product/seeky-scope.md) | Product scope and explicit non-goals |
+| [`product/seeky-product-decisions.md`](product/seeky-product-decisions.md) | Accepted license, distribution, UI, model, and retrieval decisions |
+| [`product/seeky-scope.md`](product/seeky-scope.md) | English product scope and non-goals |
+| [`architecture/README.md`](architecture/README.md) | Target retrieval engine, model strategy, slim provisioning |
 | [`decisions/seeky-adrs.md`](decisions/seeky-adrs.md) | Architecture decisions for the shipped Rust/Tauri implementation |
 | [`validation/seeky-poc-validation.md`](validation/seeky-poc-validation.md) | Build, test, runtime, watcher, and backend evidence |
 

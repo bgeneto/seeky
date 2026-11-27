@@ -1,12 +1,23 @@
 # Notice and scope
 
+Seeky source code is licensed under the **MIT License** (see [`LICENSE`](LICENSE)).
 Seeky is an independent local search implementation informed by reverse
 engineering of the installed Gety application. The repository contains research
-notes, a clean-room Rust/Tauri implementation, UI captures, and the published
-`gety-embed-v0` OpenVINO export used by the optional NPU path.
+notes, a clean-room Rust/Tauri implementation, UI captures, and a temporary
+OpenVINO export used during PoC validation.
 
 It does **not** contain Gety source code, Gety binaries, private keys, or Gety's
 encrypted OCR weights.
+
+## Distribution model
+
+The target product ships as a slim application. Runtimes, model weights, and
+native libraries are downloaded on first run from the public seeky Cloudflare R2
+bucket, verified, cached, and used offline afterward. No account, activation, or
+commercial license key is required.
+
+The current PoC still uses a local Gety installation and a temporary bundled
+OpenVINO IR. Those are transitional and are removed by the slim-setup milestone.
 
 ## What was inspected
 
@@ -25,9 +36,12 @@ encrypted OCR weights.
   or redistributed by Seeky.
 - **Qwen3-Embedding-0.6B / Qwen3-Reranker-0.6B:** Apache-2.0 per their model
   cards; not bundled in this repository.
-- **Bundled OpenVINO IR:** tracked with Git LFS under
-  `apps/seeky/src-tauri/resources/models/`. Verify the model license before
-  publishing installers or redistributing it.
+- **OpenVINO IR (current PoC):** temporarily tracked with Git LFS under
+  `apps/seeky/src-tauri/resources/models/`. The target slim build downloads it
+  from R2 and removes the bundled copy. Verify the model license before
+  publishing or redistributing it.
+- **Downloaded runtimes and models:** each R2 asset carries license/notice
+  metadata. Third-party terms must be reviewed before publication.
 - **Screenshots:** `docs/assets/screenshots/gety/` are user-provided and may
   contain local paths or file names. Review and redact before publishing.
   `docs/assets/screenshots/seeky/` are captured from the demo corpus.
