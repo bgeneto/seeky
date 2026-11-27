@@ -18,6 +18,12 @@ roadmap (§6), with the date.
 
 ### Changed
 
+- Proposed ADR-0025: the execution provider is chosen automatically per
+  workload (measured, power-aware, never a fixed order); the model is never
+  chosen automatically. Adds a temporary, user-started "Full speed" indexing
+  mode and an opt-in GPU quality tier (reranker first, embedder only with
+  CPU query fallback). Recorded in a partial SPEC-0007 draft (governor
+  modes) and in SPEC-0014 §7.3 as forward decisions for UI v2.
 - Candidate registry: the third-party ONNX exports of Qwen3-Embedding-0.6B
   and Qwen3-Reranker-0.6B (n24q02m) are recorded as as-deployed variants of
   the existing ceiling entries; jina-embeddings-v5-text-nano is recorded as

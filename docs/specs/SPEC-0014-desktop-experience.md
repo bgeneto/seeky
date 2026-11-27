@@ -48,9 +48,9 @@ or filesystem behavior and performs no network request.
   | Work package | Deferred scope | Spec version |
   |---|---|---|
   | WP-7.3 | Progressive results, stable reordering, keyboard-first result navigation, and instant cancellation | v2 |
-  | WP-7.4 | Folders coverage, health, pause/resume, and exclusions redesign | v2 |
+  | WP-7.4 | Folders coverage, health, pause/resume, and exclusions redesign, including the semantic-indexing status with Pause and the temporary Full speed control (§7.3, ADR-0025) | v2 |
   | WP-7.5 | Retrieval-backed folder/type/date/size filters | v2 |
-  | WP-7.6 | Full Settings and advanced diagnostics, including the ADR-0024 “Index source code” control and path redaction | v2 |
+  | WP-7.6 | Full Settings and advanced diagnostics, including the ADR-0024 “Index source code” control, path redaction, the `Auto`/`CPU`/per-provider override, and the opt-in GPU quality tier entry (§7.3, ADR-0025) | v2 |
   | WP-7.7 | Preview highlights and opening at a locator | v2 |
   | WP-7.8 | Full accessibility pass, React component tests with mocked IPC, and WebDriver E2E | v2 |
   | WP-7.9 | Strict Content Security Policy | v2 |
@@ -766,6 +766,42 @@ mixing both message syntaxes.
 | Hidden-native-window initialization could fail or delay first paint | Always show in the fallback path, use no network/polling, and test native rejection; record startup/size impact in the implementation PR. | No |
 | Translation expansion or a new token pair regresses accessibility | Mandatory two-locale/two-theme manual matrix and exhaustive declared contrast pair matrix; WP-7.8 adds component/E2E coverage. | No |
 
+### 7.3 Forward decisions for v2 (not v1 requirements)
+
+Recorded so v2 starts from them; v1 must not implement them (R16). They
+follow [ADR-0025](../adr/0025-automatic-provider-opt-in-gpu-tier-full-speed.md)
+(Proposed) and the governor modes in
+[SPEC-0007](SPEC-0007-indexing-pipeline.md) §5.1.
+
+- **Full speed (WP-7.4).** Next to the semantic-indexing status, the UI
+  offers Pause and Full speed. Full speed is an action, not a stored
+  setting: it shows as active until the engine reports a return to the
+  default mode (backlog drained, user off, AC power lost, restart), and the
+  status line then reverts. While active on battery, the control says so.
+  The UI renders state only from the typed governor events (SPEC-0007-R8);
+  it never infers mode from strings.
+- **Labels describe indexing, not “AI”** (ADR-0012: no AI badges). Proposed
+  catalog entries, final keys set in v2:
+
+  | Proposed key | en | pt |
+  |---|---|---|
+  | `indexing.semantic.label` | “Semantic indexing” | “Indexação semântica” |
+  | `indexing.semantic.idle` | “Continues when idle” | “Continua quando ocioso” |
+  | `indexing.action.pause` / `indexing.action.resume` | “Pause” / “Resume” | “Pausar” / “Retomar” |
+  | `indexing.action.fullSpeed` | “Full speed” | “Velocidade máxima” |
+  | `indexing.fullSpeed.active` | “Full speed until done” | “Velocidade máxima até concluir” |
+  | `indexing.fullSpeed.onBattery` | “Full speed on battery” | “Velocidade máxima na bateria” |
+  | `indexing.fullSpeed.endedPowerLost` | “Back to normal speed: charger disconnected” | “Velocidade normal: carregador desconectado” |
+
+- **Provider override and GPU tier (WP-7.6).** Settings list `Auto`, `CPU`,
+  and each validated provider on the machine; `Auto` describes itself as
+  “fastest validated option for this computer” rather than naming a fixed
+  order. The opt-in GPU quality tier, when it exists, is offered at most
+  once after detection, dismissibly, and installed only after the user sees
+  its download size and any reindex cost. The current v1 strings
+  `settings.backend.cuda.*` describe the frozen PoC CUDA path and are
+  replaced in v2.
+
 There are no unresolved technical questions in this draft. H2 acceptance is the
 maintainer's gate for the recommendations and explicit v1 scope above; this
 file must remain **Draft** until that gate.
@@ -775,3 +811,4 @@ file must remain **Draft** until that gate.
 | Version | Date | Change |
 |---|---|---|
 | 0.1 | 2026-11-27 | Initial Draft for desktop experience v1 (WP-7.1 localization and WP-7.2 themes); WP-7.3–WP-7.9 deferred to later versions |
+| 0.1 | 2026-11-27 | Added §7.3 forward decisions for v2 (Full speed, indexing labels, provider override, opt-in GPU tier) from ADR-0025; no v1 requirement changed |

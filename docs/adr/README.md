@@ -47,3 +47,4 @@ Template: [`_template.md`](_template.md).
 | [0022](0022-permissive-license-gate.md) | Permissive-license gate for code, models, and data | Accepted |
 | [0023](0023-multimodal-ready-engine.md) | Multimodal-ready engine; visual retrieval as an optional, gated pack | Accepted |
 | [0024](0024-source-code-indexing-opt-in.md) | Source-code indexing is opt-in; source files are never opened directly | Accepted |
+| [0025](0025-automatic-provider-opt-in-gpu-tier-full-speed.md) | Automatic provider selection, opt-in GPU quality tier, and full-speed indexing (amends 0016) | Proposed |

@@ -71,7 +71,7 @@ Specs are written just-in-time, as the first task of their phase (see the
 | [SPEC-0004](SPEC-0004-sdc-corpus-and-judgments.md) | Seeky Desktop Corpus and relevance judgments (incl. the visual slice) | 1, 10 | WP-1.3, WP-1.4, WP-10.1 | Accepted (maintainer pre-approval in /goal) |
 | SPEC-0005 | Model manifest (incl. modalities and components), ONNX Runtime adapter, and bake-off toolchain | 2 | WP-2.1, WP-2.2, WP-2.13 | Not written |
 | SPEC-0006 | Storage, index backends, index generations, and embedding channels | 2, 3 | WP-2.4, WP-2.5, WP-2.13, WP-3.7 | Not written |
-| SPEC-0007 | Indexing pipeline: jobs, two-speed lanes, cache, reconcile, governor | 3 | WP-3.1, WP-3.2, WP-3.3, WP-3.6 | Not written |
+| [SPEC-0007](SPEC-0007-indexing-pipeline.md) | Indexing pipeline: jobs, two-speed lanes, cache, reconcile, governor | 3 | WP-3.1, WP-3.2, WP-3.3, WP-3.6 | Draft (partial: governor modes, ADR-0025) |
 | SPEC-0008 | Document extraction, language ID, and chunking | 3 | WP-3.4, WP-3.5, WP-3.9 | Not written |
 | SPEC-0009 | OCR asset pack (CPU default tier, optional GPU pack) | 2, 3 | WP-2.11, WP-3.8 | Not written |
 | SPEC-0010 | Ranking pipeline: query analysis to diversity | 4 | WP-4.1, WP-4.2, WP-4.4–WP-4.9 | Not written |
