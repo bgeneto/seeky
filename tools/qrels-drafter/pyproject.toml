@@ -1,0 +1,14 @@
+[project]
+name = "qrels-drafter"
+version = "0.1.0"
+description = "Offline draft query and candidate-judgment tooling for SDC (development only)"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [{ name = "Seeky contributors" }]
+dependencies = []
+
+# Intentionally no build-system: the tool is used from the repository with
+# PYTHONPATH=tools/qrels-drafter. It never ships, is never imported by an
+# engine crate, and its dependencies are the Python standard library plus the
+# llama.cpp binary recorded in NOTICE.md.
