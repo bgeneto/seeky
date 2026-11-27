@@ -1,0 +1,15 @@
+Termination
+
+Contract reference: CT-2020-00017.
+
+The technical annexes describe service levels and escalation procedures.
+
+The parties acknowledge that information exchanged under this agreement is confidential.
+
+This document is the complete agreement and supersedes earlier communications.
+
+Governing law
+
+Any delay beyond ten business days may trigger a contractual penalty.
+
+A monthly incident and response-time report.

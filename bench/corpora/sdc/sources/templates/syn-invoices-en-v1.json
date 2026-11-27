@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "template_id": "syn-invoices-en-v1",
+  "kind": "text",
+  "language": "en-US",
+  "domain": "invoices-en",
+  "folder": "invoices",
+  "title_forms": [
+    "Service Invoice — {client}",
+    "Debit Note — {topic}",
+    "Delivery Receipt — {client}"
+  ],
+  "identifier": {"kind": "invoice", "pattern": "INV-{year}-{seq:06d}"},
+  "identifier_sentence": "Tax document number: {id}.",
+  "entity_pools": {
+    "client": ["Client Alpha", "Client Beta", "Gamma Group", "Delta Cooperative", "Epsilon Institute"],
+    "supplier": ["Horizon Supplier", "Meridian Services", "Atlantic Technology"],
+    "city": ["Boston", "Seattle", "Austin", "Denver", "Portland"],
+    "topic": ["process consulting", "software licensing", "material transport", "energy audit", "technical support"]
+  },
+  "headings": [
+    "Document details",
+    "Service description",
+    "Amounts and taxes",
+    "Payment terms",
+    "Reconciliation elements"
+  ],
+  "paragraphs": [
+    "Document issued by {supplier} in favour of {client}, dated {date}.",
+    "The {topic} services were delivered at the {city} site during the billed period.",
+    "The base amount is {amount} {currency}, plus tax where legally due.",
+    "Payment is due by bank transfer within thirty days of issue.",
+    "The transfer confirmation must quote reference {id} for automatic reconciliation.",
+    "{supplier} confirms that the services were delivered in accordance with the approved proposal.",
+    "Any amount discrepancy must be reported in writing within eight days.",
+    "This document serves as a receipt once full settlement is confirmed.",
+    "Billing details are fictitious and exist only for search-engine evaluation.",
+    "The internal project reference is {uuid}.",
+    "The associated integration error code is {error_code}, with no effect on the billed amount.",
+    "The executive summary reports a seven percent reduction in operating costs."
+  ],
+  "list_items": [
+    "Consulting hours with a short description.",
+    "Documented travel and subsistence.",
+    "Annual licences and support renewals.",
+    "Consumable materials used in the intervention.",
+    "Commercial discounts agreed in writing."
+  ],
+  "table_columns": ["Item", "Description", "Quantity", "Amount"],
+  "table_rows": [
+    ["{id}-01", "{topic}", "12", "{amount}"],
+    ["{id}-02", "Travel to {city}", "4", "{amount}"],
+    ["{id}-03", "Annual licence", "1", "{amount}"],
+    ["{id}-04", "Additional support", "8", "{amount}"],
+    ["{id}-05", "Consumable material", "20", "{amount}"],
+    ["{id}-06", "Contract discount", "1", "-{amount}"]
+  ],
+  "notes": "Synthetic English invoice template with reserved example identifiers."
+}

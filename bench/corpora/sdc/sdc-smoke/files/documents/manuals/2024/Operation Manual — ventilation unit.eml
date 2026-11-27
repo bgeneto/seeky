@@ -1,0 +1,48 @@
+From: "SDC Synthetic Sender" <sender@example.com>
+To: "SDC Synthetic Recipient" <recipient@example.org>
+Subject: Operation Manual — ventilation unit
+Date: Sat, 04 May 2019 09:11:30 GMT
+Message-ID: <74a882ff-a390-4164-9ed6-52a574b9ca57@example.invalid>
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="sdc-f23fd2484cb272125f981782"
+
+This is a multi-part message in MIME format.
+
+--sdc-f23fd2484cb272125f981782
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+Safety
+
+Controlled document code: MAN-2024-0025.
+
+Fasten the bracket to the wall with the supplied screws and check verticality with a level.
+
+The full serial number is recorded in the support system.
+
+If the indicator blinks red, read the troubleshooting section before restarting.
+
+Technical specifications
+
+Parts must be replaced by technicians authorised by Atlantic Technology.
+
+Run a complete operation after configuration.
+
+--sdc-f23fd2484cb272125f981782
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+<html><body>
+<h2>Safety</h2>
+<p>Controlled document code: MAN-2024-0025.</p>
+<p>Fasten the bracket to the wall with the supplied screws and check verticality with a level.</p>
+<p>The full serial number is recorded in the support system.</p>
+<p>If the indicator blinks red, read the troubleshooting section before restarting.</p>
+<h2>Technical specifications</h2>
+<p>Parts must be replaced by technicians authorised by Atlantic Technology.</p>
+<ul>
+<li>Run a complete operation after configuration.</li>
+</ul>
+</body></html>
+
+--sdc-f23fd2484cb272125f981782--

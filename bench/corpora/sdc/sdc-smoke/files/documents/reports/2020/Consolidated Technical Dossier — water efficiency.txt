@@ -1,0 +1,129 @@
+General context
+
+Annex B describes the data model and the validation rules applied.
+
+The equipment inventory was reconciled with accounting records at the end of the third quarter.
+
+Measurement uncertainty was estimated from three independent replicates per point.
+
+The risk analysis considers equipment failure, supplier unavailability, and extreme weather events.
+
+Data collection ran in weekly cycles with automatic validation for missing values and out-of-range readings.
+
+The communication plan provides monthly summary reports and one consolidated annual report.
+
+Availability indicators stayed above the contractual threshold in every month analysed.
+
+Future work includes extending the perimeter to two new sites and automating inventory reconciliation.
+
+The preventive maintenance plan was completed for ninety-four percent of scheduled interventions.
+
+Each cycle produces an immutable record that is compared with the previous cycle to detect abrupt changes.
+
+Year-on-year comparison should be read with care because the measurement perimeter changed.
+
+Variation between sites is explained mainly by differences in size and intensity of use.
+
+Results by domain are presented in normalised tables to allow direct comparison.
+
+The conclusions highlight the overall stability of indicators and the need for continued monitoring.
+
+Annex C presents the complete time series by domain and by site.
+
+Specific consumption per unit area fell consistently over the period.
+
+Conclusions
+
+Annex A lists the internal codes used throughout the document.
+
+The technical team documented every intervention, including component replacements and configuration adjustments.
+
+Local team training was reinforced with practical sessions on data recording and incident response.
+
+Corrective actions were recorded with a deadline, an owner, and completion evidence.
+
+Supporting documentation includes procedures, diagrams, and checklists used in the field.
+
+Sensitivity analysis shows that the results are robust to small changes in calibration parameters.
+
+All entities mentioned are fictitious and the values exist only for search-engine evaluation.
+
+Improvement opportunities were identified in the calibration of temperature and humidity sensors.
+
+The assessed perimeter covers seven sites across three districts, all identified by internal codes with no reference to individuals.
+
+For each risk, the team defined a mitigation measure, a tracking indicator, and a review interval.
+
+The monitoring system recorded three scheduled outages and no unplanned outage.
+
+The first section describes the institutional context and the programme objectives, including commitments made with partner organisations.
+
+Deviations above five percent were investigated individually and justified in the technical annex.
+
+The XT-4471 calibration protocol requires verification of three independent standards before each measurement series.
+
+The XT-4471 calibration protocol requires the compensation valve to be checked against the reference pressure gauge before any official measurement, as recorded in the metrology control page.
+
+Annex B describes the data model and the validation rules applied.
+
+The equipment inventory was reconciled with accounting records at the end of the third quarter.
+
+Measurement uncertainty was estimated from three independent replicates per point.
+
+The risk analysis considers equipment failure, supplier unavailability, and extreme weather events.
+
+Data collection ran in weekly cycles with automatic validation for missing values and out-of-range readings.
+
+The communication plan provides monthly summary reports and one consolidated annual report.
+
+Availability indicators stayed above the contractual threshold in every month analysed.
+
+Future work includes extending the perimeter to two new sites and automating inventory reconciliation.
+
+The preventive maintenance plan was completed for ninety-four percent of scheduled interventions.
+
+Each cycle produces an immutable record that is compared with the previous cycle to detect abrupt changes.
+
+Year-on-year comparison should be read with care because the measurement perimeter changed.
+
+Variation between sites is explained mainly by differences in size and intensity of use.
+
+Results by domain are presented in normalised tables to allow direct comparison.
+
+The conclusions highlight the overall stability of indicators and the need for continued monitoring.
+
+Annex C presents the complete time series by domain and by site.
+
+Specific consumption per unit area fell consistently over the period.
+
+Annex A lists the internal codes used throughout the document.
+
+The technical team documented every intervention, including component replacements and configuration adjustments.
+
+Local team training was reinforced with practical sessions on data recording and incident response.
+
+Corrective actions were recorded with a deadline, an owner, and completion evidence.
+
+Supporting documentation includes procedures, diagrams, and checklists used in the field.
+
+Sensitivity analysis shows that the results are robust to small changes in calibration parameters.
+
+All entities mentioned are fictitious and the values exist only for search-engine evaluation.
+
+Improvement opportunities were identified in the calibration of temperature and humidity sensors.
+
+The assessed perimeter covers seven sites across three districts, all identified by internal codes with no reference to individuals.
+
+For each risk, the team defined a mitigation measure, a tracking indicator, and a review interval.
+
+The monitoring system recorded three scheduled outages and no unplanned outage.
+
+The first section describes the institutional context and the programme objectives, including commitments made with partner organisations.
+
+Deviations above five percent were investigated individually and justified in the technical annex.
+
+Results by domain
+
+The XT-4471 calibration protocol requires verification of three independent standards before each measurement series.
+
+Annex B describes the data model and the validation rules applied.

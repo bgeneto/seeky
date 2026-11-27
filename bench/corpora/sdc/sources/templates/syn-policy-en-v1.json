@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "template_id": "syn-policy-en-v1",
+  "kind": "text",
+  "language": "en-US",
+  "domain": "policies-en",
+  "folder": "policies",
+  "title_forms": [
+    "Internal Information Security Policy — {year}",
+    "Good Practice Handbook — {topic}",
+    "Records Retention Standard — {client}"
+  ],
+  "identifier": {"kind": "policy", "pattern": "POL-{year}-{seq:04d}"},
+  "identifier_sentence": "Internal standard code: {id}.",
+  "entity_pools": {
+    "client": ["Client Alpha", "Gamma Group", "Epsilon Institute"],
+    "supplier": ["Horizon Supplier", "Meridian Services"],
+    "city": ["Boston", "Seattle", "Austin"],
+    "topic": ["information classification", "business continuity", "access management", "data protection", "digital archiving"]
+  },
+  "headings": [
+    "Scope",
+    "General principles",
+    "Information classification",
+    "Access management",
+    "Retention and disposal",
+    "Responsibilities",
+    "Policy review"
+  ],
+  "paragraphs": [
+    "This policy applies to every team handling {client} information at the {city} site.",
+    "Information is classified as public, internal, confidential, or restricted according to the impact of improper disclosure.",
+    "Access follows least privilege and is reviewed every quarter.",
+    "Access requests are recorded under {id} and approved by the area owner.",
+    "Digital records are retained for seven years unless a different legal period applies.",
+    "Disposal requires dual confirmation and produces an immutable audit record.",
+    "Backups are verified monthly through a restore test.",
+    "Any incident must be reported to the internal contact within twenty-four hours.",
+    "Annual training is mandatory for everyone with access to critical systems.",
+    "Error code {error_code} identifies an expired access request in the ticket system.",
+    "The compliance project reference is {uuid}.",
+    "External suppliers are bound by the same confidentiality obligations.",
+    "This standard is reviewed annually or after a material risk change.",
+    "Exceptions must be documented, justified, and approved by the responsible director."
+  ],
+  "list_items": [
+    "Name an owner for every document repository.",
+    "Record access and reviews in one central system.",
+    "Encrypt removable media with organisation-managed keys.",
+    "Test continuity plans at least once a year.",
+    "Delete temporary copies after the final record is validated."
+  ],
+  "table_columns": ["Class", "Example", "Retention", "Approval"],
+  "table_rows": [
+    ["Public", "Institutional announcements", "3 years", "{id}"],
+    ["Internal", "Meeting minutes", "5 years", "{id}"],
+    ["Confidential", "Supplier contracts", "10 years", "{id}"],
+    ["Restricted", "Audit credentials", "2 years", "{id}"],
+    ["Internal", "Performance reports", "5 years", "{id}"],
+    ["Confidential", "Continuity plans", "10 years", "{id}"]
+  ],
+  "notes": "Synthetic English information-policy template with fictitious entities."
+}

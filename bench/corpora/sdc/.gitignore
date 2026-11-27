@@ -1,0 +1,7 @@
+# Generated scale corpora are never committed (SPEC-0004-R5).
+sdc-s/
+sdc-m/
+extensions/
+.cache/
+*.tmp
+.sdc-*

@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "template_id": "syn-long-report-en-v1",
+  "kind": "long",
+  "language": "en-US",
+  "domain": "long-reports-en",
+  "folder": "reports",
+  "title_forms": [
+    "Annual Operations Report — {topic}",
+    "Design Statement — {client}",
+    "Consolidated Technical Dossier — {topic}"
+  ],
+  "identifier": {"kind": "report", "pattern": "LR-{year}-{seq:04d}"},
+  "identifier_sentence": "Dossier reference: {id}.",
+  "entity_pools": {
+    "client": ["Client Alpha", "Gamma Group", "Epsilon Institute"],
+    "supplier": ["Horizon Supplier", "Atlantic Technology"],
+    "city": ["Boston", "Seattle", "Austin"],
+    "topic": ["urban infrastructure", "collection conservation", "sensor networks", "water efficiency"]
+  },
+  "headings": [
+    "General context",
+    "Infrastructure description",
+    "Monitoring method",
+    "Results by domain",
+    "Risk analysis",
+    "Conclusions"
+  ],
+  "paragraphs": [
+    "This dossier consolidates the technical information produced during {year}.",
+    "The document follows the order of the operational domains defined in the annual plan.",
+    "All values are synthetic measurements and do not describe real facilities.",
+    "The programme-wide reference is {uuid}.",
+    "Error code {error_code} was observed during commissioning and has been resolved."
+  ],
+  "list_items": [
+    "Consolidate the monthly records into one file.",
+    "Validate readings against a second independent source.",
+    "Identify deviations above five percent.",
+    "Document the corrective actions taken."
+  ],
+  "table_columns": ["Domain", "Indicator", "Value", "Reference"],
+  "table_rows": [
+    ["Water", "Average consumption", "124", "{id}"],
+    ["Energy", "Average consumption", "318", "{id}"],
+    ["Waste", "Recovery rate", "67", "{id}"],
+    ["Mobility", "Average travel time", "23", "{id}"],
+    ["Air", "Average quality", "82", "{id}"],
+    ["Noise", "Average level", "54", "{id}"]
+  ],
+  "long_paragraphs": [
+    "The first section describes the institutional context and the programme objectives, including commitments made with partner organisations.",
+    "The assessed perimeter covers seven sites across three districts, all identified by internal codes with no reference to individuals.",
+    "Data collection ran in weekly cycles with automatic validation for missing values and out-of-range readings.",
+    "Each cycle produces an immutable record that is compared with the previous cycle to detect abrupt changes.",
+    "The technical team documented every intervention, including component replacements and configuration adjustments.",
+    "Availability indicators stayed above the contractual threshold in every month analysed.",
+    "Variation between sites is explained mainly by differences in size and intensity of use.",
+    "The monitoring system recorded three scheduled outages and no unplanned outage.",
+    "Sensitivity analysis shows that the results are robust to small changes in calibration parameters.",
+    "Specific consumption per unit area fell consistently over the period.",
+    "Year-on-year comparison should be read with care because the measurement perimeter changed.",
+    "Improvement opportunities were identified in the calibration of temperature and humidity sensors.",
+    "The preventive maintenance plan was completed for ninety-four percent of scheduled interventions.",
+    "Corrective actions were recorded with a deadline, an owner, and completion evidence.",
+    "The equipment inventory was reconciled with accounting records at the end of the third quarter.",
+    "Supporting documentation includes procedures, diagrams, and checklists used in the field.",
+    "Results by domain are presented in normalised tables to allow direct comparison.",
+    "Measurement uncertainty was estimated from three independent replicates per point.",
+    "Deviations above five percent were investigated individually and justified in the technical annex.",
+    "The risk analysis considers equipment failure, supplier unavailability, and extreme weather events.",
+    "For each risk, the team defined a mitigation measure, a tracking indicator, and a review interval.",
+    "The XT-4471 calibration protocol requires verification of three independent standards before each measurement series.",
+    "Local team training was reinforced with practical sessions on data recording and incident response.",
+    "The communication plan provides monthly summary reports and one consolidated annual report.",
+    "The conclusions highlight the overall stability of indicators and the need for continued monitoring.",
+    "Future work includes extending the perimeter to two new sites and automating inventory reconciliation.",
+    "Annex A lists the internal codes used throughout the document.",
+    "Annex B describes the data model and the validation rules applied.",
+    "Annex C presents the complete time series by domain and by site.",
+    "All entities mentioned are fictitious and the values exist only for search-engine evaluation."
+  ],
+  "needle": "The XT-4471 calibration protocol requires the compensation valve to be checked against the reference pressure gauge before any official measurement, as recorded in the metrology control page.",
+  "notes": "Synthetic English long report with a unique needle passage for needle-in-a-haystack queries."
+}

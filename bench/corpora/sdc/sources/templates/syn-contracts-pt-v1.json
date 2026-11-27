@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "template_id": "syn-contracts-pt-v1",
+  "kind": "text",
+  "language": "pt-BR",
+  "domain": "contracts-pt",
+  "folder": "contratos",
+  "title_forms": [
+    "Contrato de Prestação de Serviços — {client}",
+    "Aditivo ao Contrato de Manutenção — {client}",
+    "Acordo de Fornecimento — {topic}"
+  ],
+  "identifier": {"kind": "contract", "pattern": "CT-{year}-{seq:05d}"},
+  "identifier_sentence": "Referência contratual: {id}.",
+  "entity_pools": {
+    "client": ["Cliente Alfa", "Cliente Beta", "Grupo Gama", "Cooperativa Delta", "Instituto Épsilon"],
+    "supplier": ["Fornecedora Horizonte", "Serviços Meridiano", "Tecnologia Atlântica", "Oficina Central"],
+    "city": ["Lisboa", "Porto", "Coimbra", "Braga", "Faro"],
+    "topic": ["manutenção predial", "energia solar", "logística urbana", "gestão documental", "formação técnica"]
+  },
+  "headings": [
+    "Objeto do contrato",
+    "Prazo e renovação",
+    "Condições de pagamento",
+    "Obrigações das partes",
+    "Confidencialidade",
+    "Rescisão",
+    "Foro competente"
+  ],
+  "paragraphs": [
+    "A {client} contrata a {supplier} para a prestação de serviços de {topic} nas instalações de {city}.",
+    "O presente contrato produz efeitos a partir de {date} e tem a duração inicial de doze meses.",
+    "O valor global estimado é de {amount} {currency}, sujeito a retenção na fonte quando aplicável.",
+    "A renovação é automática por períodos trimestrais, salvo denúncia escrita com trinta dias de antecedência.",
+    "As faturas devem ser emitidas até ao quinto dia útil do mês seguinte à prestação do serviço.",
+    "A {supplier} compromete-se a manter uma equipa técnica certificada e um canal de apoio em dias úteis.",
+    "Qualquer atraso superior a dez dias úteis pode originar a aplicação de uma penalização contratual.",
+    "As partes reconhecem que a informação trocada no âmbito deste acordo é confidencial.",
+    "A rescisão por incumprimento exige notificação escrita e um prazo de cura de quinze dias.",
+    "O foro competente para resolver litígios é o tribunal da comarca de {city}.",
+    "Este documento constitui a versão integral do acordo e substitui comunicações anteriores.",
+    "Os anexos técnicos descrevem os níveis de serviço e os procedimentos de escalonamento.",
+    "A {client} designa um gestor de contrato responsável pela validação dos entregáveis.",
+    "Os preços podem ser revistos anualmente com base no índice de custos acordado entre as partes.",
+    "Cada pedido de trabalho extraordinário deve ser confirmado por escrito antes da execução."
+  ],
+  "list_items": [
+    "Inventário atualizado dos equipamentos abrangidos.",
+    "Plano de manutenção preventiva com calendário trimestral.",
+    "Relatório mensal de incidências e tempos de resposta.",
+    "Registo de acessos às instalações e às salas técnicas.",
+    "Procedimento de escalonamento para incidentes críticos."
+  ],
+  "table_columns": ["Referência", "Descrição", "Valor", "Data"],
+  "table_rows": [
+    ["{id}", "Serviço de {topic}", "{amount}", "{date}"],
+    ["{id}-A1", "Visita técnica inicial", "{amount}", "{date}"],
+    ["{id}-A2", "Manutenção preventiva trimestral", "{amount}", "{date}"],
+    ["{id}-A3", "Substituição de componentes", "{amount}", "{date}"],
+    ["{id}-A4", "Formação da equipa local", "{amount}", "{date}"],
+    ["{id}-A5", "Relatório anual de desempenho", "{amount}", "{date}"]
+  ],
+  "notes": "Synthetic Portuguese contract template. All entities and identifiers are fictitious."
+}

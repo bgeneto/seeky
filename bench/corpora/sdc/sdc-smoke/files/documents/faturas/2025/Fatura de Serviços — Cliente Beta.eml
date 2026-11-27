@@ -1,0 +1,57 @@
+From: "SDC Synthetic Sender" <sender@example.com>
+To: "SDC Synthetic Recipient" <recipient@example.org>
+Subject: Fatura de Serviços — Cliente Beta
+Date: Sat, 13 Apr 2019 03:23:59 GMT
+Message-ID: <7df19a38-b6b9-4baf-b304-873320797109@example.invalid>
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="sdc-0843455b86940877144987f6"
+
+This is a multi-part message in MIME format.
+
+--sdc-0843455b86940877144987f6
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+Consult the general index before printing this document.
+
+Dados do documento
+
+Número do documento fiscal: INV-2025-000063.
+
+Documento emitido por Serviços Meridiano a favor de Cliente Beta, com data de 2025-03-01.
+
+Os dados de faturação são fictícios e destinam-se apenas à avaliação do motor de busca.
+
+O comprovativo de transferência deve mencionar o número INV-2025-000063 para conciliação automática.
+
+Elementos de conferência
+
+O valor base é de 7510.38 EUR, acrescido de imposto quando legalmente devido.
+
+Qualquer divergência de valores deve ser comunicada por escrito no prazo de oito dias.
+
+Descontos comerciais acordados por escrito.
+
+This document does not replace specialised legal or technical advice.
+
+--sdc-0843455b86940877144987f6
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+<html><body>
+<p>Consult the general index before printing this document.</p>
+<h2>Dados do documento</h2>
+<p>Número do documento fiscal: INV-2025-000063.</p>
+<p>Documento emitido por Serviços Meridiano a favor de Cliente Beta, com data de 2025-03-01.</p>
+<p>Os dados de faturação são fictícios e destinam-se apenas à avaliação do motor de busca.</p>
+<p>O comprovativo de transferência deve mencionar o número INV-2025-000063 para conciliação automática.</p>
+<h2>Elementos de conferência</h2>
+<p>O valor base é de 7510.38 EUR, acrescido de imposto quando legalmente devido.</p>
+<p>Qualquer divergência de valores deve ser comunicada por escrito no prazo de oito dias.</p>
+<ul>
+<li>Descontos comerciais acordados por escrito.</li>
+</ul>
+<p>This document does not replace specialised legal or technical advice.</p>
+</body></html>
+
+--sdc-0843455b86940877144987f6--

@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "corpus_id": "sdc-m",
+  "source_set_ids": ["synthetic-office-v1"],
+  "default_seed": "sdc-s-v1",
+  "extends": "sdc-s",
+  "target_documents": 100000,
+  "target_passages": 1000000,
+  "max_committed_bytes": null,
+  "renderers": [
+    "pdf",
+    "scanned-pdf",
+    "scanned-image",
+    "docx",
+    "xlsx",
+    "pptx",
+    "odt",
+    "rtf",
+    "html",
+    "epub",
+    "eml",
+    "md",
+    "txt",
+    "code"
+  ],
+  "injection": {
+    "exact_byte_copies": 5000,
+    "exact_text_copies": 3500,
+    "scanned_variants": 1000,
+    "near_duplicate_documents": 1000,
+    "version_groups": 3000,
+    "boilerplate_documents": 16000
+  },
+  "scan_recipes": ["clean-150dpi-bilevel-png", "noise-skew-150dpi-bilevel-png"],
+  "clock_start": "2018-01-01T00:00:00Z",
+  "clock_end": "2025-12-31T23:59:59Z"
+}

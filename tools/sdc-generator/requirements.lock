@@ -1,0 +1,14 @@
+# SDC generator runtime dependencies
+#
+# Runtime dependency set: EMPTY.
+#
+# The generator and its tests use only the Python standard library (hashlib,
+# json, zipfile, zlib, xml.etree, email, http.server, unittest). There is no
+# package index access, no build backend, and nothing to hash-lock. The
+# renderer assets are licensed in ../../bench/corpora/sdc/renderers.lock.json.
+#
+# Python: >=3.12,<4
+# Last verified with: CPython 3.15.0 on Windows (development host)
+#
+# If a dependency is ever added, record the exact version and wheel/sdist hash
+# here and install with `pip install --require-hashes -r requirements.lock`.

@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "template_id": "syn-manuals-en-v1",
+  "kind": "text",
+  "language": "en-US",
+  "domain": "manuals-en",
+  "folder": "manuals",
+  "title_forms": [
+    "Operation Manual — {topic}",
+    "Installation Guide — {client}",
+    "Technical Procedure — {topic}"
+  ],
+  "identifier": {"kind": "manual", "pattern": "MAN-{year}-{seq:04d}"},
+  "identifier_sentence": "Controlled document code: {id}.",
+  "entity_pools": {
+    "client": ["Client Alpha", "Gamma Group", "Epsilon Institute"],
+    "supplier": ["Atlantic Technology", "Horizon Supplier"],
+    "city": ["Boston", "Seattle", "Austin", "Denver"],
+    "topic": ["heat pump", "ventilation unit", "records system", "workstation", "local network"]
+  },
+  "headings": [
+    "Before you begin",
+    "Step-by-step installation",
+    "Initial configuration",
+    "Troubleshooting",
+    "Periodic maintenance",
+    "Technical specifications",
+    "Safety"
+  ],
+  "paragraphs": [
+    "This manual covers installation and operation of the {topic} equipment at the {city} site.",
+    "Confirm that the package contains the power cable, the bracket, and the warranty documentation.",
+    "Switch off the power before opening any access panel.",
+    "Fasten the bracket to the wall with the supplied screws and check verticality with a level.",
+    "Connect the network cable to the marked port and wait until the status light is solid green.",
+    "Initial configuration takes about fifteen minutes and needs no additional tools.",
+    "If the indicator blinks red, read the troubleshooting section before restarting.",
+    "Error code {error_code} indicates a temporary communication failure with the server.",
+    "Clean the filters every three months or whenever the warning appears.",
+    "The equipment reference is {uuid} and appears on the side label.",
+    "Do not use aggressive solvents or spray water directly onto the components.",
+    "Parts must be replaced by technicians authorised by {supplier}.",
+    "Keep this manual with the equipment for future reference.",
+    "The full serial number is recorded in the support system."
+  ],
+  "list_items": [
+    "Check the mains voltage before powering on.",
+    "Confirm that all mounting screws are tight.",
+    "Label the network and power cables.",
+    "Run a complete operation after configuration.",
+    "Record the date of the first preventive maintenance."
+  ],
+  "table_columns": ["Step", "Action", "Duration", "Reference"],
+  "table_rows": [
+    ["1", "Unpack and inspect", "5 min", "{id}"],
+    ["2", "Fasten the bracket", "15 min", "{id}"],
+    ["3", "Connect power", "2 min", "{id}"],
+    ["4", "Configure the network", "10 min", "{id}"],
+    ["5", "Run the final test", "8 min", "{id}"],
+    ["6", "Record the installation", "3 min", "{id}"]
+  ],
+  "notes": "Synthetic English technical-manual template."
+}

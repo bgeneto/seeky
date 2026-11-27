@@ -1,0 +1,48 @@
+From: "SDC Synthetic Sender" <sender@example.com>
+To: "SDC Synthetic Recipient" <recipient@example.org>
+Subject: Notas de Investigação — recuperação de informação
+Date: Fri, 05 Mar 2021 13:19:32 GMT
+Message-ID: <46cf1f0d-ca6f-42e9-887d-fcc2b49f69b4@example.invalid>
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="sdc-056f5db859406e17fa5c7f48"
+
+This is a multi-part message in MIME format.
+
+--sdc-056f5db859406e17fa5c7f48
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+Resultados preliminares
+
+Identificador do relatório técnico: RT-2020-0037.
+
+Uma limitação importante é a curta duração do período de observação.
+
+Este relatório descreve um estudo exploratório sobre recuperação de informação realizado em Coimbra durante 2020.
+
+A equipa agradece a colaboração das unidades que disponibilizaram instalações.
+
+Resumo
+
+O objetivo principal é compreender como diferentes configurações afetam o desempenho observado em condições realistas.
+
+Reportar intervalos de confiança e não apenas médias.
+
+--sdc-056f5db859406e17fa5c7f48
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+<html><body>
+<h2>Resultados preliminares</h2>
+<p>Identificador do relatório técnico: RT-2020-0037.</p>
+<p>Uma limitação importante é a curta duração do período de observação.</p>
+<p>Este relatório descreve um estudo exploratório sobre recuperação de informação realizado em Coimbra durante 2020.</p>
+<p>A equipa agradece a colaboração das unidades que disponibilizaram instalações.</p>
+<h2>Resumo</h2>
+<p>O objetivo principal é compreender como diferentes configurações afetam o desempenho observado em condições realistas.</p>
+<ul>
+<li>Reportar intervalos de confiança e não apenas médias.</li>
+</ul>
+</body></html>
+
+--sdc-056f5db859406e17fa5c7f48--

@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "template_id": "syn-notes-fr-v1",
+  "kind": "text",
+  "language": "fr-FR",
+  "domain": "notes-fr",
+  "folder": "notes",
+  "title_forms": [
+    "Compte Rendu — {topic}",
+    "Note de Synthèse — {client}",
+    "Résumé Opérationnel — {topic}"
+  ],
+  "identifier": {"kind": "note", "pattern": "FR-{year}-{seq:04d}"},
+  "identifier_sentence": "Référence du document : {id}.",
+  "entity_pools": {
+    "client": ["Client Alpha", "Groupe Gamma", "Institut Épsilon"],
+    "supplier": ["Fournisseur Horizon", "Services Méridien"],
+    "city": ["Paris", "Lyon", "Nantes"],
+    "topic": ["gestion documentaire", "énergie solaire", "logistique urbaine", "formation interne"]
+  },
+  "headings": ["Objectif", "Points examinés", "Décisions", "Prochaines étapes"],
+  "paragraphs": [
+    "La réunion s'est tenue à {city} afin d'examiner l'avancement du projet de {topic}.",
+    "L'équipe confirme que le calendrier reste inchangé.",
+    "Un rapport mensuel présentant les indicateurs principaux sera préparé.",
+    "La référence interne du projet est {uuid}.",
+    "Le code d'incident {error_code} a été résolu pendant la séance.",
+    "Les données sont fictives et ne contiennent aucune information personnelle.",
+    "La prochaine revue est prévue le mois suivant.",
+    "Il est recommandé de consigner les décisions dans un registre commun."
+  ],
+  "list_items": [
+    "Vérifier l'inventaire avant la prochaine réunion.",
+    "Confirmer le budget avec le fournisseur.",
+    "Mettre à jour le calendrier partagé.",
+    "Envoyer le compte rendu aux participants."
+  ],
+  "table_columns": ["Sujet", "Responsable", "Date", "Référence"],
+  "table_rows": [
+    ["Inventaire", "Équipe locale", "{date}", "{id}"],
+    ["Budget", "Administration", "{date}", "{id}"],
+    ["Calendrier", "Coordination", "{date}", "{id}"],
+    ["Compte rendu", "Secrétariat", "{date}", "{id}"]
+  ],
+  "notes": "Synthetic French note template, support-language slice."
+}

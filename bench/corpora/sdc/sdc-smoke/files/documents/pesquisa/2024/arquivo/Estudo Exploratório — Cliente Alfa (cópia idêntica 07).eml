@@ -1,0 +1,51 @@
+From: "SDC Synthetic Sender" <sender@example.com>
+To: "SDC Synthetic Recipient" <recipient@example.org>
+Subject: Estudo Exploratório — Cliente Alfa
+Date: Sat, 18 May 2024 13:20:59 GMT
+Message-ID: <3b49b55f-b853-4296-a678-992d92e927d1@example.invalid>
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="sdc-837772803aacb63df8b07b2c"
+
+This is a multi-part message in MIME format.
+
+--sdc-837772803aacb63df8b07b2c
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+Discussão
+
+Identificador do relatório técnico: RT-2024-0007.
+
+O efeito observado mantém-se após ajuste para o tamanho do documento e para o número de secções.
+
+Os resultados sugerem que a variabilidade entre execuções é inferior a dois por cento quando o ambiente é controlado.
+
+Uma limitação importante é a curta duração do período de observação.
+
+Limitações
+
+A referência interna do conjunto de dados é 04ef7a24-fb18-40f0-93dd-e943e5ac3396.
+
+A amostra inclui doze cenários sintéticos e três réplicas independentes por cenário.
+
+Definir a unidade de análise antes da recolha.
+
+--sdc-837772803aacb63df8b07b2c
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+<html><body>
+<h2>Discussão</h2>
+<p>Identificador do relatório técnico: RT-2024-0007.</p>
+<p>O efeito observado mantém-se após ajuste para o tamanho do documento e para o número de secções.</p>
+<p>Os resultados sugerem que a variabilidade entre execuções é inferior a dois por cento quando o ambiente é controlado.</p>
+<p>Uma limitação importante é a curta duração do período de observação.</p>
+<h2>Limitações</h2>
+<p>A referência interna do conjunto de dados é 04ef7a24-fb18-40f0-93dd-e943e5ac3396.</p>
+<p>A amostra inclui doze cenários sintéticos e três réplicas independentes por cenário.</p>
+<ul>
+<li>Definir a unidade de análise antes da recolha.</li>
+</ul>
+</body></html>
+
+--sdc-837772803aacb63df8b07b2c--

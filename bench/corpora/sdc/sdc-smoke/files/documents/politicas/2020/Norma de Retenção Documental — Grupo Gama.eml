@@ -1,0 +1,60 @@
+From: "SDC Synthetic Sender" <sender@example.com>
+To: "SDC Synthetic Recipient" <recipient@example.org>
+Subject: Norma de Retenção Documental — Grupo Gama
+Date: Fri, 31 May 2024 04:11:42 GMT
+Message-ID: <748b1b58-6bb8-4699-809e-7ecd4a472f23@example.invalid>
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="sdc-8e011bd071434c595b99e657"
+
+This is a multi-part message in MIME format.
+
+--sdc-8e011bd071434c595b99e657
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+Responsabilidades
+
+Código da norma interna: POL-2020-0110.
+
+A informação é classificada em pública, interna, confidencial e restrita, de acordo com o impacto de uma divulgação indevida.
+
+Os pedidos de acesso são registados com o identificador POL-2020-0110 e aprovados pelo responsável da área.
+
+Os documentos digitais são conservados durante sete anos, salvo prazo legal diferente.
+
+Classificação da informação
+
+Os fornecedores externos estão sujeitos às mesmas obrigações de confidencialidade.
+
+A formação anual é obrigatória para todos os colaboradores com acesso a sistemas críticos.
+
+As cópias de segurança são verificadas mensalmente através de um teste de restauro.
+
+Eliminar cópias temporárias após a validação do registo final.
+
+Testar planos de continuidade pelo menos uma vez por ano.
+
+Cifrar suportes removíveis com chaves geridas pela organização.
+
+--sdc-8e011bd071434c595b99e657
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+<html><body>
+<h2>Responsabilidades</h2>
+<p>Código da norma interna: POL-2020-0110.</p>
+<p>A informação é classificada em pública, interna, confidencial e restrita, de acordo com o impacto de uma divulgação indevida.</p>
+<p>Os pedidos de acesso são registados com o identificador POL-2020-0110 e aprovados pelo responsável da área.</p>
+<p>Os documentos digitais são conservados durante sete anos, salvo prazo legal diferente.</p>
+<h2>Classificação da informação</h2>
+<p>Os fornecedores externos estão sujeitos às mesmas obrigações de confidencialidade.</p>
+<p>A formação anual é obrigatória para todos os colaboradores com acesso a sistemas críticos.</p>
+<p>As cópias de segurança são verificadas mensalmente através de um teste de restauro.</p>
+<ul>
+<li>Eliminar cópias temporárias após a validação do registo final.</li>
+<li>Testar planos de continuidade pelo menos uma vez por ano.</li>
+<li>Cifrar suportes removíveis com chaves geridas pela organização.</li>
+</ul>
+</body></html>
+
+--sdc-8e011bd071434c595b99e657--

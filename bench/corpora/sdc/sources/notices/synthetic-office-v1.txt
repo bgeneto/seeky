@@ -1,0 +1,39 @@
+Synthetic Office Corpus — source notice
+======================================
+
+Source set: synthetic-office-v1
+Redistribution class: permissive-core
+License: MIT (repository LICENSE)
+
+The documents in this source set are synthetic templates authored for the
+Seeky Desktop Corpus. They contain no personal data, real contact details, or
+third-party text. Every company, person role, identifier, address, and date is
+fictitious, and every e-mail address uses a reserved example domain.
+
+Source items:
+- syn-contracts-pt-v1 (MIT)
+- syn-contracts-en-v1 (MIT)
+- syn-invoices-pt-v1 (MIT)
+- syn-invoices-en-v1 (MIT)
+- syn-policy-pt-v1 (MIT)
+- syn-policy-en-v1 (MIT)
+- syn-research-pt-v1 (MIT)
+- syn-research-en-v1 (MIT)
+- syn-manuals-pt-v1 (MIT)
+- syn-manuals-en-v1 (MIT)
+- syn-long-report-pt-v1 (MIT)
+- syn-long-report-en-v1 (MIT)
+- syn-notes-es-v1 (MIT)
+- syn-notes-fr-v1 (MIT)
+- syn-notes-de-v1 (MIT)
+- syn-notes-ja-v1 (MIT)
+- syn-notes-el-v1 (MIT)
+- syn-code-v1 (MIT)
+- syn-boilerplate-v1 (MIT)
+
+Attribution: Seeky Desktop Corpus synthetic templates, MIT licensed.
+Copyright (c) 2026 Bernhard Enders and Seeky contributors.
+
+The corpus generator's renderer assets are listed in
+bench/corpora/sdc/renderers.lock.json; no external fonts, binaries, or model
+weights are bundled. The PDF base-14 font is referenced by name only.

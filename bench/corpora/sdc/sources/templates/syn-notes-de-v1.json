@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "template_id": "syn-notes-de-v1",
+  "kind": "text",
+  "language": "de-DE",
+  "domain": "notes-de",
+  "folder": "notizen",
+  "title_forms": [
+    "Besprechungsnotiz — {topic}",
+    "Kurzbericht — {client}",
+    "Zusammenfassung — {topic}"
+  ],
+  "identifier": {"kind": "note", "pattern": "DE-{year}-{seq:04d}"},
+  "identifier_sentence": "Dokumentreferenz: {id}.",
+  "entity_pools": {
+    "client": ["Kunde Alpha", "Gruppe Gamma", "Institut Epsilon"],
+    "supplier": ["Lieferant Horizont", "Service Meridian"],
+    "city": ["Berlin", "Hamburg", "München"],
+    "topic": ["Dokumentenverwaltung", "Solarenergie", "Stadtlogistik", "interne Schulung"]
+  },
+  "headings": ["Ziel", "Besprochene Punkte", "Beschlüsse", "Nächste Schritte"],
+  "paragraphs": [
+    "Die Besprechung fand in {city} statt, um den Stand des Projekts {topic} zu prüfen.",
+    "Das Team bestätigt, dass der Zeitplan unverändert bleibt.",
+    "Ein Monatsbericht mit den wichtigsten Kennzahlen wird vorbereitet.",
+    "Die interne Projektreferenz lautet {uuid}.",
+    "Der Fehlercode {error_code} wurde während der Sitzung behoben.",
+    "Die Daten sind fiktiv und enthalten keine personenbezogenen Informationen.",
+    "Die nächste Überprüfung ist für den Folgemonat geplant.",
+    "Entscheidungen sollten in einem gemeinsamen Register dokumentiert werden."
+  ],
+  "list_items": [
+    "Das Inventar vor der nächsten Sitzung prüfen.",
+    "Das Budget mit dem Lieferanten bestätigen.",
+    "Den gemeinsamen Kalender aktualisieren.",
+    "Das Protokoll an die Teilnehmenden senden."
+  ],
+  "table_columns": ["Thema", "Verantwortlich", "Datum", "Referenz"],
+  "table_rows": [
+    ["Inventar", "Lokales Team", "{date}", "{id}"],
+    ["Budget", "Verwaltung", "{date}", "{id}"],
+    ["Kalender", "Koordination", "{date}", "{id}"],
+    ["Protokoll", "Sekretariat", "{date}", "{id}"]
+  ],
+  "notes": "Synthetic German note template, support-language slice."
+}

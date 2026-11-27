@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "template_id": "syn-research-en-v1",
+  "kind": "text",
+  "language": "en-US",
+  "domain": "research-en",
+  "folder": "research",
+  "title_forms": [
+    "Research Notes — {topic}",
+    "Technical Report — {topic}",
+    "Exploratory Study — {client}"
+  ],
+  "identifier": {"kind": "report", "pattern": "TR-{year}-{seq:04d}"},
+  "identifier_sentence": "Technical report identifier: {id}.",
+  "entity_pools": {
+    "client": ["Client Alpha", "Epsilon Institute", "Gamma Group"],
+    "supplier": ["Meridian Laboratory", "Atlantic Centre"],
+    "city": ["Boston", "Seattle", "Austin"],
+    "topic": ["information retrieval", "energy efficiency", "indoor air quality", "urban mobility", "document conservation"]
+  },
+  "headings": [
+    "Summary",
+    "Background",
+    "Method",
+    "Preliminary results",
+    "Discussion",
+    "Limitations",
+    "Future work"
+  ],
+  "paragraphs": [
+    "This report describes an exploratory study of {topic} conducted in {city} during {year}.",
+    "The main objective is to understand how different configurations affect observed performance under realistic conditions.",
+    "The sample contains twelve synthetic scenarios and three independent replicates per scenario.",
+    "The results suggest that run-to-run variability is below two percent when the environment is controlled.",
+    "The qualitative analysis identified three recurring patterns in how users describe their needs.",
+    "The observed effect persists after adjustment for document size and section count.",
+    "Comparison with earlier work is limited by the absence of a shared evaluation protocol.",
+    "All collected data are synthetic and contain no personal information.",
+    "The internal dataset reference is {uuid}.",
+    "Error code {error_code} was recorded during the initial equipment calibration.",
+    "An important limitation is the short observation period.",
+    "Next steps include replicating the study at a second location and enlarging the sample.",
+    "The methodological annex details the inclusion and exclusion criteria.",
+    "The team thanks the units that provided facilities."
+  ],
+  "list_items": [
+    "Define the unit of analysis before collection.",
+    "Record every preprocessing decision.",
+    "Always compare against a simple baseline.",
+    "Report confidence intervals, not only means.",
+    "Document limitations explicitly."
+  ],
+  "table_columns": ["Scenario", "Description", "Observations", "Reference"],
+  "table_rows": [
+    ["A", "Control condition", "24", "{id}"],
+    ["B", "Noise variation", "24", "{id}"],
+    ["C", "Long documents", "18", "{id}"],
+    ["D", "Multilingual query", "18", "{id}"],
+    ["E", "Near duplicates", "12", "{id}"],
+    ["F", "Combined scenario", "12", "{id}"]
+  ],
+  "notes": "Synthetic English research-note template. No real study or personal data."
+}

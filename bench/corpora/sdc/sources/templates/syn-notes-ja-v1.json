@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "template_id": "syn-notes-ja-v1",
+  "kind": "text",
+  "language": "ja-JP",
+  "domain": "notes-ja",
+  "folder": "メモ",
+  "title_forms": [
+    "打ち合わせメモ — {topic}",
+    "技術ノート — {topic}",
+    "概要レポート — {client}"
+  ],
+  "identifier": {"kind": "note", "pattern": "JA-{year}-{seq:04d}"},
+  "identifier_sentence": "文書番号: {id}。",
+  "entity_pools": {
+    "client": ["顧客アルファ", "グループ・ガンマ"],
+    "supplier": ["サプライヤー・ホライズン", "メリディアンサービス"],
+    "city": ["東京", "大阪", "名古屋"],
+    "topic": ["文書管理", "太陽光発電", "都市物流", "社内研修"]
+  },
+  "headings": ["目的", "議題", "決定事項", "次の作業"],
+  "paragraphs": [
+    "会議は{city}で開催され、{topic}プロジェクトの進捗を確認しました。",
+    "スケジュールは変更なしで維持されることが確認されました。",
+    "主要指標を含む月次レポートを作成します。",
+    "プロジェクトの内部参照番号は{uuid}です。",
+    "エラーコード{error_code}は会議中に解決しました。",
+    "データはすべて架空であり、個人情報は含まれていません。",
+    "次回のレビューは来月を予定しています。",
+    "決定事項は共通の記録に残すことを推奨します。"
+  ],
+  "list_items": [
+    "次回会議の前に棚卸しを確認する。",
+    "見積もりを承認する。",
+    "共有カレンダーを更新する。",
+    "議事録を参加者に送付する。"
+  ],
+  "table_columns": ["項目", "担当", "日付", "参照"],
+  "table_rows": [
+    ["棚卸し", "現地チーム", "{date}", "{id}"],
+    ["予算", "管理部門", "{date}", "{id}"],
+    ["日程", "調整担当", "{date}", "{id}"],
+    ["議事録", "事務局", "{date}", "{id}"]
+  ],
+  "notes": "Synthetic Japanese note template, non-Latin non-regression slice. TXT/MD only."
+}

@@ -1,0 +1,13 @@
+[package]
+name = "sdc-engine-roundtrip"
+description = "Development-only harness that runs the Seeky engine extractors over SDC files"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+# Standalone workspace so this development tool is not a member of the product
+# workspace (SPEC-0001). It depends on seeky-extract by path only.
+[workspace]
+
+[dependencies]
+seeky-extract = { path = "../../../crates/seeky-extract" }

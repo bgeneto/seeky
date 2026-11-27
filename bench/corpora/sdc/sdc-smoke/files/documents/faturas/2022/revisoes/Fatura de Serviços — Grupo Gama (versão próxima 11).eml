@@ -1,0 +1,60 @@
+From: "SDC Synthetic Sender" <sender@example.com>
+To: "SDC Synthetic Recipient" <recipient@example.org>
+Subject: Fatura de Serviços — Grupo Gama
+Date: Thu, 29 Oct 2020 20:40:31 GMT
+Message-ID: <a41c02f3-8cd5-4481-97f0-78ce76f54c34@example.invalid>
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="sdc-aa64955bdaeff5dba754c9fa"
+
+This is a multi-part message in MIME format.
+
+--sdc-aa64955bdaeff5dba754c9fa
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+Valores e impostos
+
+Número do documento fiscal: INV-2022-000048.
+
+O pagamento deve ser efetuado por transferência até trinta dias após a emissão.
+
+O valor base é de 4548.22 EUR, acrescido de imposto quando legalmente devido.
+
+O código de erro de integração associado é E-7788, sem impacto no valor faturado.
+
+Condições de pagamento
+
+Os serviços de transporte de materiais foram prestados nas instalações de Braga durante o período faturado.
+
+O resumo executivo indica uma redução de custos operacionais de sete por cento. Revisão interna: os valores foram atualizados.
+
+Descontos comerciais acordados por escrito.
+
+Materiais consumíveis utilizados na intervenção.
+
+Horas de consultoria e respetiva descrição.
+
+Nota de revisão 11: este documento incorpora alterações internas face à versão original.
+
+--sdc-aa64955bdaeff5dba754c9fa
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+<html><body>
+<h2>Valores e impostos</h2>
+<p>Número do documento fiscal: INV-2022-000048.</p>
+<p>O pagamento deve ser efetuado por transferência até trinta dias após a emissão.</p>
+<p>O valor base é de 4548.22 EUR, acrescido de imposto quando legalmente devido.</p>
+<p>O código de erro de integração associado é E-7788, sem impacto no valor faturado.</p>
+<h2>Condições de pagamento</h2>
+<p>Os serviços de transporte de materiais foram prestados nas instalações de Braga durante o período faturado.</p>
+<p>O resumo executivo indica uma redução de custos operacionais de sete por cento. Revisão interna: os valores foram atualizados.</p>
+<ul>
+<li>Descontos comerciais acordados por escrito.</li>
+<li>Materiais consumíveis utilizados na intervenção.</li>
+<li>Horas de consultoria e respetiva descrição.</li>
+</ul>
+<p>Nota de revisão 11: este documento incorpora alterações internas face à versão original.</p>
+</body></html>
+
+--sdc-aa64955bdaeff5dba754c9fa--
