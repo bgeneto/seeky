@@ -27,11 +27,14 @@ RESULT_FILES = {
     # Preregistration amendment 2: supplementary rows, never part of K1.
     "encoders-bekko-a8m": "encoders-bekko-a8m.json",
     "encoders-gety-embed-v0": "encoders-gety-embed-v0.json",
+    # Preregistration amendment 3: a supplementary reranker, never part of K1.
+    "reranker-hs-rerank-1": "reranker-hs-rerank-1.json",
 }
 SUPPLEMENTARY_EMBEDDER_KEYS = {
     "bekko-a8m": "encoders-bekko-a8m",
     "gety-embed-v0": "encoders-gety-embed-v0",
 }
+SUPPLEMENTARY_RERANKER_KEYS = {"hs-rerank-1": "reranker-hs-rerank-1"}
 
 
 def _read_optional(workspace: Path, filename: str) -> dict[str, Any] | None:
@@ -164,6 +167,19 @@ def export_results(workspace: Path, destination: Path) -> dict[str, Any]:
         row = embedder_verdict(supplementary)
         summary["supplementary_embedders"] = {
             "amendment": 2,
+            "affects_k1": False,
+            "target": row["target"],
+            "qualified_variants": row["qualified_variants"],
+        }
+    supplementary_rerankers = {
+        model: loaded[key]
+        for model, key in SUPPLEMENTARY_RERANKER_KEYS.items()
+        if loaded[key] is not None
+    }
+    if supplementary_rerankers:
+        row = reranker_verdict(supplementary_rerankers)
+        summary["supplementary_rerankers"] = {
+            "amendment": 3,
             "affects_k1": False,
             "target": row["target"],
             "qualified_variants": row["qualified_variants"],

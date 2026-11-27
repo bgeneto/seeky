@@ -12,7 +12,7 @@ from .data import acquire_gutenberg_texts, acquire_text_data
 from .deadline import DEFAULT_GATE_TIMEOUT_SECONDS, Deadline, GateTimeout
 from .encoder_run import run_encoder_gate
 from .florence_run import run_florence_gate
-from .models import EMBEDDERS
+from .models import EMBEDDERS, PROXY_RERANKER, RERANKERS
 from .npu_run import run_npu_gate
 from .ocr_data import render_ocr_pages
 from .ocr_run import run_ocr_gate
@@ -73,6 +73,8 @@ def build_parser() -> argparse.ArgumentParser:
         )
         if name == "encoders":
             command.add_argument("--model", choices=list(EMBEDDERS), required=True)
+        if name == "reranker":
+            command.add_argument("--model", choices=list(RERANKERS), default=PROXY_RERANKER)
     return parser
 
 
@@ -129,6 +131,7 @@ def _dispatch(args: argparse.Namespace, workspace: Path, deadline: Deadline | No
             profile=_profile(args.profile),
             wait_seconds=args.wait_seconds,
             deadline=deadline,
+            model=args.model,
         )
         summary = {
             name: {

@@ -9,13 +9,14 @@ from typing import Any
 
 import numpy as np
 
-from .artifacts import sha256_file, write_json
+from .artifacts import failure_reason, sha256_file, write_json
 from .benchmark import summarize_latencies, summarize_throughput, token_length_summary
 from .deadline import Deadline, bounded_gate
 from .frozen import embedding_view, load_frozen
 from .models import (
     EMBEDDERS,
     ENCODER_SPECS,
+    ModelError,
     ModelSpec,
     upcast_fp16_model,
     complete_graph_inputs,
@@ -31,7 +32,12 @@ from .models import (
     tokenize,
 )
 from .parity import embedding_parity
-from .quantize import ArrayCalibrationReader, quantize_dynamic_model, quantize_static_model
+from .quantize import (
+    ArrayCalibrationReader,
+    QuantizationError,
+    quantize_dynamic_model,
+    quantize_static_model,
+)
 from .system import (
     ProfileError,
     RunningProfile,
@@ -114,84 +120,133 @@ def _stage_published(
     return staged
 
 
+_DERIVED_VARIANTS = ("int8-dynamic", "int8-static-qdq")
+
+
 def _prepare_variants(
     workspace: Path,
     spec: ModelSpec,
     tokenizer: Any,
     *,
     deadline: Deadline | None = None,
+    failures: dict[str, str] | None = None,
 ) -> dict[str, Path]:
+    """Stage published graphs and derive fp32, int8-dynamic, and static QDQ.
+
+    With *failures*, a variant that cannot be exported or quantized is
+    recorded there and left out (amendment 3: a reported result, not a
+    crash); without it, the failure propagates as before.
+    """
     if deadline is not None:
         deadline.check(f"{spec.slug}:prepare:assets")
     source_dir = download_encoder_assets(workspace, spec)
-    if spec.published_onnx:
-        published = _stage_published(workspace, spec, source_dir, deadline=deadline)
-        if not spec.derive_quantized:
-            return published
+    published = (
+        _stage_published(workspace, spec, source_dir, deadline=deadline)
+        if spec.published_onnx
+        else {}
+    )
+    if spec.published_onnx and not spec.derive_quantized:
+        return published
+    if "fp32" in published:
         fp32 = published["fp32"]
-    elif spec.slug == "gte-reranker":
+    elif spec.task == "text-classification":
         fp32 = _variant_directory(workspace, spec, "fp32") / "model.onnx"
         if not fp32.exists():
             if deadline is not None:
                 deadline.check(f"{spec.slug}:prepare:fp32")
-            export_reranker_fp32(source_dir, fp32, spec)
+            try:
+                export_reranker_fp32(source_dir, fp32, spec)
+            except ModelError as error:
+                if failures is None:
+                    raise
+                fp32.unlink(missing_ok=True)
+                failures["fp32"] = failure_reason(error)
+                failures.update({name: "no fp32 export" for name in _DERIVED_VARIANTS})
+                return published
     else:
         fp32 = source_dir / "onnx" / "model.onnx"
-    variants = dict(published) if spec.published_onnx else {"fp32": fp32}
+    variants = {"fp32": fp32, **published}
     dynamic = _variant_directory(workspace, spec, "int8-dynamic") / "model.onnx"
-    if not dynamic.exists():
-        if deadline is not None:
-            deadline.check(f"{spec.slug}:prepare:int8-dynamic")
-        quantize_dynamic_model(fp32, dynamic)
-    variants["int8-dynamic"] = dynamic
+    try:
+        if not dynamic.exists():
+            if deadline is not None:
+                deadline.check(f"{spec.slug}:prepare:int8-dynamic")
+            quantize_dynamic_model(fp32, dynamic)
+        variants["int8-dynamic"] = dynamic
+    except QuantizationError as error:
+        if failures is None:
+            raise
+        dynamic.unlink(missing_ok=True)
+        failures["int8-dynamic"] = failure_reason(error)
     static = _variant_directory(workspace, spec, "int8-static-qdq") / "model.onnx"
-    if not static.exists():
-        if deadline is not None:
-            deadline.check(f"{spec.slug}:prepare:int8-static-qdq")
-        if spec.slug == "gte-reranker":
-            frozen = load_frozen(workspace)
-            view = embedding_view(frozen, "granite-modernbert")
-            pairs = []
-            for index in range(128):
-                query = view["queries"][index % len(view["queries"])]["text"]
-                passage = view["passages"][index % len(view["passages"])]["text"]
-                pairs.append((query, passage))
-            calibration_text = [item[0] for item in pairs]
-            calibration_pair = [item[1] for item in pairs]
-            encoded = tokenize(
-                tokenizer,
-                calibration_text,
-                pair_texts=calibration_pair,
-                max_length=384,
-                pad_to_max=True,
-            )
-        else:
-            frozen = load_frozen(workspace)
-            view = embedding_view(frozen, spec.slug)
-            encoded = tokenize(
-                tokenizer,
-                [row["text"] for row in view["passages"][:128]],
-                max_length=384,
-                pad_to_max=True,
-            )
-        import onnxruntime as ort
+    try:
+        if not static.exists():
+            _quantize_static(workspace, spec, tokenizer, fp32, static, deadline=deadline)
+        variants["int8-static-qdq"] = static
+    except QuantizationError as error:
+        if failures is None:
+            raise
+        static.unlink(missing_ok=True)
+        failures["int8-static-qdq"] = failure_reason(error)
+    return variants
 
+
+def _quantize_static(
+    workspace: Path,
+    spec: ModelSpec,
+    tokenizer: Any,
+    fp32: Path,
+    static: Path,
+    *,
+    deadline: Deadline | None = None,
+) -> None:
+    if deadline is not None:
+        deadline.check(f"{spec.slug}:prepare:int8-static-qdq")
+    if spec.task == "text-classification":
+        frozen = load_frozen(workspace)
+        view = embedding_view(frozen, "granite-modernbert")
+        pairs = []
+        for index in range(128):
+            query = view["queries"][index % len(view["queries"])]["text"]
+            passage = view["passages"][index % len(view["passages"])]["text"]
+            pairs.append((query, passage))
+        calibration_text = [item[0] for item in pairs]
+        calibration_pair = [item[1] for item in pairs]
+        encoded = tokenize(
+            tokenizer,
+            calibration_text,
+            pair_texts=calibration_pair,
+            max_length=384,
+            pad_to_max=True,
+        )
+    else:
+        frozen = load_frozen(workspace)
+        view = embedding_view(frozen, spec.slug)
+        encoded = tokenize(
+            tokenizer,
+            [row["text"] for row in view["passages"][:128]],
+            max_length=384,
+            pad_to_max=True,
+        )
+    import onnxruntime as ort
+
+    try:
         calibration_session = ort.InferenceSession(
             str(fp32),
             providers=["CPUExecutionProvider"],
         )
-        encoded = complete_graph_inputs(calibration_session, encoded)
-        rows = [
-            {name: value[index : index + 1] for name, value in encoded.items()}
-            for index in range(128)
-        ]
-        quantize_static_model(
-            fp32,
-            static,
-            ArrayCalibrationReader(fp32, rows),
-        )
-    variants["int8-static-qdq"] = static
-    return variants
+    except Exception as error:
+        raise QuantizationError("fp32 graph cannot run for static calibration") from error
+    encoded = complete_graph_inputs(calibration_session, encoded)
+    rows = [
+        {name: value[index : index + 1] for name, value in encoded.items()}
+        for index in range(128)
+    ]
+    quantize_static_model(
+        fp32,
+        static,
+        ArrayCalibrationReader(fp32, rows),
+    )
 
 
 def _encode_corpus(

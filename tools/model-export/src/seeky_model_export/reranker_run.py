@@ -9,13 +9,16 @@ from typing import Any
 
 import numpy as np
 
-from .artifacts import write_json
+from .artifacts import failure_reason, write_json
 from .benchmark import summarize_latencies, token_length_summary
 from .deadline import Deadline, bounded_gate
 from .encoder_run import _batched, _prepare_variants, _variant_size
 from .frozen import embedding_view, load_frozen
 from .models import (
     ENCODER_SPECS,
+    PROXY_RERANKER,
+    RERANKERS,
+    ModelError,
     ModelSpec,
     create_ort_session,
     load_reference_model,
@@ -31,6 +34,15 @@ from .system import RunningProfile, apply_profile, capture_environment, high_per
 QUERY_COUNT = 30
 DEPTH = 50
 LATENCY_REPETITIONS = 30
+
+
+class RerankerRunError(RuntimeError):
+    """A reranker gate request outside the preregistered portfolio."""
+
+
+def result_filename(model: str) -> str:
+    """The proxy keeps ``reranker.json``; amendment rows get their own file."""
+    return "reranker.json" if model == PROXY_RERANKER else f"reranker-{model}.json"
 
 
 def _normalize_rows(matrix: np.ndarray) -> np.ndarray:
@@ -182,13 +194,17 @@ def run_reranker_gate(
     profile: RunningProfile | None = None,
     wait_seconds: float = 900.0,
     deadline: Deadline | None = None,
+    model: str = PROXY_RERANKER,
 ) -> dict[str, Any]:
+    if model not in RERANKERS:
+        raise RerankerRunError("reranker is not in the preregistered portfolio")
     gate_deadline = deadline or Deadline()
-    spec = ENCODER_SPECS["gte-reranker"]
+    spec = ENCODER_SPECS[model]
+    result_path = workspace / "results" / result_filename(model)
     selected_profile = profile or RunningProfile.t1_emulated()
     results: dict[str, Any] = {"schema": 1, "variants": {}}
     with bounded_gate(
-        "reranker",
+        result_path.stem,
         workspace=workspace,
         deadline=gate_deadline,
         results=results,
@@ -197,7 +213,7 @@ def run_reranker_gate(
         results.update(
             {
                 "label": "T1-emulated, provisional",
-                "model": "gte-reranker",
+                "model": model,
                 "repository": spec.repository,
                 "revision": spec.revision,
                 "profile": profile_record,
@@ -210,23 +226,27 @@ def run_reranker_gate(
         frozen = load_frozen(workspace)
         view = embedding_view(frozen, "granite-modernbert")
         tokenizer = load_tokenizer(model_directory(workspace, spec))
+        variant_failures: dict[str, str] = {}
         variants = _prepare_variants(
             workspace,
             spec,
             tokenizer,
             deadline=gate_deadline,
+            failures=None if model == PROXY_RERANKER else variant_failures,
         )
+        if variant_failures:
+            results["variant_failures"] = variant_failures
         gate_deadline.check("reranker:first-stage-lists")
         lists = _candidate_lists(workspace, frozen)
         results["queries"] = len(lists)
 
-        model = load_reference_model(model_directory(workspace, spec), spec)
+        reference_model = load_reference_model(model_directory(workspace, spec), spec)
         import torch
 
         torch.set_num_threads(selected_profile.ort_threads)
         gate_deadline.check("reranker:reference")
         reference = _reference_lists(
-            model,
+            reference_model,
             spec,
             tokenizer,
             lists,
@@ -235,17 +255,26 @@ def run_reranker_gate(
         )
         for name, path in variants.items():
             gate_deadline.check(f"reranker:variant-{name}")
-            started = time.perf_counter()
-            session = create_ort_session(path, selected_profile)
-            cold_load_seconds = time.perf_counter() - started
-            candidate = _score_lists(
-                session,
-                spec,
-                tokenizer,
-                lists,
-                deadline=gate_deadline,
-                stage=f"reranker:{name}:score",
-            )
+            try:
+                started = time.perf_counter()
+                session = create_ort_session(path, selected_profile)
+                cold_load_seconds = time.perf_counter() - started
+                candidate = _score_lists(
+                    session,
+                    spec,
+                    tokenizer,
+                    lists,
+                    deadline=gate_deadline,
+                    stage=f"reranker:{name}:score",
+                )
+            except ModelError as error:
+                if model == PROXY_RERANKER:
+                    raise
+                # Amendment 3: an unrunnable variant is a reported result.
+                variant_failures[name] = failure_reason(error)
+                results["variant_failures"] = variant_failures
+                write_json(result_path, results)
+                continue
             parity = reranker_parity(reference, candidate, view["qrels"], k=10)
             passes_parity = (
                 parity["mean_kendall_tau_b"] >= 0.95
@@ -258,7 +287,7 @@ def run_reranker_gate(
                 stage=f"reranker:{name}:size",
             )
             variant_result: dict[str, Any] = {
-                "path_label": f"gte-reranker/{name}",
+                "path_label": f"{model}/{name}",
                 "providers": session.get_providers(),
                 "model_bytes": size,
                 "files": files,
@@ -290,5 +319,5 @@ def run_reranker_gate(
                 else:
                     variant_result["timing_skipped"] = "quiet window did not open"
             results["variants"][name] = variant_result
-            write_json(workspace / "results" / "reranker.json", results)
+            write_json(result_path, results)
     return results

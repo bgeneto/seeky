@@ -12,13 +12,15 @@ from seeky_model_export.models import (
 
 
 def test_preregistered_encoder_revisions_are_immutable():
-    # The three proxies plus the two amendment-2 supplementary embedders.
+    # The three proxies, the two amendment-2 supplementary embedders, and the
+    # amendment-3 supplementary reranker.
     assert set(ENCODER_SPECS) == {
         "e5-small",
         "granite-modernbert",
         "gte-reranker",
         "bekko-a8m",
         "gety-embed-v0",
+        "hs-rerank-1",
     }
     for spec in ENCODER_SPECS.values():
         assert len(spec.revision) == 40

@@ -62,6 +62,39 @@ Rules for the amendment rows:
   own claim that native OpenVINO ran about 5.5× faster than ONNX Runtime on an
   x86 CPU is cited as vendor evidence for H5, not as a measurement.
 
+**Post-measurement amendment 3 (2026-11-27): supplementary reranker.** Frozen
+after the reranker fp32 row and the amendment 2 rows were measured and before
+any row below was run. It adds one reranker without changing any rule above.
+Like amendment 2, the row never changes the frozen K1 reranker verdict in §6,
+which stays computed from `gte-reranker` alone, and it is never pooled with
+the proxy row. It answers the same H5 question for the reranker: does a fired
+reranker K1 reflect model compute, or ONNX Runtime itself?
+
+| Slug | Model and revision | Why | License evidence |
+|---|---|---|---|
+| `hs-rerank-1` | `hindsight-ai/hs-rerank-1` @ `6bc7caf42bfcd5873ed76309cd0785cb1f550f51` | ModernBERT cross-encoder fine-tuned from `jhu-clsp/mmBERT-small`: 8 layers, 384 hidden, 114M parameters of which 98M are the 256k-token embedding table, so about 15M parameters compute per pair; pt among its declared languages | MIT in the upstream model card; base model MIT |
+
+Rules for the amendment row:
+
+- **Data, profile, parity, timing, and statistics:** exactly §3.1, §4, and §5
+  for the reranker: the same 30 frozen first-stage lists at depth 50, the same
+  384-token pair limit, the same T1-emulated profile, the same tolerances (mean
+  Kendall tau-b ≥0.95, worst list ≥0.90, |nDCG@10 change| ≤0.5 points), the
+  same timing.
+- **Reference:** PyTorch/Transformers from `model.safetensors` at the pinned
+  revision, loaded as fp32, raw logit of the single output. The upstream stores
+  these weights in fp16 (an fp32 copy sits at a separate `fp32` tag), so the
+  reference is the fp16 checkpoint computed in fp32; the upcast is exact for the
+  weights. This is a stated limitation, as for `gety-embed-v0`.
+- **Variants:** the published `onnx/model.onnx` (int8 token-embedding table) as
+  `published-default`; `fp32` exported from the reference exactly as the
+  `gte-reranker` fp32 export; `int8-dynamic` and `int8-static-qdq` derived from
+  that `fp32` exactly as §2, with the same calibration pairs. A variant that
+  cannot be exported or run is a reported result, not a crash.
+- **Outside the amendment:** no NPU, T0, or K4 row changes. The model card's
+  benchmark figure and its 8,192-token context are vendor claims, not
+  measurements; this gate times 384-token pairs only.
+
 ## 1. Fixed proxy portfolio
 
 Only license-Allowed models under ADR-0022 are included. Revisions are immutable

@@ -94,10 +94,22 @@ ENCODER_SPECS = {
         derive_quantized=False,
         output_names=("sentence_embedding", "embeddings"),
     ),
+    # Preregistration amendment 3: a supplementary reranker, never part of K1.
+    "hs-rerank-1": ModelSpec(
+        "hs-rerank-1",
+        "hindsight-ai/hs-rerank-1",
+        "6bc7caf42bfcd5873ed76309cd0785cb1f550f51",
+        "text-classification",
+        "logits",
+        published_onnx=(("published-default", "onnx/model.onnx"),),
+    ),
 }
 PROXY_EMBEDDERS = ("e5-small", "granite-modernbert")
 SUPPLEMENTARY_EMBEDDERS = ("bekko-a8m", "gety-embed-v0")
 EMBEDDERS = (*PROXY_EMBEDDERS, *SUPPLEMENTARY_EMBEDDERS)
+PROXY_RERANKER = "gte-reranker"
+SUPPLEMENTARY_RERANKERS = ("hs-rerank-1",)
+RERANKERS = (PROXY_RERANKER, *SUPPLEMENTARY_RERANKERS)
 
 FLORENCE_REPOSITORY = "microsoft/Florence-2-large"
 FLORENCE_REVISION = "21a599d414c4d928c9032694c424fb94458e3594"
@@ -530,7 +542,7 @@ def export_embedder_static_fp32(
 
 def export_reranker_fp32(model_dir: Path, destination: Path, spec: ModelSpec) -> Path:
     if spec.task != "text-classification":
-        raise ModelError("only the reranker uses this export helper")
+        raise ModelError("only rerankers use this export helper")
     model = load_reference_model(model_dir, spec)
     tokenizer = load_tokenizer(model_dir)
     encoded = tokenize(

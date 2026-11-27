@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import re
 from pathlib import Path
 from typing import Any
 
@@ -13,6 +14,18 @@ import requests
 
 class ArtifactError(RuntimeError):
     """A safe, typed artifact or manifest failure."""
+
+
+_PATH_TOKEN = re.compile(r"[A-Za-z]:[\\/]\S*|(?<!\w)/\S+")
+
+
+def failure_reason(error: BaseException) -> str:
+    """Name the root failure without any local path (committed output)."""
+    root: BaseException = error
+    while root.__cause__ is not None:
+        root = root.__cause__
+    message = _PATH_TOKEN.sub("<path>", str(root).splitlines()[0] if str(root) else "")
+    return f"{type(root).__name__}: {message}"[:300]
 
 
 def ensure_external_workspace(path: str | os.PathLike[str]) -> Path:
