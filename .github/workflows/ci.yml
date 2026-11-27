@@ -12,8 +12,6 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
-# WP-0.4 extends this workflow with clippy -D warnings, hardware-free tests,
-# cargo-deny, the TypeScript build, and the Windows/Linux/macOS compile matrix.
 jobs:
   format:
     name: Format (rustfmt + Prettier)
@@ -41,3 +39,148 @@ jobs:
       - name: Prettier
         working-directory: apps/desktop
         run: npm run format:check
+
+  lint:
+    name: Clippy (default + hw-tests)
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          lfs: true
+
+      - name: Install the pinned Rust toolchain (rust-toolchain.toml)
+        run: rustup toolchain install
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Create the frontend output directory for tauri::generate_context!
+        shell: bash
+        run: mkdir -p apps/desktop/dist
+
+      - name: Clippy (hardware-free)
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+      - name: Clippy (including hardware-test code)
+        run: cargo clippy --workspace --all-targets --features hw-tests -- -D warnings
+
+  test:
+    name: Hardware-free tests (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          lfs: true
+
+      - name: Install Tauri's Linux system dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y \
+            libwebkit2gtk-4.1-dev \
+            build-essential \
+            curl \
+            wget \
+            file \
+            libxdo-dev \
+            libssl-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev
+
+      - name: Install the pinned Rust toolchain (rust-toolchain.toml)
+        run: rustup toolchain install
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Create the frontend output directory for tauri::generate_context!
+        shell: bash
+        run: mkdir -p apps/desktop/dist
+
+      - name: Test the workspace without hardware features
+        run: cargo test --workspace
+
+  deny:
+    name: cargo-deny (bans, licenses, advisories, sources)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install the pinned Rust toolchain (rust-toolchain.toml)
+        run: rustup toolchain install
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Install cargo-deny 0.22.1
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-deny@0.22.1
+
+      - name: Check dependency policies
+        run: cargo deny check bans licenses advisories sources
+
+  web:
+    name: TypeScript typecheck + frontend build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: apps/desktop/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: apps/desktop
+        run: npm ci
+
+      - name: Typecheck and build
+        working-directory: apps/desktop
+        run: npm run build
+
+  compile:
+    name: Compile (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          lfs: true
+
+      - name: Install Tauri's Linux system dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y \
+            libwebkit2gtk-4.1-dev \
+            build-essential \
+            curl \
+            wget \
+            file \
+            libxdo-dev \
+            libssl-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev
+
+      - name: Install the pinned Rust toolchain (rust-toolchain.toml)
+        run: rustup toolchain install
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Create the frontend output directory for tauri::generate_context!
+        shell: bash
+        run: mkdir -p apps/desktop/dist
+
+      - name: Check all workspace targets
+        run: cargo check --workspace --all-targets
