@@ -21,6 +21,7 @@ from .models import (
     ModelError,
     ModelSpec,
     create_ort_session,
+    download_encoder_assets,
     load_reference_model,
     load_tokenizer,
     model_directory,
@@ -225,7 +226,8 @@ def run_reranker_gate(
         )
         frozen = load_frozen(workspace)
         view = embedding_view(frozen, "granite-modernbert")
-        tokenizer = load_tokenizer(model_directory(workspace, spec))
+        # A model never downloaded before has no local tokenizer yet.
+        tokenizer = load_tokenizer(download_encoder_assets(workspace, spec))
         variant_failures: dict[str, str] = {}
         variants = _prepare_variants(
             workspace,

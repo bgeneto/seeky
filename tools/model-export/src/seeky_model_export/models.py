@@ -493,6 +493,24 @@ def run_reference_model(
     return pool_hidden(numpy_output, mask, spec.pooling, normalize=spec.pooling != "logits")
 
 
+def _positional_hidden(model: Any, names: list[str], accepted: set[str]):
+    """Wrap *model* so tracing sees exactly *names* as positional tensors."""
+    import torch
+
+    extra = {"use_cache": False} if "use_cache" in accepted else {}
+
+    class PositionalHidden(torch.nn.Module):
+        def __init__(self) -> None:
+            super().__init__()
+            self.model = model
+
+        def forward(self, *tensors):
+            result = self.model(**dict(zip(names, tensors, strict=True)), **extra)
+            return result.last_hidden_state
+
+    return PositionalHidden().eval()
+
+
 def export_embedder_static_fp32(
     model_dir: Path,
     destination: Path,
@@ -507,10 +525,12 @@ def export_embedder_static_fp32(
         raise ModelError("static export shapes must be positive")
     model = load_reference_model(model_dir, spec)
     tokenizer = load_tokenizer(model_dir)
+    # Pad to the static length: the graph is traced at exactly this shape.
     encoded = tokenize(
         tokenizer,
         ["static export query"] * batch_size,
         max_length=sequence_length,
+        pad_to_max=True,
     )
     try:
         import torch
@@ -523,11 +543,12 @@ def export_embedder_static_fp32(
         }
         names = list(inputs)
         destination.parent.mkdir(parents=True, exist_ok=True)
+        # Transformers 5 forwards reject the exporter's keyword mapping
+        # (use_cache arrives twice); trace a positional wrapper instead.
         torch.onnx.export(
-            model,
-            (),
+            _positional_hidden(model, names, accepted),
+            tuple(inputs.values()),
             str(destination),
-            kwargs=inputs,
             input_names=names,
             output_names=["last_hidden_state"],
             dynamic_axes=None,

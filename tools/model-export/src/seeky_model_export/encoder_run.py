@@ -406,7 +406,8 @@ def run_encoder_gate(
                 "max_passage_tokens": 384,
             }
         )
-        tokenizer = load_tokenizer(model_directory(workspace, spec))
+        # A model never downloaded before has no local tokenizer yet.
+        tokenizer = load_tokenizer(download_encoder_assets(workspace, spec))
         variants = _prepare_variants(
             workspace,
             spec,

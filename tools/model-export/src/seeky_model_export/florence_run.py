@@ -154,6 +154,11 @@ def _decode(
             generated.append(token)
             if eos is not None and token == eos:
                 break
+            if len(generated) >= max_new_tokens:
+                # The preregistered output bound (§3.2): keep the truncated
+                # transcript; one more decoder step would pass the decoder's
+                # position table.
+                break
             next_embeds = next(
                 iter(
                     _run_named(
@@ -195,12 +200,14 @@ def _time_and_score(
     pages = image_paths[:FIRST_PAGES]
     samples = []
     hypotheses: dict[str, str] = {}
+    bounded: list[str] = []
+    eos = processor.tokenizer.eos_token_id
     for index, path in enumerate(pages):
         if deadline is not None:
             deadline.check(f"{stage}:page-{index}")
         inputs = _image_batch(processor, path)
         started = time.perf_counter_ns()
-        _, text = _decode(
+        tokens, text = _decode(
             bundle,
             processor,
             inputs,
@@ -209,6 +216,8 @@ def _time_and_score(
         )
         samples.append((time.perf_counter_ns() - started) / 1_000_000_000)
         hypotheses[path.stem] = text
+        if hit_token_bound(tokens, eos):
+            bounded.append(path.stem)
     summary = summarize_latencies(samples, resamples=2_000)
     summary["early_stop_pages"] = FIRST_PAGES
     all_slow = all(value > 4.0 for value in samples)
@@ -221,8 +230,14 @@ def _time_and_score(
         "samples_seconds": samples,
         "quality": quality,
         "early_stop_all_above_4s": all_slow,
+        "pages_at_token_bound": bounded,
         "hypotheses": hypotheses,
     }
+
+
+def hit_token_bound(tokens: list[int], eos: int | None, max_new_tokens: int = MAX_NEW_TOKENS) -> bool:
+    """A page that used the whole output bound without emitting EOS."""
+    return len(tokens) >= max_new_tokens and (not tokens or tokens[-1] != eos)
 
 
 def run_florence_gate(
@@ -348,6 +363,7 @@ def run_florence_gate(
                     "parity": parity,
                     "parity_passed": parity["deterministic_repeat"] and parity["CER_parity_passed"],
                     "early_stop_all_above_4s": measured["early_stop_all_above_4s"],
+                    "pages_at_token_bound": measured["pages_at_token_bound"],
                     "hypotheses_sha256": {
                         key: sha256_file_bytes(value.encode("utf-8")) for key, value in measured["hypotheses"].items()
                     },

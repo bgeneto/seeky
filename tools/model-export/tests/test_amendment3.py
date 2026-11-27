@@ -116,7 +116,20 @@ def test_an_unrunnable_variant_is_recorded_and_the_rest_still_run(tmp_path, monk
     monkeypatch.setattr(reranker_run, "capture_environment", lambda: {})
     monkeypatch.setattr(reranker_run, "load_frozen", lambda workspace: {})
     monkeypatch.setattr(reranker_run, "embedding_view", lambda frozen, slug: {"qrels": {}})
-    monkeypatch.setattr(reranker_run, "load_tokenizer", lambda directory: None)
+    downloaded = []
+
+    def download(workspace, spec):
+        downloaded.append(spec.slug)
+        return tmp_path / "models" / spec.slug
+
+    def tokenizer(directory):
+        # Regression: the tokenizer of a never-downloaded model was read
+        # before its snapshot existed.
+        assert downloaded == ["hs-rerank-1"]
+        return None
+
+    monkeypatch.setattr(reranker_run, "download_encoder_assets", download)
+    monkeypatch.setattr(reranker_run, "load_tokenizer", tokenizer)
     monkeypatch.setattr(
         reranker_run,
         "_prepare_variants",
