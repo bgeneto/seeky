@@ -22,6 +22,7 @@ lexical indexing. Therefore:
 |---|---|---|---|
 | **Fast lane** | Metadata, filename/path index, lexical index, duplicate signatures | Seconds | Makes a file findable by name and words almost immediately |
 | **Semantic lane** | Passage embeddings (and optional sparse/learned representations) | Background, prioritized | Fills in meaning; coverage is reported per folder |
+| **Visual lane** (optional pack) | Visual-unit embeddings ([ADR-0023](../adr/0023-multimodal-ready-engine.md)) | Background, lowest priority | Never delays text semantic coverage; visual coverage reported separately |
 
 A file is **lexically searchable** after the fast lane commits and
 **semantically searchable** after its embeddings commit. Search results merge
@@ -87,6 +88,14 @@ discover ─► change set ─► jobs (SQLite, durable) ─► extract ─► n
   the semantic lane's priority scheme so it never blocks lexical indexing of
   text documents. OCR text records the OCR engine and revision as provenance,
   so an engine change re-OCRs only affected files.
+- **Visual units** (only when the visual pack is enabled,
+  [ADR-0023](../adr/0023-multimodal-ready-engine.md)): image files, slides,
+  embedded figures, and pages with little extractable text are recorded as
+  visual units with locators and content hashes. Selection is adaptive and
+  rule-based (the rules are benchmark-owned): a text-only page gets no visual
+  unit, and the pages of a document are never all rendered for embedding. An
+  image can carry both OCR passages and a visual unit; they are complementary
+  representations of the same file.
 
 ### 2.4 Chunking
 
@@ -122,6 +131,12 @@ length statistics. After commit, the file is lexically searchable.
   by interactive search (the query pool always wins); optional pause on battery;
   memory ceiling.
 - Commit vectors in batches to the active generation's vector index.
+- **Visual lane** (optional pack): visual units are decoded, resized, and
+  embedded in a separate queue below text passages in priority, with its own
+  throughput session and budgets (V1–V2 in the methodology). Image decoding
+  runs inside the governed pool, because it can cost as much as the model.
+  Visual units use the same content-addressed cache, so copies and renames are
+  never re-embedded.
 
 ## 3. Index generations (blue/green)
 
@@ -136,6 +151,15 @@ input recipe version.
 - When the new generation reaches full coverage (and passes integrity checks),
   it is atomically promoted; the old one is garbage-collected later.
 - Vectors from different generations are never compared.
+- **One lineage per embedding channel**
+  ([ADR-0023](../adr/0023-multimodal-ready-engine.md)). The text channel's
+  generation owns the lexical, filename, and text-vector indexes; a visual
+  channel's generation (specialized design only) owns only visual vectors and
+  records the visual recipe (model, revision, dimension, preprocessing,
+  visual-unit selection rules). Rebuilding one channel never rebuilds another.
+  With a unified model, image vectors live in the text channel's generation
+  and are reused through the embedding cache when only text-side recipe
+  elements (for example the chunker) change.
 
 ## 4. Failure semantics
 
@@ -148,10 +172,13 @@ input recipe version.
 | Watcher failure | Mark root degraded; fall back to periodic reconcile; surface in health |
 | Disk full | Pause indexing; keep serving search; actionable message |
 | Model assets missing/corrupt | Semantic lane pauses; lexical lane continues; repair flow offered |
+| Visual pack missing/corrupt | Visual lane pauses; text lanes and text search are unaffected; repair flow offered |
+| Undecodable or oversized image | No visual unit; file stays findable by name (and OCR text, if any); health records the reason |
 
 ## 5. Metrics (owned by the benchmark program)
 
-- Files/s and MB/s extracted per format; passages/s embedded per provider.
+- Files/s and MB/s extracted per format; passages/s embedded per provider;
+  images/s embedded including decode (visual pack) and visual coverage.
 - Time-to-lexically-searchable and time-to-semantically-searchable.
 - Re-embedding avoided by the cache (hit rate) on rename/copy/edit workloads.
 - Search latency under concurrent indexing (interference ratio).

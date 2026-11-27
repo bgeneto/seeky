@@ -24,6 +24,7 @@ candidates.
 | Learned sparse retrieval | Whether a sparse retriever joins the cascade |
 | Inference engine | ORT validation gate (kill criteria K1–K4); challenger engines only for a role where a criterion fires ([ADR-0019](../adr/0019-single-inference-engine.md)) |
 | OCR engines | CPU OCR pack contents, optional GPU pack, default on/off |
+| Visual embedders (optional pack, [ADR-0023](../adr/0023-multimodal-ready-engine.md)) | Visual architecture (A text-only, B unified, C specialized), visual model, visual-unit selection, pack shipped or not |
 | Extractors | Per-format extractor choice |
 | Lexical engines and analyzers | FTS5 vs Tantivy; stemming/stopwords per language |
 | Filename index | Instant filename/path search structure |
@@ -54,6 +55,10 @@ Seeky's own corpus, built to resemble a real user's folders.
 - **Adversarial structure:** exact copies, near-duplicate versions, boilerplate
   templates, very long books next to short notes, scanned duplicates of text
   PDFs, renamed/moved copies.
+- **Visual slice** (for the optional visual pack, ADR-0023): public-domain or
+  CC0 photos, rendered screenshots, diagrams and charts (from CC-BY papers or
+  generated plots), and slide decks with figures, pinned in the source
+  manifests like every SDC file; photos of identifiable people are avoided.
 - **Scales:** `sdc-smoke` (~200 files, committed, used in CI), `sdc-s`
   (~10k files / ~100k passages), `sdc-m` (~100k files / ~1M passages, extended
   with distractors).
@@ -75,6 +80,14 @@ Seeky's own corpus, built to resemble a real user's folders.
   | Mixed semantic + metadata | concept + type + date |
   | Code search | where a feature is implemented |
   | Filename/partial | prefix or typo of a file name (instant search) |
+  | Visual: text → image *(visual pack)* | photo of a red car parked on a street |
+  | Visual: diagram or chart *(visual pack)* | chart showing exponential growth; series RLC circuit diagram |
+  | Visual: image as query *(visual pack)* | other photos of this place; slides with this figure |
+
+  Visual categories are reported on their own and do not enter the text
+  weighted primary score (§3.1). Every text category is also run with the
+  visual pack enabled, so its effect on text-intent queries is measured (gate
+  Q8).
 
 - Judgments: graded 0–3 at **document** and **passage** level; snippet evidence
   spans for a subset; duplicate-cluster labels.
@@ -97,6 +110,10 @@ Seeky's own corpus, built to resemble a real user's folders.
 | mMARCO | Portuguese passage retrieval; constructed pt↔en cross-lingual pairs | pt, es, fr, de, … | MS MARCO terms — internal research use only |
 | Quati | Native Brazilian Portuguese retrieval | pt | Verify license before use |
 | BEIR subsets (SciFact, NFCorpus, FiQA, TREC-COVID) | English domain shift | en | Mixed — internal use only |
+| XM3600 *(visual pack)* | Multilingual text → image retrieval | 36 incl. pt, en | Verify license (captions and images) |
+| MMEB v2 image and visual-document subsets *(visual pack)* | Text ↔ image and visual-document retrieval | mostly en | Mixed per subset — internal use only |
+| ViDoRe *(visual pack)* | Visually rich document retrieval | en, fr, others | Verify per release |
+| COCO Captions, Flickr30k *(visual pack)* | Classic text ↔ image retrieval | en | Research terms — internal use only |
 
 Public datasets complement SDC; the **SDC test split is the deciding dataset**
 for product defaults. A candidate that wins SDC but collapses on public sets is
@@ -133,6 +150,8 @@ OCR CER/WER are measured against exact source text.
 | Hallucination rate (inserted words; text on no-text images; repetition loops) | OCR | Hard gate O4 |
 | Retrieval impact: nDCG@10 / Recall@100 on the scanned-document slice | OCR | OCR engines |
 | Text fidelity (normalized edit similarity) | extraction | Extractors |
+| nDCG@10, Recall@10 on visual slices | document / visual unit | Visual pack (gate Q8) |
+| Cross-modal alignment: text → image Recall@10 of a deployed variant vs its fp32 reference pair | visual | Visual quantization, especially with different precisions per component |
 
 Weighted primary score for selection: nDCG@10 averaged over language slices
 with weights pt 0.35, en 0.35, cross-lingual 0.15, other languages 0.15, and
@@ -151,6 +170,8 @@ reported per category.
 | Disk | bytes per 1k passages by component |
 | Startup | cold start to Instant-capable; to semantic-capable |
 | OCR throughput | s/page (p50/p95) and pages/s for A4 at 300 dpi, per tier and provider |
+| Visual throughput | images/s by image-size bucket, with decode/resize time reported separately from inference |
+| Image-query latency | p50/p95 with a warm vision encoder; cold load reported separately |
 | Distribution | installer size; default download size; per-asset size; runtime bytes per engine and platform |
 | Energy (where measurable) | joules per 1k passages, CPU vs NPU |
 
@@ -232,6 +253,21 @@ starts. Conditions: A4 page at 300 dpi, T1 CPU-only, background priority.
 | Q5 | Vector quantization/ANN: Recall@100 ≥ 0.99 versus exact f32 after rescoring |
 | Q6 | Reranker on by default on CPU only if it adds ≥ 3.0 nDCG@10 (significant) within P3; otherwise NPU-only or off |
 | Q7 | Diversity costs ≤ 1.0 nDCG@10 while improving distinct relevant@10 |
+| Q8 | Visual pack ships only if (a) its weighted nDCG@10 on the visual slices beats configuration A (OCR + filename + text, no pack) with statistical significance, and (b) with the pack enabled, no text category or language slice regresses beyond Q2 |
+
+### 5.6 Visual retrieval (optional pack)
+
+Provisional; locked before visual Stage B starts
+([ADR-0023](../adr/0023-multimodal-ready-engine.md)). Conditions: T1 CPU-only,
+background priority, photos up to 12 MP.
+
+| ID | Budget | Target |
+|---|---|---|
+| V1 | Visual indexing throughput, including decode and resize | ≥ 5 images/s |
+| V2 | Peak RSS added by the visual pack during indexing | ≤ 1.0 GB |
+| V3 | Visual pack download (vision encoder + any separate text encoder) | ≤ 250 MB |
+| V4 | Hybrid stage p95 for text queries with the visual channel enabled | P2 still met |
+| V5 | Image-query latency p95, warm vision encoder | ≤ 400 ms |
 
 ## 6. Statistics
 
@@ -253,8 +289,12 @@ starts. Conditions: A4 page at 300 dpi, T1 CPU-only, background priority.
 2. **Constraints:** meets the relevant budgets on T1 CPU-only (and T0 functional).
 3. **Objective:** maximize the weighted primary quality score on SDC-test,
    subject to gate Q2.
-4. **Tie-breakers** (within CI): no new engine, smaller download, lower RAM,
-   higher indexing throughput, simpler integration.
+4. **Tie-breakers** (within CI): no new engine; then, for the default text
+   embedder only, a candidate whose embedding space also serves images,
+   provided it meets every text budget including D2
+   ([ADR-0023](../adr/0023-multimodal-ready-engine.md)); then smaller
+   download, lower RAM, higher indexing throughput, simpler integration.
+   Image capability never offsets a text-quality loss outside the CI.
 5. Commit the Pareto frontier (quality × latency × memory × download) and the
    deployment-cost table (§8.5) with the report; record the outcome in an ADR.
 
@@ -264,7 +304,7 @@ revisited explicitly (ADR), never silently relaxed.
 ## 8. Model bake-off protocol
 
 Applies to every model bake-off (embedders, rerankers, snippet scorers, sparse
-encoders, OCR) and to the ORT validation gate (§8.7). Goal: decisions in days,
+encoders, OCR, visual embedders) and to the ORT validation gate (§8.7). Goal: decisions in days,
 from numbers, with expensive measurement spent only on finalists.
 
 ### 8.1 Unit of comparison: the deployment variant
@@ -446,6 +486,42 @@ superseding ADR.
 - **Tiers:** the CPU default tier must meet O1–O4. A GPU opt-in tier is
   measured on the reference GPU and must clear the §8.6 OCR margin over the
   CPU default tier to justify its download.
+
+### 8.9 Visual bake-off specifics (optional pack)
+
+Governed by [ADR-0023](../adr/0023-multimodal-ready-engine.md); candidates in
+[candidates §14](candidates.md).
+
+- **Configurations:** **A** text-only (OCR + filename + text channel, no
+  pack) is the baseline for every visual metric. **B** unified: one channel
+  whose text component is the default text embedder from WP-2.6. **C**
+  specialized: the default text embedder plus a separate visual channel. If
+  the WP-2.6 winner is not multimodal, a unified model can still serve as C's
+  visual channel; its text component then embeds queries only, never
+  passages, and its bytes count toward V3.
+- **Slices:** photos, screenshots, diagrams and charts, slides, scanned
+  documents with figures; pt and en text queries, cross-language queries, and
+  image-as-query; plus every text category re-run with the pack enabled
+  (gate Q8, part b).
+- **Visual units:** the selection rules (which slides, figures, and pages
+  become units) are part of the configuration under test; report units per
+  1k pages and the recall they buy.
+- **Parity:** image parity vectors start from raw bytes, so Rust decoding,
+  resizing, and normalization are validated against the reference
+  preprocessing. Report top-10 overlap on the visual slices, not only cosine.
+  When the text and vision components use different precisions, gate on the
+  cross-modal alignment metric (§3.1): per-component cosine can hide
+  alignment loss.
+- **Knobs:** Matryoshka dimension (re-normalize after truncation), visual
+  token budget for models that feed images to a shared backbone (70 / 140 /
+  280), input resolution, precision per component. Vocabulary pruning of
+  large-vocabulary text towers is allowed only if parity and pt/en quality
+  hold.
+- **Fusion and presentation:** rank fusion vs per-modality calibration;
+  interleaved vs grouped image results, each measured on visual and
+  text-intent slices.
+- **Public sets** (XM3600, MMEB v2 subsets, ViDoRe) shortlist and cross-check;
+  the SDC visual slice decides.
 
 ## 9. Tooling
 

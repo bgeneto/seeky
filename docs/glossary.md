@@ -13,13 +13,18 @@
 | **Transcription model** | An OCR model that only transcribes visible text with deterministic decoding and a fixed prompt (ADR-0021); may be encoder-decoder or VLM-based |
 | **OCR hallucination rate** | Share of OCR output words not present on the page, plus text emitted for pages without text; a hard OCR gate |
 | **Tier T0/T1/T2** | Hardware tiers: floor laptop, reference laptop (budgets defined here, CPU-only), workstation (iteration only) |
-| **Budget** | A locked numeric target (P*, I*, R*, D*, O*) such as Hybrid-stage p95 latency |
+| **Budget** | A locked numeric target (P*, I*, R*, D*, O*, V*) such as Hybrid-stage p95 latency |
 | **Passage** | Contiguous span of extracted text with offsets and a locator; the retrieval unit (a.k.a. chunk) |
 | **Document** | One indexed file; the presentation unit |
-| **Locator** | Where a passage lives: page, slide, sheet/row/column, or line |
+| **Locator** | Where a passage or visual unit lives: page, slide, sheet/row/column, line, or figure |
+| **Visual unit** | An image file, slide, embedded figure, or page region embedded as one vector by the visual pack; has a locator and content hash like a passage (ADR-0023) |
+| **Visual pack** | Optional asset pack with the vision encoder(s) for image search; outside the default download and never loaded on the text query path (ADR-0023) |
+| **Embedding channel** | One embedding space in the index (one model, revision, dimension, input recipe) with its own generation lineage; the text channel always exists, a visual channel only in a specialized design (ADR-0023) |
+| **Unified vs specialized multimodal** | One model and space for text and images (one channel) vs a text channel plus a separate visual channel, fused by rank |
+| **Modality gap** | Systematic offset between text–text and text–image similarity scores, even inside one shared space; the reason raw scores are never compared across modalities |
 | **Two-speed indexing** | Fast lane (metadata, filename, lexical) within seconds; semantic lane (embeddings) in the background |
 | **Semantic coverage** | Fraction of a root's passages that have embeddings in the active generation |
-| **Index generation** | All derived indexes built with one recipe (embedding model + revision + dimension + tokenizer + chunker); swapped blue/green |
+| **Index generation** | All derived indexes built with one recipe (embedding model + revision + dimension + tokenizer + chunker); swapped blue/green; one lineage per embedding channel |
 | **Embedding input recipe** | Exactly what text is embedded for a passage (heading path + passage text; never the filename) |
 | **Embedding cache** | Content-addressed store `hash(recipe output) → vector`, so copies, renames, and unchanged passages are never re-embedded |
 | **Reconcile** | Startup/resume comparison of the filesystem with stored signatures to catch offline changes |

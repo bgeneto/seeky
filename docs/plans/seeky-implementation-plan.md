@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Status | Active |
-| Version | 2.0 |
+| Version | 2.1 (visual pack track per ADR-0023) |
 | Date | 2026-11-27 |
 | Supersedes | Plan v1.1 (2026-11-26) and the archived Python-era plans |
 | Current release | 0.1.0 PoC (milestones M0 "runnable PoC" and M1 "live incremental index" complete) |
@@ -38,7 +38,7 @@ Seeky 1.0 is successful when, on CPU-only reference hardware (tier T1) with
    default model download is **≤ 250 MB**.
 5. Every one of those claims is backed by a committed benchmark report.
 
-Budget and gate IDs (P1–P5, I1–I5, R1–R6, D1–D2, O1–O4, Q1–Q7) are defined in
+Budget and gate IDs (P1–P5, I1–I5, R1–R6, D1–D2, O1–O4, V1–V5, Q1–Q8) are defined in
 [`../benchmarks/methodology.md`](../benchmarks/methodology.md); they are
 provisional until locked by ADR at the end of Phase 1.
 
@@ -51,9 +51,9 @@ provisional until locked by ADR at the end of Phase 1.
 | Local-first | No content in network requests or logs; provisioning is the only network use |
 | Performance-first | Budgets defined before code; perf harness in Phase 1; interference and stage latency are gates |
 | Multilingual-first | Language-sliced evaluation; pt/en analyzers; cross-lingual queries; en/pt UI |
-| Search-only | No generative features; VLMs only as gated OCR transcribers (ADR-0021); answer layer removed from the roadmap; no HTTP/MCP/CLI product surface |
+| Search-only | No generative features; VLMs only as gated OCR transcribers (ADR-0021); no generated image captions; answer layer removed from the roadmap; no HTTP/MCP/CLI product surface |
 | Benchmark-driven | Harness and baseline precede retrieval work; every component chosen by bake-off with an ADR; the inference engine (ONNX Runtime) validated by a priority-zero gate with predeclared kill criteria (WP-0.6); models compared as deployed (ONNX variant + quantization + provider) |
-| Model-agnostic core | Model manifest + traits; index generations; no hardcoded dimensions or paths |
+| Model-agnostic core | Model manifest + traits; index generations; modality-aware contracts and embedding channels (ADR-0023, WP-2.13); no hardcoded dimensions or paths |
 | Engine-first | Cargo workspace with UI-independent engine; Tauri becomes a thin shell in Phase 0 |
 
 ## 3. Methodology: Spec-Driven + Benchmark-Driven Development
@@ -150,9 +150,12 @@ Details: [overview](../architecture/overview.md) ·
 | 7 | Desktop experience | 0.7.0 | UX | Phase 0 (7.1, 7.2), WP-4.3 (7.3) |
 | 8 | Scale, hardening, cross-platform (beta) | 0.9.0 | All | 3, 4, 5, 6, 7 |
 | 9 | Release 1.0 | 1.0.0 | All | 8 |
+| 10 | Visual retrieval (optional pack) | 1.1.0, or 1.0 if pulled in | Visual (optional) | WP-2.13; 3, 4, 6 (10.1–10.2 can start after WP-1.3 and WP-2.2) |
 
 Critical path: **0 → 1 → 2 → 3 ∥ 4 → 8 → 9**. Tracks Acceleration,
-Distribution, and UX run in parallel once their dependencies land.
+Distribution, and UX run in parallel once their dependencies land. Phase 10 is
+**off the 1.0 critical path** ([ADR-0023](../adr/0023-multimodal-ready-engine.md));
+its only Phase 2 cost is WP-2.13 (modality-aware contracts).
 
 ```text
 Phase 0 ─► Phase 1 ─► Phase 2 ─┬─► Phase 3 ─┐
@@ -160,6 +163,8 @@ Phase 0 ─► Phase 1 ─► Phase 2 ─┬─► Phase 3 ─┐
    │                    ├─► Phase 5 ────────┤
    │                    └─► Phase 6 ────────┤
    └─► Phase 7 (7.1–7.2 early; rest after WP-4.3) ┘
+
+Phases 3 + 4 + 6 ─► Phase 10 (optional visual pack; 10.1–10.2 screening may start early)
 ```
 
 ---
@@ -216,15 +221,18 @@ storage, then select the core components by bake-off.
 | 2.3 | **Conditional — only if WP-0.6 fires a kill criterion:** challenger-engine bake-off for the failing role only (llama.cpp/GGUF, native OpenVINO IR, …), with full deployment cost and the new-engine margin ([methodology §8.6](../benchmarks/methodology.md)) | report | 0.6, 2.2 | Report + superseding ADR for that role, or confirmation of ADR-0019 |
 | 2.4 | Store v2: schema (`files`, `passages`, `jobs`, `generations`, `embedding_cache`, `models`), migration from the PoC DB, single-writer actor, WAL reader pool | SPEC-0006 | Phase 1 | `seeky-store` v2 + migration tests |
 | 2.5 | `LexicalIndex`, `FilenameIndex`, `VectorIndex` traits with as-built implementations behind them | SPEC-0006 | 2.4 | Trait-based retrieval adapters |
-| 2.6 | **Bake-off: embedding models** (incl. Matryoshka dims, quantization matrix) per [candidates §1](../benchmarks/candidates.md), on ONNX Runtime | report | 2.1, 2.2 (2.3 if triggered) | Report + ADR "Default embedding model" |
+| 2.6 | **Bake-off: embedding models** (incl. Matryoshka dims, quantization matrix) per [candidates §1](../benchmarks/candidates.md), on ONNX Runtime; multimodal-capable candidates compete on text merit only, with image capability as the ADR-0023 tie-breaker ([methodology §7](../benchmarks/methodology.md)) | report | 2.1, 2.2 (2.3 if triggered) | Report + ADR "Default embedding model" |
 | 2.7 | **Bake-off: lexical engine and analyzers** (FTS5 vs Tantivy; pt/en stemming, stopwords, trigram) | report | 2.5 | Report + ADR |
 | 2.8 | **Bake-off: filename/path index** | report | 2.5 | Report + ADR |
 | 2.9 | **Bake-off: vector store and quantization** (exact, flat int8, binary + rescoring, USearch, sqlite-vec) at `sdc-s` and synthetic 1M | report | 2.5, 2.6 | Report + ADR |
 | 2.10 | **Bake-off: chunking grid** (size, overlap, structure-aware, heading-path header) | report | 2.6 | Report + ADR |
 | 2.11 | **OCR screening** (Stage 0 + Stage A) over [candidates §5](../benchmarks/candidates.md): license and name verification, then CER/WER, hallucination, and retrieval impact on the OCR screening set in reference runtimes; select ≤ 4 finalists per tier (CPU default, GPU opt-in) | report | 1.1, 1.3, 2.2 | Screening report; finalists for WP-3.8 |
 | 2.12 | Implement winners behind traits; **B1 report** (new components, RRF fusion, no new ranking stages) | — | 2.6–2.10 | Report B1 |
+| 2.13 | **Modality-aware contracts, no visual model** ([ADR-0023](../adr/0023-multimodal-ready-engine.md)): `modality` and locator on retrieval units and a `visual_units` table; embedding channels with one generation lineage each; manifest `modalities`, `space`, per-component variants, and `[image]` preprocessing; the image capability on `Embedder`; fusion over N retrievers; text-only behavior unchanged | SPEC-0005, SPEC-0006 | 2.1, 2.4 | Contracts + tests proving the text path is unchanged and never opens a vision session |
 
 WP-2.11 runs in parallel with the other bake-offs; it needs no T1 time.
+WP-2.13 adds fields and capabilities only; it selects no visual model and
+moves no visual work onto the 1.0 critical path.
 
 **Exit evidence:** component ADRs accepted; B1 beats B0 on Q1;
 P1/P2 met at `sdc-s` on T1 CPU-only; OCR finalists named.
@@ -338,6 +346,28 @@ usable during indexing).
 | 9.3 | User documentation (en/pt): getting started, privacy, troubleshooting | — | Docs |
 | 9.4 | **1.0 GA gate**: all locked budgets and Q gates on the T0/T1 matrix | — | GA report |
 
+### Phase 10 — Visual retrieval (optional pack)
+
+**Goal:** text-to-image and image-to-image search as an optional pack that
+never weakens the text engine ([ADR-0023](../adr/0023-multimodal-ready-engine.md)).
+Off the 1.0 critical path; the maintainer decides whether it ships in 1.0 or
+1.1.
+
+| WP | Work package | Spec | Depends | Deliverables |
+|---|---|---|---|---|
+| 10.1 | **[human: judgments]** SDC visual slice: photos, screenshots, diagrams and charts, slides, scans with figures; pt/en text queries, cross-language and image-as-query; graded judgments; text categories re-run with the pack on | SPEC-0004 | 1.3, 1.4 | Visual slice + qrels |
+| 10.2 | **Visual screening** (Stage 0 + Stage A) over [candidates §14](../benchmarks/candidates.md): license review (Gemma Prohibited Use Policy; Nomic vision license), reference-runtime quality on the visual screening set, XM3600 pt/en, MMEB v2 subsets, ViDoRe; configurations A/B/C | report | 2.2, 10.1 | Screening report; ≤ 4 finalists per configuration |
+| 10.3 | Write and accept SPEC-0016: visual-unit selection rules, preprocessing, channel layout, fusion and calibration, image-query API, failure semantics | SPEC-0016 | 2.13, 10.2 | Accepted spec |
+| 10.4 | **Bake-off: visual architecture, Stages B + C** on T1 CPU-only: ONNX export of vision graphs with Rust preprocessing parity, quantization per component with cross-modal alignment checks, Matryoshka dims, visual token budget, resolution; V1–V5 and Q8 | report | 10.2, 10.3, 2.12 | Report + ADR "Visual architecture and model" (or "pack not shipped") |
+| 10.5 | Visual lane in the indexing pipeline (decode, resize, embed under the governor), visual channel generations, visual retriever, rank fusion or calibration, image queries | SPEC-0016 | 10.4, 3.2, 3.7, 4.7 | Engine support; V1, V2, V4, V5 measured |
+| 10.6 | Visual-pack provisioning: asset class, manifest entries, notices, repair | SPEC-0013 | 10.4, 6.2 | Pack installable and removable offline-safe |
+| 10.7 | UI: image-search setting, locally generated thumbnails, image-as-query input, modality filter; en/pt strings; both themes | SPEC-0014 | 10.5, 7.3 | UI support |
+| 10.8 | **B4 report**: full pipeline with and without the pack at `sdc-s` | — | 10.5–10.7 | Report B4 |
+
+**Exit evidence:** Q8 and V1–V5 met on T1 CPU-only; Q2 holds with the pack
+enabled; the visual ADR is accepted. If Q8 fails, the pack does not ship and
+the WP-2.13 contracts stay in place for a later attempt.
+
 ---
 
 ## 8. Benchmark program summary
@@ -360,6 +390,8 @@ usable during indexing).
 | Snippet scorer | 4.10 | Heuristic vs model |
 | Learned sparse | 4.11 | Whether a sparse retriever joins |
 | NPU providers | 5.2–5.6 | Provider per vendor; native OpenVINO fate |
+| Visual screening (Stages 0 + A) | 10.2 | Visual finalists per configuration (A/B/C) |
+| Visual architecture (Stages B + C) | 10.4 | Unified vs specialized; visual model; pack shipped or not |
 
 Protocol, datasets, statistics, and the decision rule:
 [`../benchmarks/methodology.md`](../benchmarks/methodology.md). Seeds:
@@ -424,6 +456,8 @@ Runtime candidate by the predeclared new-engine margin
 | SQLite ↔ index-file inconsistency after crash | Corrupt results | Generation markers; idempotent rebuild from SQLite + cache |
 | R2 outage | First-run semantic delay | Lexical-first; cached manifest; offline bundle |
 | Agent drift from contracts | Rework | Accepted specs only; requirement IDs in tests; reviewer checklist; this plan's status table |
+| A multimodal model is chosen for its image support at the expense of text | Core quality or latency regression | WP-2.6 judges text merit only; image capability is a tie-breaker inside the CI and the text budgets (ADR-0023, methodology §7) |
+| Visual pack slows indexing or pollutes text results | Worse core experience | Lowest-priority visual lane; budgets V1, V2, V4; Q8 (b) re-runs every text category with the pack on; rank-based fusion; pack off until the user enables it |
 
 ## 12. Rejected options (decision log)
 
@@ -449,6 +483,10 @@ Options discussed in earlier documents that this plan deliberately drops:
 | Manual Reindex as the answer to offline edits | Replaced by startup reconcile |
 | Filename/path inside the embedding input | Would force re-embedding on rename |
 | DirectML as the universal accelerator | Maintenance-mode API, GPU-centric, Windows-only |
+| "Multimodal-first" as a product principle; a unified multimodal model mandatory | Couples text quality to a secondary capability; a shared space still needs per-modality calibration (ADR-0023) |
+| Generated image captions or tags to make images text-searchable | Generative content in the index (ADR-0021) |
+| Embedding every document page as an image; late-interaction visual document retrieval as a product tier | CPU indexing cost and index size; OCR plus selective visual units cover the value (ADR-0023) |
+| Multimodal reranker; audio and video embeddings | No evidence of gain worth the cost; outside the core user jobs (ADR-0023) |
 
 ## 13. Open decisions (resolved by bake-offs or the maintainer)
 
@@ -467,6 +505,10 @@ Options discussed in earlier documents that this plan deliberately drops:
 | Windows ML as EP supplier | WP-5.6 |
 | Installer formats, signing certificate, manifest key management | SPEC-0015 / SPEC-0013 + maintainer |
 | macOS/Linux GA timing | Phase 8 results + maintainer |
+| Acceptance of ADR-0023 (multimodal-ready contracts, optional visual pack) | Maintainer |
+| EmbeddingGemma 2 license (Gemma Prohibited Use Policy pass-through) | WP-10.2 Stage 0 (and WP-2.6 if it enters the text bake-off) + maintainer |
+| Unified vs specialized visual architecture; visual model; pack shipped or not | WP-10.4 (gate Q8) + maintainer |
+| Visual pack in 1.0 or 1.1 | Maintainer, after Phase 8 |
 
 ## 14. Definition of Done (any work package)
 
@@ -487,11 +529,12 @@ Options discussed in earlier documents that this plan deliberately drops:
 | M1 Live incremental index | Done | 0.1.0 |
 | Phase 0 | In progress | WP-0.5 done (repository reorganization, AGENTS.md, templates); pre-flight done (fmt, clippy `-D warnings`, `hw-tests` feature, HTML fix, Auto never selects CUDA; [conformance audit](../validation/poc-conformance-audit.md)); WP-0.4 format gate done (rustfmt + Prettier in CI and a pre-commit hook) |
 | Phases 1–9 | Not started | — |
+| Phase 10 | Not started | Proposed by ADR-0023 (optional visual pack; off the 1.0 critical path) |
 
 ## 16. Immediate next actions
 
 1. Maintainer reviews and accepts this plan, the [vision](../product/vision.md),
-   and ADR-0015 to ADR-0022.
+   and ADR-0015 to ADR-0023.
 2. Write and accept **SPEC-0001** (workspace and crate boundaries) and
    **SPEC-0002 v1** (engine API).
 3. Execute WP-0.1 → WP-0.2 → WP-0.3 and WP-0.4 in parallel with WP-0.2; run

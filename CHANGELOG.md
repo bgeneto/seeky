@@ -47,6 +47,11 @@ All notable changes to Seeky are recorded here.
   ship (ADR-0021). OCR may use a transcription model of any architecture,
   including small VLMs, only with deterministic decoding, a fixed prompt, and a
   hallucination gate.
+- Proposed (ADR-0023): image search is planned as an optional, separately
+  downloaded visual pack that ships only if its own bake-off passes, and never
+  slows text search. The engine's data model, model manifest, and index
+  generations become modality-aware from Phase 2. The default text embedding
+  model is still chosen on text quality; image support only breaks ties.
 - ONNX Runtime is the single inference engine for embeddings, reranking,
   snippet scoring, and OCR (ADR-0019), validated by a priority-zero gate with
   predeclared kill criteria (plan WP-0.6). Challenger engines (llama.cpp/GGUF,

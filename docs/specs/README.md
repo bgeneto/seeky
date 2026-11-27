@@ -59,9 +59,9 @@ Specs are written just-in-time, as the first task of their phase (see the
 | SPEC-0001 | Workspace and crate boundaries | 0 | WP-0.1 |
 | SPEC-0002 | Engine API (v1 headless; v2 progressive search) | 0, 4 | WP-0.2, WP-0.3, WP-4.3 |
 | SPEC-0003 | Evaluation and benchmark harness | 1 | WP-1.1, WP-1.2, WP-1.5, WP-1.6 |
-| SPEC-0004 | Seeky Desktop Corpus and relevance judgments | 1 | WP-1.3, WP-1.4 |
-| SPEC-0005 | Model manifest, ONNX Runtime adapter, and bake-off toolchain | 2 | WP-2.1, WP-2.2 |
-| SPEC-0006 | Storage, index backends, and index generations | 2, 3 | WP-2.4, WP-2.5, WP-3.7 |
+| SPEC-0004 | Seeky Desktop Corpus and relevance judgments (incl. the visual slice) | 1, 10 | WP-1.3, WP-1.4, WP-10.1 |
+| SPEC-0005 | Model manifest (incl. modalities and components), ONNX Runtime adapter, and bake-off toolchain | 2 | WP-2.1, WP-2.2, WP-2.13 |
+| SPEC-0006 | Storage, index backends, index generations, and embedding channels | 2, 3 | WP-2.4, WP-2.5, WP-2.13, WP-3.7 |
 | SPEC-0007 | Indexing pipeline: jobs, two-speed lanes, cache, reconcile, governor | 3 | WP-3.1, WP-3.2, WP-3.3, WP-3.6 |
 | SPEC-0008 | Document extraction, language ID, and chunking | 3 | WP-3.4, WP-3.5, WP-3.9 |
 | SPEC-0009 | OCR asset pack (CPU default tier, optional GPU pack) | 2, 3 | WP-2.11, WP-3.8 |
@@ -71,5 +71,6 @@ Specs are written just-in-time, as the first task of their phase (see the
 | SPEC-0013 | Provisioning and asset manifest | 6 | WP-6.1–WP-6.5 |
 | SPEC-0014 | Desktop experience: shell, i18n, themes, progressive UI | 7 | WP-7.1–WP-7.9 |
 | SPEC-0015 | Release, packaging, and signing | 9 | WP-9.1, WP-9.2 |
+| SPEC-0016 | Visual retrieval pack: visual units, channels, fusion, image queries ([ADR-0023](../adr/0023-multimodal-ready-engine.md)) | 10 | WP-10.3–WP-10.7 |
 
 Template: [`_template.md`](_template.md).

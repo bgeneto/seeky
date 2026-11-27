@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Status | Accepted — the product "constitution" |
-| Version | 2.0 |
+| Version | 2.1 (image search scope per [ADR-0023](../adr/0023-multimodal-ready-engine.md)) |
 | Date | 2026-11-27 |
 | Precedence | Highest. Every ADR, spec, plan, and line of code must comply. |
 
@@ -87,6 +87,12 @@ Derived principles (equally binding):
 - Optional OCR for scanned PDFs and images (separately provisioned CPU asset
   pack); an opt-in GPU OCR pack only if its bake-off justifies it — never
   required, never the default.
+- Optional **visual retrieval pack**: text-to-image and image-to-image search
+  over images and selected visual units of documents (slides, embedded
+  figures), using non-generative embedding encoders. Separately provisioned,
+  outside the default download, never loaded on the text query path, and
+  delivered only after the text engine meets its gates; the engine's contracts
+  are modality-aware from the start ([ADR-0023](../adr/0023-multimodal-ready-engine.md)).
 - Hybrid retrieval: lexical BM25, filename/path, dense semantic, fusion,
   cross-encoder reranking, and benchmark-gated learned sparse retrieval.
 - Hierarchical ranking: passage ranking, document aggregation, per-document
@@ -104,7 +110,7 @@ Derived principles (equally binding):
 
 ### Deferred (post-1.0, each needs a scope decision)
 
-- Image semantic search, audio/video transcription.
+- Audio and video search or transcription.
 - Search inside archives (zip, 7z), network drives, removable-drive indexes.
 - Saved searches; search history beyond a small local recent-queries list.
 - Other opt-in GPU asset packs (for example faster initial indexing).
@@ -112,8 +118,9 @@ Derived principles (equally binding):
 ### Out of scope (permanently, unless this document changes)
 
 - Chat, generated answers, summaries, agents, conversational history, LLM query
-  rewriting, HyDE, generated snippets — any model that generates content
-  (vision-language models only as gated OCR transcribers, ADR-0021).
+  rewriting, HyDE, generated snippets, generated image captions or tags — any
+  model that generates content (vision-language models only as gated OCR
+  transcribers, ADR-0021).
 - MCP server, public REST API, public CLI, connector SDK, external connectors,
   cloud sync, LAN access, AI-client integrations, API-key management.
 - Accounts, multiuser support, activation, license enforcement, telemetry.

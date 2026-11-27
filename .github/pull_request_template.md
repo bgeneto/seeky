@@ -10,7 +10,7 @@
 
 ## Gates
 
-<!-- Which budgets/quality gates can this change affect? (P*, I*, R*, D*, O*, Q*) -->
+<!-- Which budgets/quality gates can this change affect? (P*, I*, R*, D*, O*, V*, Q*) -->
 
 - [ ] No quality/performance impact (explain why), **or**
 - [ ] Benchmark report attached: `docs/benchmarks/results/...`

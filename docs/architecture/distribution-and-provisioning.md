@@ -41,6 +41,7 @@ Public listing is unnecessary; clients fetch only manifest-referenced keys.
 | Reranker | Selected cross-encoder (CPU int8; NPU variant) | First run, after the embedder |
 | OCR pack (CPU) | OCR models selected by the OCR bake-off (for example detection + recognition, or a small transcription model) | When the user enables OCR |
 | GPU OCR pack (opt-in) | Higher-accuracy OCR model and an ONNX Runtime GPU execution provider, only if the OCR bake-off justifies it (ADR-0016) | Only on explicit user opt-in with a supported GPU |
+| Visual pack | Vision encoder selected by the visual bake-off, plus the visual channel's text encoder in a specialized design ([ADR-0023](../adr/0023-multimodal-ready-engine.md)); outside D2 | When the user enables image search |
 | Notices | LICENSE/NOTICE per asset | With each asset |
 
 GPU runtimes are not part of the default asset set ([ADR-0016](../adr/0016-cpu-first-npu-ready-execution.md)).
@@ -57,7 +58,8 @@ runtimes/
   ep-qnn/<version>/windows-arm64/...
   ep-vitisai/<version>/windows-x64/...
 models/
-  embedding/<family>/<revision>/   tokenizer.json, model_<variant>.onnx, parity.jsonl, model.toml
+  embedding/<family>/<revision>/   tokenizer.json, <component>_<variant>.onnx, parity.jsonl, model.toml
+                                   (components such as text and vision are separate assets)
   reranker/<family>/<revision>/    tokenizer.json, model_<variant>.onnx, parity.jsonl, model.toml
   ocr/<family>/<revision>/         det/rec models, dictionaries, model.toml
 licenses/

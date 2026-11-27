@@ -39,6 +39,7 @@ cannot is priced under the ADR-0019 runtime-cost rule.
 | `ibm-granite/granite-embedding-278m-multilingual` | 278M | 768 | Apache-2.0 | challenger | r1 family; check for r2 siblings *(verify)* |
 | `intfloat/multilingual-e5-base` | 278M | 768 | MIT | challenger | Classic quality/CPU trade-off |
 | `google/embeddinggemma-300m` | 308M | 768 (MRL 512/256/128) | Gemma Terms | challenger | **License review** (use policy pass-through) |
+| `google/embeddinggemma-2` (text component) | 270M (130M backbone + 140M embedder) | 768 (MRL 512/256/128) | Apache-2.0 + Gemma Prohibited Use Policy | challenger | Released 2026-10-06. Text component of a multimodal model: competes on text merit, image capability only as the ADR-0023 tie-breaker (methodology §7). ONNX text graph 314 MB (q8) / 175 MB (q4) vs D2 *(vendor)*; model card warns against fp16 inference; **license review** (use policy pass-through). See §14 |
 | `nomic-ai/nomic-embed-text-v2-moe` | 475M total / 305M active | 768 (MRL 256) | Apache-2.0 | challenger | MoE export/runtime cost *(verify)* |
 | `minishlab/potion-multilingual-128M` | static | 256 | MIT | challenger | Static (lookup) embedder; native Rust; T0 tier or instant-semantic experiments |
 | `BAAI/bge-m3` | 568M | 1024 (+ sparse, multi-vector) | MIT | ceiling | Offline quality reference |
@@ -198,3 +199,35 @@ decoders; the file format does not imply a generative model.
 | OpenVINO (native API) | OpenVINO IR (reads ONNX too) | Apache-2.0 | conditional (WP-2.3, WP-5.2) | Converts PyTorch/ONNX/TF/Paddle to IR; NNCF int8/int4; CPU plugin on x86-64 and ARM64; strongest on Intel NPU; GenAI pipelines for VLMs *(verify per model)* |
 | candle / burn / tract | safetensors / ONNX | MIT / Apache-2.0 | conditional | Joins only if CPU kernels and NPU coverage qualify at Stage 0 |
 | vLLM, MLX, TensorRT | various | various | excluded (default path) | Server-, GPU-, or platform-specific; may be priced only for a GPU opt-in pack |
+
+## 14. Visual and multimodal embedders (optional visual pack)
+
+Seeds the visual bake-off (plan Phase 10,
+[methodology §8.9](methodology.md)) under
+[ADR-0023](../adr/0023-multimodal-ready-engine.md). Configurations compared:
+**A** text-only (no pack), **B** unified (one space for text and images),
+**C** specialized (default text embedder + a separate visual channel).
+Only non-generative embedding encoders are eligible; models that generate
+captions or descriptions are excluded by
+[ADR-0021](../adr/0021-no-generative-models-in-product.md). All figures are
+vendor-reported until reproduced in Stage A; no candidate publishes
+Portuguese text-to-image results.
+
+| Candidate | Type | Size | Text context | License | Role | Notes |
+|---|---|---|---|---|---|---|
+| `google/embeddinggemma-2` (text + vision components) | Unified; images enter the shared backbone as soft tokens | Text 270M, vision 170M (audio 300M, not used). ONNX q8: text 314 MB, vision 195 MB; q4: 175 / 109 MB | 8,192 (shared with image tokens) | Apache-2.0 + Gemma Prohibited Use Policy → **review** | challenger (B; also a §1 text candidate) | 768-d, MRL 512/256/128 (vendor: "close to lossless" to 256; 128 degrades multimodal quality). Visual token budget 70–1120, default 280: an image costs the vision encoder plus the backbone over a few hundred tokens. ONNX export targets Transformers.js; q4 worst-case cosine vs fp32 0.975 (text 0.988). Published: MTEB multilingual v2 mean 61.36 (all tasks, not retrieval-only), MMEB v2 overall 59.01, MMEB v2 visual documents nDCG@5 67.84 |
+| `google/siglip2-base-patch16-224` | Two-tower (CLIP-like) | ~375M total *(verify split; large 256k-vocabulary text embedding table)* | 64 | Apache-2.0 | challenger (C: visual channel) | Independent towers: images embedded at index time, short text tower at query time. Multilingual training. Vocabulary pruning to cut pack size is allowed only with parity and pt/en quality checks |
+| Other SigLIP 2 sizes (base 256/384, so400m) | Two-tower | larger | 64 | Apache-2.0 | challenger / ceiling | Resolution and size sweep |
+| `nomic-ai/nomic-embed-vision-v1.5` + `nomic-embed-text-v1.5` | Vision tower aligned to an existing text space | 92M vision + 137M text | 8,192 | Vision: Apache-2.0 per Nomic (relicensed 2025-01), but the model card was seen listing CC-BY-NC — **verify**; text: Apache-2.0 | probe | English-centric text tower (P5 risk); simple, independent encoders |
+| OpenCLIP ViT-B/32 (LAION-2B) | Two-tower | ~151M | 77 | MIT code; weights *(verify)* | baseline (C) | Classic reference point for text-to-image quality and speed |
+| `apple/MobileCLIP2-*` | Two-tower | very small | 77 | Apple AMLR (research use) | excluded | License (ADR-0022); community ONNX conversions do not change the terms |
+| `jinaai/jina-clip-v2`, `jinaai/jina-embeddings-v5-omni-*` | Two-tower / unified | 0.9B / 1.0B | 8,192 | CC-BY-NC | excluded | Non-commercial license |
+| ColPali / ColQwen class | Late-interaction visual document retrieval | 2–3B | — | various | ceiling | Multi-vector; beyond CPU budgets; offline quality reference for visual documents only |
+
+Sources checked 2026-11-27:
+[EmbeddingGemma 2 model card](https://huggingface.co/google/embeddinggemma-2),
+[developer guide](https://developers.googleblog.com/embeddinggemma-2-the-developer-guide/),
+[ONNX exports](https://huggingface.co/onnx-community/embeddinggemma-2-ONNX),
+[Nomic Embed Vision announcement](https://home.nomic.ai/blog/posts/nomic-embed-vision),
+[nomic-embed-vision-v1.5 card](https://huggingface.co/nomic-ai/nomic-embed-vision-v1.5).
+Stage 0 re-verifies every license file and revision.

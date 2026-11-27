@@ -24,7 +24,8 @@ a benchmark report.
 | Passage | Contiguous span of extracted text with source offsets and a locator (page/slide/sheet/line) |
 | Document | One indexed file; one or more passages |
 | Candidate set | Passages/documents produced by first-stage retrievers |
-| Retriever | Filename/path, lexical (BM25), dense, and (gated) learned-sparse first-stage search |
+| Retriever | Filename/path, lexical (BM25), dense, (gated) learned-sparse, and (optional pack) visual first-stage search |
+| Visual unit | An image, slide, figure, or page region embedded as one vector by the visual pack ([ADR-0023](../adr/0023-multimodal-ready-engine.md)); never sent to the text cross-encoder or snippet engine |
 | Reranker | Multilingual cross-encoder scoring `(query, passage)` pairs |
 | Aggregation | Function mapping passage evidence to a document score |
 | Near-duplicate | Substantially redundant document/passage (copies, versions, boilerplate) |
@@ -44,6 +45,7 @@ query
   │      lexical BM25 ──┼─► fusion (RRF baseline) ─► passage candidates
   │      dense ANN/flat ┘            │
   │      [learned sparse: gated]     ▼
+  │      [visual: optional pack]
   │                         ═══ Stage "Instant" emitted after filename+lexical ═══
   │
   ├─ 2. Document layer
@@ -90,6 +92,7 @@ that hurts any category beyond tolerance is removed.
 | Lexical BM25 | passage | 200 | Language-aware analyzers (stemming for pt/en is benchmark-gated); phrase support |
 | Dense | passage | 200 | Quantized first pass + rescoring if selected; metadata pre-filtering |
 | Learned sparse (gated) | passage | 200 | Inference-free document-side models only if they beat BM25 at equal latency |
+| Visual (optional pack) | visual unit | 50 | Text queries are embedded by the visual channel's text encoder (or reuse the text query vector in a unified model); image queries load the vision encoder on demand. Never runs on the text query path when the pack is off |
 
 ### 4.1 Fusion
 
@@ -98,6 +101,13 @@ that hurts any category beyond tolerance is removed.
   (min-max/z-score per retriever, tuned on the dev split); query-class-specific
   weights.
 - Per-retriever ranks are kept for diagnostics and result tags.
+- **Cross-modal rule** ([ADR-0023](../adr/0023-multimodal-ready-engine.md)):
+  raw similarity scores from different modalities are never compared or
+  summed, even inside one shared embedding space (modality gap). Visual
+  candidates enter fusion by rank, or through per-modality calibration if the
+  visual bake-off selects it. Whether image results are interleaved with
+  documents or shown as a separate group is decided in SPEC-0014, informed by
+  gate Q8 (text-intent slices must not regress with the pack enabled).
 
 ## 5. Document layer
 
@@ -168,6 +178,8 @@ signals stay.
   navigational/identifier queries (exact filename hit with a strong margin).
 - Score caching per `(query, passage-hash)` for incremental typing.
 - **Fail open:** reranker absent, slow, or failing → keep the Hybrid ordering.
+- Visual units are not reranked; a multimodal reranker is out of scope until a
+  bake-off justifies its cost (ADR-0023).
 - Optionally offloaded to the NPU when validated.
 
 ### 6.2 Re-aggregation and diversity
@@ -195,6 +207,9 @@ never compresses, summarizes, or rewrites.
 - Locators let the shell open the file at the page/line when the OS app
   supports it.
 - Evaluated with snippet evidence-hit rate and span F1 on annotated passages.
+- Visual results show a locally generated thumbnail and their locator (page,
+  slide); no generated caption or description is ever produced
+  ([ADR-0021](../adr/0021-no-generative-models-in-product.md)).
 
 ## 8. Progressive delivery and latency
 
@@ -219,6 +234,7 @@ reports:
 | Filename depth | 40 |
 | Lexical depth | 200 |
 | Dense depth | 200 |
+| Visual depth (optional pack) | 50 |
 | RRF `k` | 60 |
 | Passages per document entering refinement | 8 |
 | Documents reranked (N) | 30 |
@@ -245,7 +261,7 @@ reports:
 | Module | Responsibility |
 |---|---|
 | `query/` | Normalization, classification, filter parsing, routing |
-| `retrieve/` | Filename, lexical, dense, (sparse) adapters over `seeky-store` traits |
+| `retrieve/` | Filename, lexical, dense, (sparse), (visual) adapters over `seeky-store` traits |
 | `fuse.rs` | RRF and challengers |
 | `document/` | Grouping, aggregation, dedupe, length correction |
 | `rerank.rs` | Cross-encoder orchestration, budgets, caching, fail-open |

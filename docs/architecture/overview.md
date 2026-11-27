@@ -29,8 +29,8 @@ Five subsystems, mirroring the reference architecture for semantic file search:
 | # | Subsystem | Responsibility | Crates |
 |---|---|---|---|
 | 1 | Filesystem intelligence | Scan, watch, reconcile, change detection, exclusions | `seeky-engine` |
-| 2 | Document intelligence | Extraction, normalization, language ID, OCR, chunking, source offsets | `seeky-extract` |
-| 3 | Indexing engine | Metadata, lexical, filename, vector indexes; embedding cache; generations | `seeky-store`, `seeky-infer` |
+| 2 | Document intelligence | Extraction, normalization, language ID, OCR, chunking, visual-unit selection, source offsets | `seeky-extract` |
+| 3 | Indexing engine | Metadata, lexical, filename, vector indexes; embedding cache; embedding channels and generations | `seeky-store`, `seeky-infer` |
 | 4 | Neural retrieval engine | Query analysis, candidate generation, fusion, reranking, document ranking | `seeky-search`, `seeky-infer` |
 | 5 | Semantic presentation | Extractive snippets, highlights, locators, result shaping | `seeky-search` |
 
@@ -100,11 +100,15 @@ impl Engine {
     // Observability
     pub fn status(&self) -> EngineStatus;          // cheap, lock-free snapshot
     pub fn subscribe(&self) -> EventReceiver;      // index progress, health, provisioning
-    pub fn capabilities(&self) -> Capabilities;    // lexical / semantic / rerank / ocr / npu
+    pub fn capabilities(&self) -> Capabilities;    // lexical / semantic / rerank / ocr / visual / npu
 
     pub fn shutdown(self) -> Result<()>;
 }
 ```
+
+A `SearchRequest` carries a text query or, when the visual pack is active, an
+image query ([ADR-0023](../adr/0023-multimodal-ready-engine.md)); both flow
+through the same stages.
 
 `SearchSink` receives one `SearchUpdate` per stage:
 
@@ -141,7 +145,9 @@ Rules:
 1. **Search never waits for indexing.** The query path runs on a dedicated
    high-priority pool with its own inference session(s) configured for batch-1
    latency. Indexing runs on a low-priority pool (OS background priority where
-   available) with throughput-configured sessions.
+   available) with throughput-configured sessions. Vision-encoder sessions
+   exist only for visual indexing and image queries; the text query path never
+   loads them ([ADR-0023](../adr/0023-multimodal-ready-engine.md)).
 2. **Single writer, many readers.** One store-writer actor owns all writes
    (SQLite transactions and index commits); readers use pooled WAL connections
    and immutable index snapshots. No lock is held across inference or I/O to
@@ -160,11 +166,11 @@ Rules:
 <app-data>/                          e.g. %APPDATA%\ai.seeky.desktop\
   seeky.db                           SQLite (WAL): source of truth
   index/
-    gen-<id>/                        one directory per index generation
-      lexical/                       Tantivy segments (if selected) — or inside seeky.db (FTS5)
-      filename/                      filename/path index
+    gen-<id>/                        one directory per index generation (one lineage per embedding channel)
+      lexical/                       Tantivy segments (if selected) — or inside seeky.db (FTS5); text channel only
+      filename/                      filename/path index; text channel only
       vectors/                       vector segments (flat/quantized or HNSW files)
-      GENERATION.json                model/chunker/tokenizer recipe + checksums
+      GENERATION.json                channel, model/chunker/tokenizer recipe + checksums
   cache/embeddings/                  content-addressed embedding cache (if outside SQLite)
   assets/                            provisioned runtimes/models (versioned, immutable)
   logs/                              rotating, redacted
@@ -176,10 +182,11 @@ Core tables in `seeky.db` (detailed in the storage spec):
 |---|---|
 | `roots` | Watched folders, watch state, exclusion rules |
 | `files` | Path, file identity, signature (size, mtime_ns, optional file ID), type, language, content hash, SimHash, duplicate cluster, length statistics, status |
-| `passages` | File, ordinal, compressed text, offsets, locator (page/slide/sheet/line), heading path, token length, passage hash |
-| `embedding_cache` | (passage-hash, generation) → vector (quantized and/or full) |
+| `passages` | File, ordinal, compressed text, offsets, locator (page/slide/sheet/line), heading path, token length, passage hash, source (extracted or OCR) |
+| `visual_units` | File, ordinal, kind (image, slide, figure, page region), locator, pixel size, content hash; populated only when the visual pack is enabled ([ADR-0023](../adr/0023-multimodal-ready-engine.md)) |
+| `embedding_cache` | (unit hash, generation) → vector (quantized and/or full), for passages and visual units |
 | `jobs` | Durable, idempotent indexing jobs with priority and attempts |
-| `generations` | Index generations: model ID/revision, dimension, chunker version, status |
+| `generations` | Index generations per embedding channel: channel, model ID/revision, modalities, dimension, recipe versions, status |
 | `models` | Installed model manifests and verification state |
 | `settings` | Key/value user settings |
 

@@ -20,6 +20,7 @@ defines **how** models run, not **which** ones win.
 | Snippet scorer (pruner slot) | `SnippetScorer` | Snippet quality | Heuristic baseline; model only if a bake-off wins |
 | OCR (detection + recognition pipeline, or a transcription model under [ADR-0021](../adr/0021-no-generative-models-in-product.md)) | `OcrEngine` | Scanned PDFs/images | Optional asset pack (CPU); GPU pack only if justified |
 | Learned sparse encoder | `SparseEncoder` | Gated retriever | Off unless it wins its bake-off |
+| Visual embedding (vision encoder in a unified model's space, or a separate visual channel) | `Embedder` with the image capability ([ADR-0023](../adr/0023-multimodal-ready-engine.md)) | Image search | Optional visual pack; off until the user enables image search |
 | Language identifier | `LanguageId` | Analyzers, slices | Native Rust library (no neural runtime needed) |
 
 ## 2. Runtime
@@ -43,6 +44,14 @@ defines **how** models run, not **which** ones win.
   (padding side and id, truncation, special tokens, prompts).
 - Static embedders (lookup-table models), if selected, run natively in Rust
   behind the same `Embedder` trait.
+- **Multimodal models** run as one ONNX graph per component (for example
+  `text` and `vision`). Each component has its own sessions, variants, and
+  parity vectors and is loaded only when its modality is needed; the text query
+  path never loads a vision component
+  ([ADR-0023](../adr/0023-multimodal-ready-engine.md)). Image preprocessing
+  (decode, resize, normalize, patching) is implemented in Rust from the
+  manifest; parity vectors for image components start from raw image bytes, so
+  preprocessing drift is caught like model drift.
 
 ## 3. Execution providers (CPU-first, NPU-ready)
 
@@ -85,6 +94,8 @@ revision    = "<upstream commit or version>"
 task        = "embedding"            # embedding | rerank | sparse | ocr-det | ocr-rec | ocr-transcribe | snippet
 license     = "Apache-2.0"
 languages   = ["multilingual"]
+modalities  = ["text"]               # text | image; a multimodal model lists both (ADR-0023)
+space       = "<family>/<revision>"  # embedding-space ID; only components sharing it produce comparable vectors
 
 [tokenizer]
 files        = ["tokenizer.json"]
@@ -104,15 +115,29 @@ truncatable_to = [512, 256, 128]     # Matryoshka dimensions, if supported
 query   = "query: "
 passage = "passage: "
 
-[[variants]]                          # one per precision/provider family
+[[variants]]                          # one per component × precision/provider family
+component = "text"                    # text | vision (multimodal models ship one graph per component)
 precision = "int8"
 providers = ["cpu"]
 file      = "model_int8.onnx"
 sha256    = "…"
 
 [parity]
-vectors   = "parity.jsonl"            # inputs → reference outputs
+vectors   = "parity.jsonl"            # inputs → reference outputs (raw image bytes for vision)
 tolerance = 0.01                      # cosine distance or logit delta
+```
+
+Models with the `image` modality add an image section; every value is read
+from the manifest, never hardcoded:
+
+```toml
+[image]
+component    = "vision"               # graph that embeds images
+resize       = "shortest-edge"        # resize policy implemented in Rust
+size         = 224
+mean         = [0.5, 0.5, 0.5]
+std          = [0.5, 0.5, 0.5]
+token_budget = 280                    # visual soft tokens, for models that feed images to a shared backbone
 ```
 
 ## 5. Model lifecycle
@@ -154,6 +179,13 @@ tolerance = 0.01                      # cosine distance or logit delta
 
 - One embedding model, revision, dimension, and input recipe per index
   generation; never mix vectors.
+- Each embedding channel has its own generation lineage
+  ([ADR-0023](../adr/0023-multimodal-ready-engine.md)): the text channel always
+  exists; a visual channel exists only in a specialized design (a unified model
+  embeds images into the text channel's space). Rebuilding one channel never
+  rebuilds another. Raw scores from different modalities are never compared,
+  even inside one shared space (modality gap); fusion works on ranks or
+  calibrated scores.
 - The provisioner knows which generation recipe the database expects; if its
   model is missing, the semantic lane pauses with a repair action while lexical
   search continues ([ADR-0018](../adr/0018-lexical-first-availability.md)).
@@ -175,3 +207,7 @@ tolerance = 0.01                      # cosine distance or logit delta
 Excludes ANN overhead, text, lexical index, and metadata. A binary first pass
 with int8/f32 rescoring is a leading candidate for CPU-first scale; the
 vector-store bake-off decides.
+
+Visual units add one vector each: 100k images cost about 77 MB at 768-d int8
+or 26 MB at 256-d int8. The visual pack's model bytes (vision encoder, plus a
+separate text encoder in a specialized design) are outside D2.

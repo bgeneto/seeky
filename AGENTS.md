@@ -57,7 +57,7 @@ apps/seeky/               as-built PoC: Tauri 2 + React 19 + Rust (becomes apps/
   demo/                   five-file smoke corpus
 docs/
   product/vision.md       principles, scope, product decisions
-  adr/                    one decision per file (0001–0022 …)
+  adr/                    one decision per file (0001–0023 …)
   specs/                  SDD specs + template (written just-in-time per phase)
   architecture/           overview, indexing, retrieval-engine, inference-and-models, provisioning
   benchmarks/             methodology, candidates, report template, results/
@@ -84,7 +84,7 @@ Target layout after Phase 0 (do not create ahead of its work package):
    Draft from [`docs/specs/_template.md`](docs/specs/_template.md) and stop for
    acceptance — do not implement a Draft.
 3. **Declare the gate** before coding: which tests prove the requirement IDs,
-   which budgets/quality gates (P*, I*, R*, D*, O*, Q*) the change can affect.
+   which budgets/quality gates (P*, I*, R*, D*, O*, V*, Q*) the change can affect.
 4. **Write failing tests first** (unit, property, integration, fuzz as the spec
    says). Reference requirement IDs in test names or doc comments
    (`// SPEC-0007-R4`).
@@ -153,7 +153,11 @@ touch.
   inference or user-file I/O; single store writer.
 - Every swappable subsystem (models, lexical, filename, vector index, OCR) goes
   through its trait in `seeky-core`.
-- One embedding vector space per index generation; never mix vectors (ADR-0019).
+- One embedding vector space per index generation, and one generation lineage
+  per embedding channel; never mix vectors, and never compare raw scores across
+  modalities (ADR-0019, ADR-0023).
+- The text query path never loads a vision encoder; image search is an optional
+  pack (ADR-0023).
 - The filename/path is never part of the embedding input.
 
 ### Rust
@@ -184,6 +188,8 @@ touch.
 - Check the license **before** spending time on a candidate
   ([`docs/benchmarks/candidates.md`](docs/benchmarks/candidates.md)).
 - Report confidence intervals; a difference inside the CI is a tie.
+- A multimodal model competes in the text embedding bake-off on text merit;
+  its image capability is only a tie-breaker (ADR-0023).
 - Development tooling may use LLMs to draft evaluation data; humans verify; no
   generative feature ever ships (ADR-0021).
 - ONNX Runtime is the only inference engine (ADR-0019). Compare models **as
@@ -196,8 +202,9 @@ touch.
 
 ## 7. Never do this
 
-- Add a generative LLM, chat, summarization, answer generation, agents, MCP,
-  connectors, cloud sync, accounts, license keys, telemetry, or analytics; or
+- Add a generative LLM, chat, summarization, answer generation, image
+  captioning, agents, MCP, connectors, cloud sync, accounts, license keys,
+  telemetry, or analytics; or
   a VLM used for anything but gated OCR transcription (ADR-0021).
 - Add a second inference engine to the product without the ADR-0019
   runtime-cost rule.
