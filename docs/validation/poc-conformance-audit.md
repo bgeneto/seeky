@@ -62,7 +62,7 @@ closed, the Status field above becomes `Closed`.
 | # | Finding | Rule | Status |
 |---|---|---|---|
 | A1 | HTML extraction always failed: the script/style pattern used a backreference, which the `regex` crate rejects, so every `.html`/`.htm` file errored | Bug | **Fixed**; test `extracts_html_text_without_scripts_and_styles` added |
-| A2 | Auto backend resolved CUDA → NPU → CPU (GPU first) | [ADR-0016](../adr/0016-cpu-first-npu-ready-execution.md) | **Fixed**: Auto resolves NPU → CPU; CUDA only when chosen explicitly. The NPU is still not "validated" in the ADR-0016 sense (see A5, A11) until WP-5.1/WP-5.2 |
+| A2 | Auto backend resolved CUDA → NPU → CPU (GPU first) | [ADR-0016](../adr/0016-cpu-first-npu-ready-execution.md) | **Fixed**: Auto is CPU-only, because ADR-0016 allows automatic NPU use only once validated (A5, A11). NPU and CUDA run only when chosen explicitly; WP-5.1/WP-5.2 decide when Auto may select the NPU |
 | A3 | Tests needing local assets or hardware were not opt-in | AGENTS.md §5 | **Fixed**: `hw-tests` cargo feature |
 | A4 | Regexes compiled per file, and per text run in DOCX/PPTX entity decoding | AGENTS.md §6 (hot paths) | **Fixed**: compiled once |
 | A5 | Switching backend does not re-embed: CPU uint8, CUDA fp16, and NPU vectors mix in one index with no parity check | ADR-0019 (one vector space; parity) | Open → WP-2.1 (manifest, parity on load), WP-3.7 (index generations) |

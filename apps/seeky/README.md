@@ -210,8 +210,9 @@ npm run tauri -- build --debug --no-bundle
    `contract renewal notice`. Filename and path terms are matched too and show
    a `FILENAME` tag.
 7. Click a result to preview; **Open file** launches the OS default app.
-8. **Settings** → choose Auto / CPU / CUDA / NPU. Auto resolves NPU → CPU and
-   never selects a GPU (ADR-0016); CUDA must be chosen explicitly. The choice is
+8. **Settings** → choose Auto / CPU / CUDA / NPU. Auto uses the CPU only: it
+   selects validated providers (ADR-0016), and the NPU path is not validated
+   yet. NPU and CUDA must be chosen explicitly. The choice is
    saved and reused on the next launch.
 9. Switching backends does not re-embed the index. All backends produce 384-d
    `gety-embed-v0` vectors, but cross-backend parity is **not verified** (the

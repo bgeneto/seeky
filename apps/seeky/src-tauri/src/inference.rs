@@ -85,20 +85,11 @@ fn init_ort(ort_dll: &Path) -> Result<()> {
 impl Engine {
     pub fn create(backend: Backend, model_root: &Path, npu_dir: &Path) -> Result<Self> {
         match backend {
-            Backend::Auto => {
-                let mut last_err = None;
-                // ADR-0016: Auto never selects a GPU; CUDA stays available only
-                // when chosen explicitly (frozen until removal, plan WP-5.7).
-                for candidate in [Backend::Npu, Backend::Cpu] {
-                    match Self::create_one(candidate, model_root, npu_dir) {
-                        Ok(engine) => return Ok(engine),
-                        Err(err) => last_err = Some((candidate, err)),
-                    }
-                }
-                Err(last_err
-                    .map(|(b, e)| anyhow!("auto backend failed (last {b:?}): {e:#}"))
-                    .unwrap_or_else(|| anyhow!("no inference backend available")))
-            }
+            // ADR-0016: Auto selects only validated providers. The NPU path has
+            // no parity check and truncates at 256 tokens (audit A5, A11), so
+            // Auto is CPU-only until WP-5.1/WP-5.2 validate it. NPU and CUDA
+            // run only when chosen explicitly (CUDA frozen, plan WP-5.7).
+            Backend::Auto => Self::create_one(Backend::Cpu, model_root, npu_dir),
             other => Self::create_one(other, model_root, npu_dir),
         }
     }

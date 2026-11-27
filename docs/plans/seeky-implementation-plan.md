@@ -561,7 +561,7 @@ Rules:
 |---|---|---|
 | M0 Runnable PoC | Done | 0.1.0 |
 | M1 Live incremental index | Done | 0.1.0 |
-| Phase 0 | In progress | WP-0.4 in progress, WP-0.5 done (§15.3). Pre-flight fixes done outside any WP: fmt, clippy `-D warnings`, `hw-tests` feature, HTML fix, Auto never selects CUDA ([conformance audit](../validation/poc-conformance-audit.md)) |
+| Phase 0 | In progress | WP-0.4 in progress, WP-0.5 done (§15.3). Pre-flight fixes done outside any WP: fmt, clippy `-D warnings`, `hw-tests` feature, HTML fix, Auto is CPU-only until the NPU is validated ([conformance audit](../validation/poc-conformance-audit.md)) |
 | Phases 1–9 | Not started | — |
 | Phase 10 | Not started | Planned per ADR-0023, accepted 2026-11-27 (optional visual pack; off the 1.0 critical path) |
 

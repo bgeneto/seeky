@@ -20,9 +20,9 @@ const BACKENDS = [
   {
     id: "auto",
     label: "Auto",
-    detail: "NPU → CPU",
+    detail: "CPU",
     blurb:
-      "Use the NPU when available, otherwise the CPU. Never selects a GPU.",
+      "Uses the CPU. NPU and GPU run only when chosen explicitly until they pass validation.",
   },
   {
     id: "cpu",

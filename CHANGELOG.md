@@ -18,8 +18,9 @@ roadmap (§6), with the date.
 
 ### Changed
 
-- Auto backend selection resolves NPU → CPU and never selects a GPU
-  (ADR-0016); CUDA remains available only when chosen explicitly.
+- Auto backend selection uses the CPU only: ADR-0016 allows automatic
+  NPU use only once the NPU path is validated (WP-5.1/WP-5.2). NPU and CUDA
+  remain available when chosen explicitly.
 - Extraction regular expressions are compiled once instead of per file and per
   text run.
 - Tests that need local model files, PDFium, CUDA, or an NPU run only with the
