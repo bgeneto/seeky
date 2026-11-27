@@ -641,6 +641,58 @@ that forbid automated download, or a dataset too large for an unattended
 run; record the blocker and continue with the others.
 ```
 
+### Lane H: WP-1.2, `seeky-bench` plus its accepted evaluation-API prerequisite
+
+```text
+WORK PACKAGE: WP-1.2, plus the accepted SPEC-0002 v1.1 R17-R25 prerequisite
+that no other work package owns. BRANCH: wp/1.2-seeky-bench. STARTS AFTER:
+WP-1.1 merged, SPEC-0002 v1.1 accepted, SPEC-0003 Accepted.
+WHY THE SCOPE: SPEC-0003 R15-R22 and R32 require Engine::search_with,
+probe_query_embedding, and config_snapshot, which SPEC-0002 v1.1 defines but
+nothing implements yet. Implement R17-R25 first, commit it green, then build
+the bench against it.
+OWNED PATHS: tools/seeky-bench/ (new); crates/seeky-core/, seeky-search/,
+seeky-engine/, seeky-infer/, and seeky-store/ only for SPEC-0002 v1.1
+R17-R25; root Cargo.toml members and [workspace.dependencies]; Cargo.lock;
+SPEC-0002 status cells R17-R25; SPEC-0003 status cells R15-R22 and R32.
+Do not touch apps/, deny.toml, CI, the plan or its indexes, CHANGELOG.md, the
+conformance audit, or any spec other than those status cells; propose those
+records in the PR.
+PHASE A (engine, SPEC-0002 section 9): v1.1 evaluation depth 1..=1000 with
+candidate-depth reporting; deterministic total order; opt-in in-process stage
+telemetry; uncached batch-1 query-embedding probe; exact extension/date/
+folder/size filters with per-predicate pushdown/post reporting and
+possibly_incomplete; canonical privacy-safe config snapshot and SHA-256. Keep
+v1 search and payloads unchanged; the only additive error is
+MetadataUnavailable. Use the section 9.7 recommendations and do not guess.
+PHASE B (bench, SPEC-0003 4.8-4.11): implement index, eval, perf (skeleton),
+compare, and report. Resolve corpora only through the built-in SDC mappings or
+bench/datasets/<id>/manifest.json; reject unknown or conflicting flags before
+opening the engine; disable watching for deterministic indexing; write an
+index metadata sidecar; capture a privacy-safe environment and hash the
+semantic configuration; issue queries in ID order; write run.trec,
+results.json, summary.md, config snapshot, environment, and checksums
+atomically; fail closed with INSUFFICIENT_DEPTH; apply structured filters
+exactly and report pushdown/post; implement the test-split confirmation and
+exposure ledger; `compare` never opens the engine; `report` recomputes
+nothing and refuses to overwrite differing content. perf is only a skeleton
+for WP-1.6.
+TESTS FIRST: the SPEC-0002 section 9.6.1 engine matrix; the SPEC-0003 6.1
+matrix for R15-R22 and R32; a hermetic end-to-end fixture under
+tools/seeky-bench/tests/ that indexes a tiny BEIR corpus, evals it, and shows
+a second run reproduces the artifacts; malformed CLI/filter/report matrices;
+no network and no user paths.
+GREEN: AGENTS 5.
+DONE: Phase A R17-R25 Implemented and Phase B R15-R22/R32 Implemented with a
+reproducible fixture eval. The real `cargo run -p seeky-bench -- eval
+--corpus sdc-smoke --split dev` stays blocked because `sdc-smoke-v1` verified
+judgments do not exist yet (WP-1.4, H6); record WP-1.2 In progress with that
+as the only remaining item. PR with PROPOSED RECORDS.
+STOP: if SPEC-0002 section 9 leaves a semantic undecided, if a new dependency
+needs a license review, or if a change would touch a path outside the list
+above; report instead of guessing.
+```
+
 ## 7. Where the unattended run ends
 
 With the gates answered as they come up, the run can reach:
