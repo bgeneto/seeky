@@ -18,6 +18,11 @@ roadmap (§6), with the date.
 
 ### Changed
 
+- CI now enforces clippy `-D warnings` (including `hw-tests` code),
+  hardware-free tests on Windows and Linux, cargo-deny bans, licenses,
+  advisories, and sources, the TypeScript build, and compilation on Windows,
+  Linux, and macOS. `deny.toml` implements ADR-0022; its scoped license
+  exceptions and temporary advisory ignores await maintainer gate H4 (WP-0.4).
 - The repository is a Cargo workspace (SPEC-0001): engine crate stubs under
   `crates/`, the app moved from `apps/seeky` to `apps/desktop`, the Rust
   toolchain is pinned to 1.99.1, and Rust checks run from the root

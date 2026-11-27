@@ -561,7 +561,7 @@ Rules:
 |---|---|---|
 | M0 Runnable PoC | Done | 0.1.0 |
 | M1 Live incremental index | Done | 0.1.0 |
-| Phase 0 | In progress | WP-0.1 and WP-0.5 done, WP-0.4 in progress (§15.3). Pre-flight fixes done outside any WP: fmt, clippy `-D warnings`, `hw-tests` feature, HTML fix, Auto is CPU-only until the NPU is validated ([conformance audit](../validation/poc-conformance-audit.md)). SPEC-0001 and SPEC-0002 v1 Accepted |
+| Phase 0 | In progress | WP-0.1 and WP-0.5 done; WP-0.4 implementation complete and awaiting H4 approval (§15.3). Pre-flight fixes done outside any WP: fmt, clippy `-D warnings`, `hw-tests` feature, HTML fix, Auto is CPU-only until the NPU is validated ([conformance audit](../validation/poc-conformance-audit.md)). SPEC-0001 and SPEC-0002 v1 Accepted |
 | Phases 1–9 | Not started | — |
 | Phase 10 | Not started | Planned per ADR-0023, accepted 2026-11-27 (optional visual pack; off the 1.0 critical path) |
 
@@ -572,7 +572,7 @@ Rules:
 | 0.1 | Done | [SPEC-0001](../specs/SPEC-0001-workspace-and-crate-boundaries.md) v0.1 (R1–R12, R14–R17); root `Cargo.toml`, `rust-toolchain.toml`, `clippy.toml`, `deny.toml`, `crates/seeky-*` stubs, `apps/desktop`; commits: `git log --grep "WP-0.1"` | R13 completes when WP-0.2/WP-0.3 remove the PoC's heavy dependencies from the shell; R18 lands with WP-0.2 |
 | 0.2 | Not started | — | — |
 | 0.3 | Not started | — | — |
-| 0.4 | In progress | `.github/workflows/ci.yml` (`format` job), `.githooks/pre-commit` | Done: rustfmt + Prettier in CI and a check-only pre-commit hook; hardware tests behind the `hw-tests` feature (pre-flight). Remaining CI jobs: clippy `-D warnings`, hardware-free tests, `cargo-deny`, TypeScript typecheck + build, Windows/Linux/macOS compile |
+| 0.4 | In progress | `.github/workflows/ci.yml` (`format`, `lint`, `test`, `deny`, `web`, `compile`), `.githooks/pre-commit`, `deny.toml`; [PR #1](https://github.com/bgeneto/seeky/pull/1) CI and local AGENTS §5 checks | Done: rustfmt + Prettier, clippy `-D warnings` with and without `hw-tests`, hardware-free tests on Windows/Linux, cargo-deny bans/licenses/advisories/sources, TypeScript build, and Windows/Linux/macOS compile jobs. Remaining: maintainer approval of the disclosed license exceptions and advisory ignores (H4), then mark Done |
 | 0.5 | Done | `AGENTS.md`, `CLAUDE.md`, `docs/adr/_template.md`, `docs/specs/_template.md`, `docs/benchmarks/_report-template.md`, `.github/pull_request_template.md` | Repository reorganization |
 | 0.6 | Not started | — | Fed by the OCR Stage 0 paper screen (§16) |
 | 1.1 | Not started | — | — |
@@ -664,9 +664,10 @@ finished items and add the next ones, so this list never points at done work.
 
 1. Maintainer reviews and accepts this plan (the
    [vision](../product/vision.md) and ADR-0015 to ADR-0023 are Accepted).
-2. Execute WP-0.2 → WP-0.3, and WP-0.4 in parallel with WP-0.2; run
-   **WP-0.6 (ORT validation gate, priority zero)** alongside — it needs no
-   corpus or judgments, only T1 (or T1-emulated) time.
+2. Execute WP-0.2 → WP-0.3; run **WP-0.6 (ORT validation gate, priority zero)**
+   alongside — it needs no corpus or judgments, only T1 (or T1-emulated) time.
+   WP-0.4 awaits maintainer approval of its disclosed license exceptions and
+   advisory ignores (H4).
 3. Write **SPEC-0003** (harness) and **SPEC-0004** (SDC + judgments) while
    Phase 0 lands; secure access to a T1 reference laptop (or define the
    T1-emulated profile).
