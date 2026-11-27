@@ -55,7 +55,7 @@ Before you start:
 | H3 | Approve the T1-emulated profile that lane E proposes, or provide a physical T1 laptop | WP-0.6 final measurements |
 | H4 | Approve the license exceptions and advisory ignores that lane B lists, if any | WP-0.4 Done |
 | H5 | Decide the WP-0.6 outcome: ADR-0019 stands, or WP-2.3 starts for the failing role | Phase 0 exit; SPEC-0005 |
-| H6 | Verify the LLM-drafted queries and judgments (lane J) | WP-1.4, then WP-1.7 (B0 on T1, also yours) |
+| H6 | Verify the LLM-drafted queries and judgments (lane J); since ADR-0026 a model reviewer with [`judgment-review-prompt.md`](../benchmarks/judgment-review-prompt.md) may do it | WP-1.4, then WP-1.7 (B0 on T1, also yours) |
 | H7 | Accept SPEC-0005 and SPEC-0006 (lane N drafts). SPEC-0006 v0.2 Accepted 2026-11-27; SPEC-0005 pending | Phase 2 briefs (next revision of this file) |
 | — | Manual checks the agents cannot do: the app opens an existing index (SPEC-0001-R10, SPEC-0002-R16); a PDF result opens and a `.py` result is revealed in Explorer (SPEC-0002-R7) | Phase 0 exit evidence |
 
@@ -165,7 +165,7 @@ E  OCR Stage 0 → WP-0.6 ─H3─► (continues) ─H5─────► N SPEC
 | J | WP-1.4 drafted queries and judgments | anywhere | G merged | `wp/1.4-judgments-draft` |
 | K | WP-7.1 then WP-7.2 | this workstation | A2 merged, H2 | `wp/7.1-i18n`, `wp/7.2-themes` |
 | L | WP-1.6 perf harness | this workstation | H merged | `wp/1.6-perf` |
-| M | WP-1.8 CI smoke gate | anywhere | H and G merged; `sdc-smoke-v1` human-verified (H6) | `wp/1.8-smoke-gate` |
+| M | WP-1.8 CI smoke gate | anywhere | H and G merged; `sdc-smoke-v1` verified (H6) | `wp/1.8-smoke-gate` |
 | N | SPEC-0005 and SPEC-0006 drafts | anywhere | E report merged (SPEC-0005) | `spec/0005-manifest`, `spec/0006-storage` |
 
 Shared files that need a single owner at a time:
@@ -861,7 +861,7 @@ outside the owned paths.
 WORK PACKAGE: WP-1.8 per SPEC-0003 R29-R31 (4.8-4.11 for compare and the
 gate result shape). BRANCH: wp/1.8-smoke-gate. STARTS: now for the code
 and hermetic tests (maintainer, 2026-11-27); the CI job is activated only
-after `sdc-smoke-v1` is human-verified and published (H6, SPEC-0004 R26).
+after `sdc-smoke-v1` is verified and published (H6, SPEC-0004 R26).
 STARTING POINT: WP-1.2 already wired `compare --gate wp1.8`
 (tools/seeky-bench/src/gate.rs, wp18_gate): one candidate,
 --repeat-candidate, --baseline-commit, same config, macro nDCG@10, repeat

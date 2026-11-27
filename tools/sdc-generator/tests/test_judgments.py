@@ -572,6 +572,52 @@ class JudgmentTestCase(unittest.TestCase):
         }
         _validate_provenance(llm, file="probe.jsonl")
 
+    def test_model_reviewer_may_verify_but_not_its_own_draft(self) -> None:
+        # SPEC-0004-R20, ADR-0026: an llm: reviewer verifies, never its own draft.
+        reviewer = "llm:claude-opus-5-5@claude-opus-5-5"
+        tool_draft = {
+            "drafted_by": "tool:qrels-drafter@v1",
+            "tool_config_sha256": "a" * 64,
+            "verified_by": [reviewer],
+            "state": "verified",
+            "adjudicated_by": None,
+        }
+        _validate_provenance(tool_draft, file="probe.jsonl")
+
+        other_model_draft = {
+            "drafted_by": "llm:qwen3-0.6b@rev1",
+            "llm_prompt_sha256": "b" * 64,
+            "verified_by": [reviewer],
+            "state": "verified",
+            "adjudicated_by": None,
+        }
+        _validate_provenance(other_model_draft, file="probe.jsonl")
+
+        own_draft = {
+            "drafted_by": reviewer,
+            "llm_prompt_sha256": "b" * 64,
+            "verified_by": [reviewer],
+            "state": "verified",
+            "adjudicated_by": None,
+        }
+        with self.assertRaises(SdcError) as caught:
+            _validate_provenance(own_draft, file="probe.jsonl")
+        self.assertEqual(caught.exception.code, "PROVENANCE_INCOMPLETE")
+
+        adjudicated = {
+            "drafted_by": "tool:qrels-drafter@v1",
+            "tool_config_sha256": "a" * 64,
+            "verified_by": [reviewer, "human:reviewer-a"],
+            "state": "adjudicated",
+            "adjudicated_by": reviewer,
+        }
+        _validate_provenance(adjudicated, file="probe.jsonl")
+
+        for bad in ("model:claude", "llm:no-revision", "bot:x"):
+            with self.assertRaises(SdcError) as caught:
+                _validate_provenance({**tool_draft, "verified_by": [bad]}, file="probe.jsonl")
+            self.assertEqual(caught.exception.code, "PROVENANCE_INCOMPLETE")
+
     def test_tool_draft_has_no_grade_authority(self) -> None:
         # SPEC-0004-R20/R21 and section 5.4: a tool grade never publishes.
         root = _draft_root(self.tmp, "tool-authority")

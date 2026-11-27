@@ -43,8 +43,9 @@ Template: [`_template.md`](_template.md).
 | [0018](0018-lexical-first-availability.md) | Lexical-first availability before model provisioning | Accepted |
 | [0019](0019-single-inference-engine.md) | ONNX Runtime as the single inference engine, with a validation gate | Accepted |
 | [0020](0020-pluggable-index-backends.md) | Pluggable lexical/vector index backends; SQLite as metadata source of truth | Accepted |
-| [0021](0021-no-generative-models-in-product.md) | No generative models in the shipped product | Accepted |
+| [0021](0021-no-generative-models-in-product.md) | No generative models in the shipped product | Accepted (amended by 0026) |
 | [0022](0022-permissive-license-gate.md) | Permissive-license gate for code, models, and data | Accepted |
 | [0023](0023-multimodal-ready-engine.md) | Multimodal-ready engine; visual retrieval as an optional, gated pack | Accepted |
 | [0024](0024-source-code-indexing-opt-in.md) | Source-code indexing is opt-in; source files are never opened directly | Accepted |
 | [0025](0025-automatic-provider-opt-in-gpu-tier-full-speed.md) | Automatic provider selection, opt-in GPU quality tier, and full-speed indexing (amends 0016) | Accepted |
+| [0026](0026-model-verified-evaluation-judgments.md) | Model-verified evaluation judgments (amends 0021) | Accepted |

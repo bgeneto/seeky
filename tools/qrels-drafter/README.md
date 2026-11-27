@@ -7,7 +7,7 @@ area that is never benchmark-eligible. Nothing here ships, and no engine crate
 imports it.
 
 Every record it writes is `state: "draft"` with `verified_by: []`. Tool and LLM
-grades are candidate data: gate H6 (a human) verifies every query intent and
+grades are candidate data: gate H6 (a human or, per ADR-0026, a model other than the drafter) verifies every query intent and
 every relevance grade before any split can be frozen.
 
 ## Category split (SPEC-0004 4.6)

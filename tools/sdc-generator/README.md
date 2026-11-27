@@ -74,7 +74,7 @@ use the combined `queries.draft.jsonl`, `qrels.draft.documents.jsonl`,
   target hashes against `--corpus`, and pool rows. The flag is refused outside
   a `drafts` directory and is never needed for a frozen set.
 - `judgments freeze-split` requires state `draft`, every non-rejected query to
-  be human-verified or adjudicated, no pool rows, and the SPEC-0004 query
+  be verified or adjudicated, no pool rows, and the SPEC-0004 query
   minima. It verifies the stratified assignment from §5.4 and records the exact
   future `dev`/`test` query-file digests in `query_file_sha256`.
 - `judgments publish` requires state `split_frozen`, an unchanged query digest,
@@ -86,7 +86,9 @@ use the combined `queries.draft.jsonl`, `qrels.draft.documents.jsonl`,
 Draft provenance is `human:<id>`, `llm:<model>@<revision>` with
 `llm_prompt_sha256`, or `tool:<id>@<version>` with `tool_config_sha256`. A tool
 or LLM draft is candidate data only: it has no authority over a relevance grade,
-and `publish` refuses any record without human verification. A tool drafts only
+and `publish` refuses any unverified record. A reviewer in `verified_by` is
+`human:<id>` or `llm:<model>@<revision>` (ADR-0026); a model never verifies its
+own draft. A tool drafts only
 `known_item`, `exact_identifier`, `needle_in_haystack`,
 `mixed_semantic_metadata`, `filename_partial`, and `code_search` records, never
 a `cross_lingual` slice (SPEC-0004 §4.6).

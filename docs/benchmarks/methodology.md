@@ -94,7 +94,9 @@ Seeky's own corpus, built to resemble a real user's folders.
 - Drafting: humans author queries; LLMs may draft additional queries and
   candidate judgments offline (development tooling only,
   [ADR-0021](../adr/0021-no-generative-models-in-product.md)); every judgment
-  used for a gate is human-verified or adjudicated.
+  used for a gate is verified or adjudicated by a human or model reviewer
+  ([ADR-0026](../adr/0026-model-verified-evaluation-judgments.md)); a model
+  never verifies its own draft.
 - Pooling: judgments are pooled from all systems under test (depth 20) to avoid
   favoring the baseline.
 - **Splits:** `dev` (tuning allowed) and `test` (gate decisions only; never used
@@ -105,7 +107,7 @@ Source-code documents and `code_search` queries run only in the `code_enabled`
 configuration (ADR-0024). Default Q1/Q2 reporting and the WP-1.8 smoke gate
 cover the other eight query categories; code search is reported separately
 against code-enabled baselines. The `sdc-smoke-v1` set is dev-only and must be
-human-verified before WP-1.8 starts.
+verified before WP-1.8 starts.
 
 ### 2.3 Public datasets (downloaded by script, never redistributed)
 

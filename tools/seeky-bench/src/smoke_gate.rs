@@ -62,7 +62,7 @@ pub enum Reason {
     SmokeSetUnpublished,
     /// R30: the judgment set is not frozen with `test_exposure` not applicable.
     NotFrozen,
-    /// R30: a query or judgment is not human-verified or adjudicated.
+    /// R30: a query or judgment is not verified or adjudicated.
     UnverifiedData,
     /// The published set fails full SDC validation or cannot be read.
     SmokeSetInvalid,
@@ -367,7 +367,7 @@ impl SmokeProvenance {
         Self { state, verifiers }
     }
 
-    /// Human-verified or adjudicated with at least one recorded verifier.
+    /// Verified or adjudicated with at least one recorded reviewer (ADR-0026).
     #[must_use]
     pub fn is_verified(&self) -> bool {
         matches!(self.state.as_str(), "verified" | "adjudicated") && self.verifiers > 0
@@ -703,7 +703,7 @@ fn evaluate_inner(
         fail(
             Reason::UnverifiedData,
             format!(
-                "query {} is {} rather than human-verified or adjudicated",
+                "query {} is {} rather than verified or adjudicated",
                 query.id,
                 if query.provenance.state.is_empty() {
                     "unlabelled"
@@ -721,7 +721,7 @@ fn evaluate_inner(
         fail(
             Reason::UnverifiedData,
             format!(
-                "judgment {} is not human-verified or adjudicated",
+                "judgment {} is not verified or adjudicated",
                 judgment.location
             ),
         )?;

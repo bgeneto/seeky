@@ -454,6 +454,11 @@ def _check_compatible(manifest: dict[str, Any], corpus: _Corpus) -> None:
         )
 
 
+def _is_reviewer(value: Any) -> bool:
+    """A human pseudonym or a pinned model identity (ADR-0026)."""
+    return isinstance(value, str) and bool(_HUMAN.match(value) or _LLM.match(value))
+
+
 def _validate_provenance(
     value: Any, *, file: str, line: int | None = None, field: str = "provenance"
 ) -> dict[str, Any]:
@@ -489,10 +494,16 @@ def _validate_provenance(
     elif TOOL_PROVENANCE_KEY in value:
         _bad("tool_config_sha256 is valid only for a tool draft", file=file, line=line, field=TOOL_PROVENANCE_KEY)
     verified_by = value["verified_by"]
-    if not isinstance(verified_by, list) or not all(
-        isinstance(item, str) and _HUMAN.match(item) for item in verified_by
-    ):
-        _prov("verified_by must be an array of human:<id> values", file=file, line=line, field="verified_by")
+    if not isinstance(verified_by, list) or not all(_is_reviewer(item) for item in verified_by):
+        _prov(
+            "verified_by must be an array of human:<id> or llm:<model>@<revision> values",
+            file=file,
+            line=line,
+            field="verified_by",
+        )
+    # ADR-0026: a model reviewer never verifies its own draft.
+    if isinstance(drafted_by, str) and llm_draft and drafted_by in verified_by:
+        _prov("a model may not verify its own draft", file=file, line=line, field="verified_by")
     if len(set(verified_by)) != len(verified_by):
         _prov("verified_by must be distinct", file=file, line=line, field="verified_by")
     state = value["state"]
@@ -502,12 +513,12 @@ def _validate_provenance(
         _prov("a verified or adjudicated record needs verified_by", file=file, line=line, field="verified_by")
     adjudicated_by = value["adjudicated_by"]
     if state == "adjudicated":
-        if not isinstance(adjudicated_by, str) or not _HUMAN.match(adjudicated_by):
-            _prov("adjudicated_by must name a human reviewer", file=file, line=line, field="adjudicated_by")
+        if not _is_reviewer(adjudicated_by):
+            _prov("adjudicated_by must name a reviewer", file=file, line=line, field="adjudicated_by")
         if adjudicated_by not in verified_by:
             _prov("adjudicated_by must appear in verified_by", file=file, line=line, field="adjudicated_by")
         if len(set(verified_by)) < 2:
-            _prov("adjudication needs two distinct human reviewers", file=file, line=line, field="verified_by")
+            _prov("adjudication needs two distinct reviewers", file=file, line=line, field="verified_by")
     elif adjudicated_by is not None:
         _prov("adjudicated_by must be null unless state is adjudicated", file=file, line=line, field="adjudicated_by")
     return value

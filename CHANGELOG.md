@@ -199,6 +199,15 @@ roadmap (§6), with the date.
 
 ### Product decisions
 
+- Evaluation judgments may be verified by a model instead of a human
+  (ADR-0026, SPEC-0004 0.4): `verified_by` and `adjudicated_by` accept
+  `llm:<model-id>@<pinned-snapshot>` reviewers in `judgments validate`,
+  `freeze-split`, `publish`, the `seeky-eval` loader, and the WP-1.8 gate, with
+  no mandatory human sample. A model never verifies its own draft, and a hosted
+  model may review only synthetic, redistributable corpora such as SDC. The
+  versioned reviewer instruction is
+  [`docs/benchmarks/judgment-review-prompt.md`](docs/benchmarks/judgment-review-prompt.md);
+  reports on a model-verified set name the reviewer and the prompt version.
 - Source code is indexed only when the user turns on "Index source code"
   (off by default), and source files are never opened with the OS default
   handler; Seeky reveals them in the file manager instead (ADR-0024).

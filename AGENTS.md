@@ -303,8 +303,10 @@ every commit (§9).
 - Report confidence intervals; a difference inside the CI is a tie.
 - A multimodal model competes in the text embedding bake-off on text merit;
   its image capability is only a tie-breaker (ADR-0023).
-- Development tooling may use LLMs to draft evaluation data; humans verify; no
-  generative feature ever ships (ADR-0021).
+- Development tooling may use LLMs to draft evaluation data; a human or a
+  model other than the drafter verifies it, a model following
+  [`judgment-review-prompt.md`](docs/benchmarks/judgment-review-prompt.md)
+  (ADR-0026); no generative feature ever ships (ADR-0021).
 - ONNX Runtime is the only inference engine (ADR-0019). Compare models **as
   deployed** (ONNX variant + quantization + provider), following the bake-off
   funnel in [`docs/benchmarks/methodology.md`](docs/benchmarks/methodology.md)
