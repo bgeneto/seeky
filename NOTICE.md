@@ -31,8 +31,10 @@ phase of the [implementation plan](docs/plans/seeky-implementation-plan.md).
 ## Licensing
 
 - **Gety application:** proprietary. Do not redistribute its binaries.
-- **`gety-embed-v0`:** the Hugging Face model card declares MIT. It is a
-  benchmark baseline only; verify the license before redistributing files.
+- **`gety-embed-v0`:** MIT per the Hugging Face model card of
+  `gety-ai/gety-embed-v0` (base model `intfloat/multilingual-e5-small`, MIT).
+  Verified 2026-11-27: the LFS-tracked `model.bin` is byte-identical to the
+  published `openvino/model.bin`. It is a benchmark baseline only.
 - **`gety-ocr-v0`:** encrypted/private. Not used or redistributed by Seeky.
 - **OpenVINO IR (PoC):** temporarily tracked with Git LFS under
   `apps/seeky/src-tauri/resources/models/`; removed when provisioning ships.
