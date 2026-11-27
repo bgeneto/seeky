@@ -12,6 +12,8 @@ pub(crate) struct Provenance {
     #[serde(default)]
     pub(crate) llm_prompt_sha256: Option<String>,
     #[serde(default)]
+    pub(crate) tool_config_sha256: Option<String>,
+    #[serde(default)]
     pub(crate) verified_by: Vec<String>,
     pub(crate) state: String,
     #[serde(default)]
@@ -32,6 +34,13 @@ impl Provenance {
                 "PROVENANCE_INCOMPLETE",
                 location,
                 "LLM draft lacks llm_prompt_sha256",
+            ));
+        }
+        if self.drafted_by.starts_with("tool:") && self.tool_config_sha256.is_none() {
+            return Err(EvalError::data(
+                "PROVENANCE_INCOMPLETE",
+                location,
+                "tool draft lacks tool_config_sha256",
             ));
         }
         match self.state.as_str() {
@@ -156,5 +165,37 @@ pub(crate) fn validate_grade(grade: u8, location: &str) -> Result<()> {
             location,
             "grade must be an integer in 0..=3",
         ))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Provenance;
+
+    fn parse(value: &serde_json::Value) -> Provenance {
+        match serde_json::from_value(value.clone()) {
+            Ok(provenance) => provenance,
+            Err(error) => panic!("provenance should parse: {error}"),
+        }
+    }
+
+    fn error_code(provenance: &Provenance) -> Option<String> {
+        provenance
+            .validate_gate_eligible("probe")
+            .err()
+            .map(|error| error.to_string())
+    }
+
+    // SPEC-0004-R20: a verified tool draft carries its config hash and loads.
+    #[test]
+    fn verified_tool_draft_with_config_hash_is_gate_eligible() {
+        let provenance = parse(&serde_json::json!({
+            "drafted_by": "tool:qrels-drafter@0.1.0",
+            "tool_config_sha256": "a".repeat(64),
+            "verified_by": ["human:reviewer-a"],
+            "state": "verified",
+            "adjudicated_by": null
+        }));
+        assert_eq!(error_code(&provenance), None);
     }
 }

@@ -114,6 +114,10 @@ roadmap (§6), with the date.
 
 ### Fixed
 
+- `seeky-eval` now loads published judgments drafted by a tool: it accepted no
+  `tool_config_sha256` provenance field and would have rejected every
+  tool-drafted record of `sdc-smoke-v1` and `sdc-v1`. A tool draft without that
+  hash is still refused.
 - HTML and HTM files are extracted again; extraction previously failed for every
   HTML file because of an unsupported regular-expression backreference.
 
