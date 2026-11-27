@@ -12,6 +12,7 @@ from .data import acquire_gutenberg_texts, acquire_text_data
 from .deadline import DEFAULT_GATE_TIMEOUT_SECONDS, Deadline, GateTimeout
 from .encoder_run import run_encoder_gate
 from .florence_run import run_florence_gate
+from .models import EMBEDDERS
 from .npu_run import run_npu_gate
 from .ocr_data import render_ocr_pages
 from .ocr_run import run_ocr_gate
@@ -71,7 +72,7 @@ def build_parser() -> argparse.ArgumentParser:
             ),
         )
         if name == "encoders":
-            command.add_argument("--model", choices=["e5-small", "granite-modernbert"], required=True)
+            command.add_argument("--model", choices=list(EMBEDDERS), required=True)
     return parser
 
 

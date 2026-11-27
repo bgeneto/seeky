@@ -12,11 +12,18 @@ from seeky_model_export.models import (
 
 
 def test_preregistered_encoder_revisions_are_immutable():
-    assert set(ENCODER_SPECS) == {"e5-small", "granite-modernbert", "gte-reranker"}
+    # The three proxies plus the two amendment-2 supplementary embedders.
+    assert set(ENCODER_SPECS) == {
+        "e5-small",
+        "granite-modernbert",
+        "gte-reranker",
+        "bekko-a8m",
+        "gety-embed-v0",
+    }
     for spec in ENCODER_SPECS.values():
         assert len(spec.revision) == 40
         assert int(spec.revision, 16)
-        assert spec.pooling in {"mean", "cls", "logits"}
+        assert spec.pooling in {"mean", "cls", "logits", "pooled"}
 
 
 def test_model_spec_rejects_mutable_or_incomplete_identity():

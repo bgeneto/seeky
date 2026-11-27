@@ -25,6 +25,11 @@ class ModelSpec:
     revision: str
     task: str
     pooling: str
+    # Amendment 2 fields; the defaults keep the preregistered proxies unchanged.
+    published_onnx: tuple[tuple[str, str], ...] = ()
+    reference: str = "pytorch"
+    derive_quantized: bool = True
+    output_names: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
         if not self.slug or "/" not in self.repository or self.repository.startswith("/"):
@@ -35,8 +40,10 @@ class ModelSpec:
             int(self.revision, 16)
         except ValueError as error:
             raise ModelError("model revision must be hexadecimal") from error
-        if self.pooling not in {"mean", "cls", "logits"}:
+        if self.pooling not in {"mean", "cls", "logits", "pooled"}:
             raise ModelError("unsupported model output pooling")
+        if self.reference not in {"pytorch", "fp16-upcast"}:
+            raise ModelError("unsupported reference implementation")
 
 
 ENCODER_SPECS = {
@@ -61,7 +68,36 @@ ENCODER_SPECS = {
         "text-classification",
         "logits",
     ),
+    # Preregistration amendment 2: supplementary embedders, never part of K1.
+    "bekko-a8m": ModelSpec(
+        "bekko-a8m",
+        "hotchpotch/bekko-embedding-v1-a8m",
+        "c721113d59a1d91b447450324f51c4b3332c924a",
+        "feature-extraction",
+        "mean",
+        published_onnx=(
+            ("fp32", "onnx/model_fp32_not_recommended.onnx"),
+            ("published-default", "onnx/model.onnx"),
+        ),
+    ),
+    "gety-embed-v0": ModelSpec(
+        "gety-embed-v0",
+        "gety-ai/gety-embed-v0",
+        "424f41cb36776481b7e2c9f619ca7ce5d5351fe0",
+        "feature-extraction",
+        "pooled",
+        published_onnx=(
+            ("fp16-upcast", "onnx_cuda/model_fp16.onnx"),
+            ("published-uint8", "onnx/model_uint8.onnx"),
+        ),
+        reference="fp16-upcast",
+        derive_quantized=False,
+        output_names=("sentence_embedding", "embeddings"),
+    ),
 }
+PROXY_EMBEDDERS = ("e5-small", "granite-modernbert")
+SUPPLEMENTARY_EMBEDDERS = ("bekko-a8m", "gety-embed-v0")
+EMBEDDERS = (*PROXY_EMBEDDERS, *SUPPLEMENTARY_EMBEDDERS)
 
 FLORENCE_REPOSITORY = "microsoft/Florence-2-large"
 FLORENCE_REVISION = "21a599d414c4d928c9032694c424fb94458e3594"
@@ -90,6 +126,7 @@ def download_encoder_assets(workspace: Path, spec: ModelSpec) -> Path:
     patterns = [*_TOKENIZER_FILES, "model.safetensors"]
     if spec.slug in {"e5-small", "granite-modernbert"}:
         patterns.append("onnx/model.onnx")
+    patterns.extend(repo_path for _, repo_path in spec.published_onnx)
     try:
         from huggingface_hub import snapshot_download
 
@@ -188,9 +225,14 @@ def pool_hidden(
         if output.ndim != 2 or output.shape[1] != 1:
             raise ModelError("reranker output must have shape [batch, 1]")
         return output[:, 0]
-    if output.ndim != 3 or mask.shape != output.shape[:2]:
+    if pooling == "pooled":
+        # The graph already pooled; only (re)normalize the sentence vector.
+        if output.ndim != 2 or output.shape[0] != mask.shape[0]:
+            raise ModelError("pooled encoder output must have shape [batch, dim]")
+        pooled = output
+    elif output.ndim != 3 or mask.shape != output.shape[:2]:
         raise ModelError("encoder output and attention mask have incompatible shapes")
-    if pooling == "cls":
+    elif pooling == "cls":
         pooled = output[:, 0, :]
     elif pooling == "mean":
         weights = mask.astype(np.float32)
@@ -323,7 +365,66 @@ def run_encoder_session(
     mask = encoded.get("attention_mask")
     if mask is None:
         raise ModelError("attention_mask is required for output pooling")
-    return pool_hidden(outputs[0], mask, spec.pooling, normalize=spec.pooling != "logits")
+    output = outputs[0]
+    if spec.output_names:
+        names = [item.name for item in session.get_outputs()]
+        chosen = next((name for name in spec.output_names if name in names), None)
+        if chosen is None:
+            raise ModelError("ONNX graph lacks the declared sentence output")
+        output = outputs[names.index(chosen)]
+    return pool_hidden(output, mask, spec.pooling, normalize=spec.pooling != "logits")
+
+
+def upcast_fp16_model(source: Path, destination: Path) -> Path:
+    """Rewrite an fp16 ONNX graph to compute in fp32 (amendment 2 reference).
+
+    Every fp16 initializer, constant, cast target, and declared tensor type is
+    promoted to fp32. The weights are upcast exactly, so the result is the fp16
+    model computed in fp32, not an fp32 checkpoint.
+    """
+    try:
+        import onnx
+        from onnx import TensorProto, numpy_helper
+
+        model = onnx.load(str(source))
+
+        def upcast_tensor(tensor: Any) -> Any:
+            if tensor.data_type != TensorProto.FLOAT16:
+                return tensor
+            array = numpy_helper.to_array(tensor).astype(np.float32)
+            return numpy_helper.from_array(array, tensor.name)
+
+        def upcast_types(values: Iterable[Any]) -> None:
+            for value in values:
+                tensor_type = value.type.tensor_type
+                if tensor_type.elem_type == TensorProto.FLOAT16:
+                    tensor_type.elem_type = TensorProto.FLOAT
+
+        def upcast_graph(graph: Any) -> None:
+            for index, tensor in enumerate(graph.initializer):
+                graph.initializer[index].CopyFrom(upcast_tensor(tensor))
+            upcast_types(graph.input)
+            upcast_types(graph.output)
+            upcast_types(graph.value_info)
+            for node in graph.node:
+                for attribute in node.attribute:
+                    if node.op_type == "Cast" and attribute.name == "to":
+                        if attribute.i == TensorProto.FLOAT16:
+                            attribute.i = TensorProto.FLOAT
+                    elif attribute.type == onnx.AttributeProto.TENSOR:
+                        attribute.t.CopyFrom(upcast_tensor(attribute.t))
+                    elif attribute.type == onnx.AttributeProto.GRAPH:
+                        upcast_graph(attribute.g)
+                    elif attribute.type == onnx.AttributeProto.GRAPHS:
+                        for subgraph in attribute.graphs:
+                            upcast_graph(subgraph)
+
+        upcast_graph(model.graph)
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        onnx.save(model, str(destination))
+    except Exception as error:
+        raise ModelError("fp16 graph could not be upcast to fp32") from error
+    return destination
 
 
 def load_reference_model(model_dir: Path, spec: ModelSpec):

@@ -7,6 +7,9 @@ from typing import Any
 
 from .artifacts import ArtifactError, load_json
 
+# Models trained with the e5 `query: `/`passage: ` input prefixes.
+E5_PREFIXED = frozenset({"e5-small", "gety-embed-v0"})
+
 
 class FrozenDataError(RuntimeError):
     """The frozen text sample is missing, malformed, or incomplete."""
@@ -44,7 +47,7 @@ def embedding_view(frozen: dict[str, Any], slug: str) -> dict[str, Any]:
                 raise FrozenDataError("frozen query row is malformed")
             identifier = f"{source_name}:{row['id']}"
             text = row["text"]
-            if slug == "e5-small":
+            if slug in E5_PREFIXED:
                 text = f"query: {text}"
             queries.append({"id": identifier, "text": text, "source": source_name})
         for row in source_passages:
@@ -52,7 +55,7 @@ def embedding_view(frozen: dict[str, Any], slug: str) -> dict[str, Any]:
                 raise FrozenDataError("frozen passage row is malformed")
             identifier = f"{source_name}:{row['id']}"
             text = row["text"]
-            if slug == "e5-small":
+            if slug in E5_PREFIXED:
                 text = f"passage: {text}"
             passages.append({"id": identifier, "text": text, "source": source_name})
         source_qrels = source.get("qrels", {})

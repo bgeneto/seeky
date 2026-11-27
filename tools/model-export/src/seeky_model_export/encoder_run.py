@@ -14,8 +14,10 @@ from .benchmark import summarize_latencies, summarize_throughput, token_length_s
 from .deadline import Deadline, bounded_gate
 from .frozen import embedding_view, load_frozen
 from .models import (
+    EMBEDDERS,
     ENCODER_SPECS,
     ModelSpec,
+    upcast_fp16_model,
     complete_graph_inputs,
     create_ort_session,
     download_encoder_assets,
@@ -77,6 +79,41 @@ def _variant_size(
     return total, files
 
 
+def _stage_published(
+    workspace: Path,
+    spec: ModelSpec,
+    source_dir: Path,
+    *,
+    deadline: Deadline | None = None,
+) -> dict[str, Path]:
+    """Give each published graph its own variant directory (amendment 2).
+
+    One directory per variant keeps the size accounting to that variant's
+    files. ``fp16-upcast`` is rewritten to compute in fp32; other published
+    graphs are linked unchanged.
+    """
+    import os
+    import shutil
+
+    staged: dict[str, Path] = {}
+    for name, repo_path in spec.published_onnx:
+        if deadline is not None:
+            deadline.check(f"{spec.slug}:prepare:{name}")
+        source = source_dir / repo_path
+        target = _variant_directory(workspace, spec, name) / "model.onnx"
+        if not target.exists():
+            if name == "fp16-upcast":
+                upcast_fp16_model(source, target)
+            else:
+                target.parent.mkdir(parents=True, exist_ok=True)
+                try:
+                    os.link(source, target)
+                except OSError:
+                    shutil.copy2(source, target)
+        staged[name] = target
+    return staged
+
+
 def _prepare_variants(
     workspace: Path,
     spec: ModelSpec,
@@ -87,7 +124,12 @@ def _prepare_variants(
     if deadline is not None:
         deadline.check(f"{spec.slug}:prepare:assets")
     source_dir = download_encoder_assets(workspace, spec)
-    if spec.slug == "gte-reranker":
+    if spec.published_onnx:
+        published = _stage_published(workspace, spec, source_dir, deadline=deadline)
+        if not spec.derive_quantized:
+            return published
+        fp32 = published["fp32"]
+    elif spec.slug == "gte-reranker":
         fp32 = _variant_directory(workspace, spec, "fp32") / "model.onnx"
         if not fp32.exists():
             if deadline is not None:
@@ -95,7 +137,7 @@ def _prepare_variants(
             export_reranker_fp32(source_dir, fp32, spec)
     else:
         fp32 = source_dir / "onnx" / "model.onnx"
-    variants = {"fp32": fp32}
+    variants = dict(published) if spec.published_onnx else {"fp32": fp32}
     dynamic = _variant_directory(workspace, spec, "int8-dynamic") / "model.onnx"
     if not dynamic.exists():
         if deadline is not None:
@@ -278,7 +320,7 @@ def run_encoder_gate(
     wait_seconds: float = 900.0,
     deadline: Deadline | None = None,
 ) -> dict[str, Any]:
-    if slug not in {"e5-small", "granite-modernbert"}:
+    if slug not in EMBEDDERS:
         raise ValueError("embedding gate supports only preregistered embedders")
     gate_deadline = deadline or Deadline()
     spec = ENCODER_SPECS[slug]
@@ -325,6 +367,36 @@ def run_encoder_gate(
         if query_reference.exists() and passage_reference.exists():
             reference_queries = np.load(query_reference)
             reference_passages = np.load(passage_reference)
+        elif spec.reference == "fp16-upcast":
+            # Amendment 2: no fp32 checkpoint exists, so the reference is the
+            # published fp16 graph computed in fp32 on ORT CPU.
+            import onnxruntime as ort
+
+            reference_session = ort.InferenceSession(
+                str(variants["fp16-upcast"]),
+                providers=["CPUExecutionProvider"],
+            )
+            reference_queries = _encode_corpus(
+                reference_session,
+                tokenizer,
+                spec,
+                [row["text"] for row in view["queries"]],
+                max_length=64,
+                deadline=gate_deadline,
+                stage=f"encoders:{slug}:reference-queries",
+            )
+            reference_passages = _encode_corpus(
+                reference_session,
+                tokenizer,
+                spec,
+                [row["text"] for row in view["passages"]],
+                max_length=384,
+                deadline=gate_deadline,
+                stage=f"encoders:{slug}:reference-passages",
+            )
+            del reference_session
+            np.save(query_reference, reference_queries)
+            np.save(passage_reference, reference_passages)
         else:
             reference_model = load_reference_model(model_directory(workspace, spec), spec)
             import psutil

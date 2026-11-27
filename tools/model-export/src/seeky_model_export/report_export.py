@@ -24,6 +24,13 @@ RESULT_FILES = {
     "florence": "florence.json",
     "npu": "npu.json",
     "t0": "t0-functional.json",
+    # Preregistration amendment 2: supplementary rows, never part of K1.
+    "encoders-bekko-a8m": "encoders-bekko-a8m.json",
+    "encoders-gety-embed-v0": "encoders-gety-embed-v0.json",
+}
+SUPPLEMENTARY_EMBEDDER_KEYS = {
+    "bekko-a8m": "encoders-bekko-a8m",
+    "gety-embed-v0": "encoders-gety-embed-v0",
 }
 
 
@@ -140,6 +147,11 @@ def export_results(workspace: Path, destination: Path) -> dict[str, Any]:
         embedder_bytes=embedder_bytes,
         reranker_bytes=reranker_bytes,
     )
+    supplementary = {
+        model: loaded[key]
+        for model, key in SUPPLEMENTARY_EMBEDDER_KEYS.items()
+        if loaded[key] is not None
+    }
     summary = {
         "schema": 1,
         "sources_present": [key for key, value in loaded.items() if value is not None],
@@ -147,5 +159,14 @@ def export_results(workspace: Path, destination: Path) -> dict[str, Any]:
         "runtime_installed_bytes": RUNTIME_INSTALLED_BYTES,
         "verdicts": verdicts,
     }
+    if supplementary:
+        # Same K1 arithmetic, reported beside the frozen verdict, never in it.
+        row = embedder_verdict(supplementary)
+        summary["supplementary_embedders"] = {
+            "amendment": 2,
+            "affects_k1": False,
+            "target": row["target"],
+            "qualified_variants": row["qualified_variants"],
+        }
     write_json(destination / "summary-data.json", _sanitize(summary))
     return summary
