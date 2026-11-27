@@ -568,7 +568,7 @@ Rules:
 | M0 Runnable PoC | Done | 0.1.0 |
 | M1 Live incremental index | Done | 0.1.0 |
 | Phase 0 | In progress | WP-0.1 to WP-0.5 done (WP-0.4 after H4 approval on 2026-11-27); WP-0.6 in progress on `wp/0.6-ort-gate` (§15.3). Pre-flight fixes done outside any WP: fmt, clippy `-D warnings`, `hw-tests` feature, HTML fix, Auto is CPU-only until the NPU is validated ([conformance audit](../validation/poc-conformance-audit.md)). SPEC-0001 and SPEC-0002 v1 Implemented; manual Phase 0 app checks remain |
-| Phase 1 | In progress | WP-1.1 `seeky-eval` merged (SPEC-0003 R1–R14); WP-1.3 Done (R1–R14, full-scale `sdc-s` verified at 10,000 files and 109,689 passages); WP-1.2 `seeky-bench` implements R15–R22/R32 and SPEC-0002 v1.1, with the real smoke eval waiting on WP-1.4/H6; WP-1.4 is drafting on its branch; WP-1.5 pins four public datasets, with cross-lingual and large-corpus sources blocked (§15.3) |
+| Phase 1 | In progress | WP-1.1 `seeky-eval` merged (SPEC-0003 R1–R14); WP-1.3 Done (R1–R14, full-scale `sdc-s` verified at 10,000 files and 109,689 passages); WP-1.2 `seeky-bench` implements R15–R22/R32 and SPEC-0002 v1.1, with the real smoke eval waiting on WP-1.4/H6; WP-1.6 Done (`seeky-bench perf`, SPEC-0003 R25–R28; real T1 numbers are WP-1.7); WP-1.4 is drafting on its branch; WP-1.5 pins four public datasets, with cross-lingual and large-corpus sources blocked (§15.3) |
 | Phases 2-9 | Not started | - |
 | Phase 10 | Not started | Planned per ADR-0023, accepted 2026-11-27 (optional visual pack; off the 1.0 critical path) |
 
@@ -587,7 +587,7 @@ Rules:
 | 1.3 | Done | [SPEC-0004](../specs/SPEC-0004-sdc-corpus-and-judgments.md) R1–R14; `tools/sdc-generator/` (stdlib-only Python 3.12+), `bench/corpora/sdc/`, committed `sdc-smoke` with corpus hash `365511dd…`, 104 generator tests and real-engine renderer round trips; full-scale `sdc-s` built and verified with 10,000 rendered files, 109,689 passages, 112.5 MB, and corpus hash `1d65b8ff…`; [PR #7](https://github.com/bgeneto/seeky/pull/7), [PR #10](https://github.com/bgeneto/seeky/pull/10) | External public-domain/CC-BY sources are optional in v1 (synthetic sources satisfy R6) and need maintainer license review before they are pinned; `sdc-m` is validated at reduced scale; JPEG scans and four future extractors remain deferred |
 | 1.4 | In progress | Unmerged branch `wp/1.4-judgments-draft`: `tools/qrels-drafter/` and `bench/qrels/sdc/drafts/sdc-v1/`; offline template drafts for `known_item`, `exact_identifier`, `needle_in_haystack`, `mixed_semantic_metadata`, `filename_partial`, and `code_search`; local open-weight LLM drafts for `conceptual`, `exploratory`, and `cross_language`; every item draft-only (SPEC-0004 0.3) | H6 human verification, the full 600-query campaign, pooling, and `sdc-smoke-v1` remain; no verified judgment exists yet |
 | 1.5 | In progress | [SPEC-0003](../specs/SPEC-0003-evaluation-harness.md) R23–R24; `tools/dataset-fetch/` (stdlib-only Python 3.12) and `bench/datasets/` with pinned `beir-scifact`, `beir-nfcorpus`, `beir-fiqa`, and `mldr-pt` manifests, locks, and notices; 56 tool tests, offline `verify` on all four, and real `seeky-eval` BEIR-loader parity; [PR #11](https://github.com/bgeneto/seeky/pull/11) | Remaining: no real mMARCO-pt/pt↔en pair pin (recipe tested synthetically), MIRACL publishes dev qrels only, and TREC-COVID/MLDR-en/Quati are deferred for size; FiQA's manifest is ~8.9 MB because §4.2 requires a per-document hash |
-| 1.6 | Not started | — | — |
+| 1.6 | Done | [SPEC-0003](../specs/SPEC-0003-evaluation-harness.md) R25–R28 (v0.2); `tools/seeky-bench/src/perf.rs` and `src/perf/` (search, embedding, indexing/time-to-searchable, interference, resources, startup suites; tier/quiet-window/eligibility); `crates/seeky-eval` §4.10 performance shape (`query_embedding {batch, samples, latency_ms}`, optional RSS, `warnings`); 13 perf acceptance tests in `tools/seeky-bench/tests/perf.rs` plus unit tests; SPEC-0001 §5.3 windows-sys exemption; [PR #18](https://github.com/bgeneto/seeky/pull/18); commits: `git log --grep "WP-1.6"` | Real T1/T1-emulated numbers are WP-1.7. Extraction and embedding throughput share one timed pass until the engine exposes indexing stage timings |
 | 1.7 | Not started | — | — |
 | 1.8 | Not started | — | — |
 | 2.1 | Not started | — | — |
@@ -677,8 +677,9 @@ finished items and add the next ones, so this list never points at done work.
    fp32 and reranker fp32 proxies fired K1. OCR, Florence, NPU/K3, K4, and T0
    were stopped unmeasured; the final K1-K4 report and H3/H5 remain.
 3. The **SPEC-0002 v1.1 evaluation extension** is Accepted (2026-11-27), so
-   WP-1.2 and then WP-1.6 can start. Secure access to a T1
-   reference laptop (or define the T1-emulated profile). SPEC-0003 and
+   WP-1.6 (`seeky-bench perf`) is Done. WP-1.7 needs a T1 reference laptop
+   or the T1-emulated profile (`--tier T1-emulated --cpus … --memory-limit …`,
+   with the process started pinned to those CPUs). SPEC-0003 and
    SPEC-0004 are Accepted with maintainer pre-approval in /goal.
 4. WP-1.1 (`seeky-eval`) and WP-1.3 are Done. WP-1.5 is in progress with four
    pinned datasets; its cross-lingual pair and the largest sources are blocked
@@ -686,8 +687,7 @@ finished items and add the next ones, so this list never points at done work.
    queries and judgments offline: a deterministic tool for the template-faithful
    categories and a local open-weight model for semantic paraphrase and
    pt<->en pairs; every item remains a candidate and the maintainer verifies it
-   (H6), including the `sdc-smoke-v1` subset required by WP-1.8. WP-1.6 is
-   unblocked after WP-1.2.
+   (H6), including the `sdc-smoke-v1` subset required by WP-1.8.
 5. In parallel (UX track): WP-7.1 is Done; WP-7.2 (themes, SPEC-0014 v1
    R10–R15) is next and depends only on WP-0.3 (maintainer, 2026-11-27).
 6. Start the OCR **Stage 0 paper screen now** (no code needed,

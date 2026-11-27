@@ -12,6 +12,14 @@ roadmap (§6), with the date.
 ## Unreleased
 
 ### Added
+- `seeky-bench perf` measures warm-idle and warm-indexing search latency
+  (p50/p95/p99 with fixed-seed bootstrap CIs), batch-1 query-embedding
+  latency, bulk indexing throughput, lexical/semantic time-to-searchable, the
+  S5 interference ratio, RSS, index size and disk per 1k passages, and cold
+  start. It validates `--tier`/`--cpus`/`--memory-limit` against the host,
+  records the quiet window, and sets `qualifies_for_budget = false` with an
+  explicit reason for every undersampled, non-T1, noisy, or synthetic run
+  (WP-1.6, SPEC-0003 R25–R28).
 - The desktop UI is localized in English and Portuguese (WP-7.1): it follows
   the OS language, offers a Language preference, falls back to English per
   message, and CI checks catalog parity and runs the frontend unit tests.
@@ -83,6 +91,13 @@ roadmap (§6), with the date.
   HTML file because of an unsupported regular-expression backreference.
 
 ### Changed
+
+- The report's `performance` object follows SPEC-0003 §4.10:
+  `query_embedding` is `{batch, samples, latency_ms}`, RSS values may be null,
+  and `warnings` lists every unavailable or not-budget-eligible value (schema
+  version unchanged; no committed report had a performance payload).
+  SPEC-0003 0.2 corrects the §5.8 D disk-per-1k reference to 2,500,000 and
+  names the interference-ratio bootstrap keys.
 
 - SPEC-0004 0.2 accepts `tool:<id>@<version>` draft provenance with
   `tool_config_sha256`. Tool drafts are candidate data only: they have no

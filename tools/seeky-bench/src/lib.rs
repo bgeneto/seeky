@@ -195,6 +195,7 @@ pub fn run_with_paths(paths: &BenchPaths, args: Vec<String>) -> Result<()> {
         "perf" => command_perf(paths, rest),
         "compare" => command_compare(paths, rest),
         "report" => command_report(rest),
+        perf::startup::PROBE_COMMAND => command_startup_probe(rest),
         other => Err(Failure::usage(format!("unknown subcommand {other}"))),
     }
 }
@@ -542,7 +543,7 @@ fn command_eval(paths: &BenchPaths, args: &[String]) -> Result<()> {
 mod eval;
 
 // ---------------------------------------------------------------------------
-// perf (skeleton)
+// perf
 // ---------------------------------------------------------------------------
 
 fn command_perf(paths: &BenchPaths, args: &[String]) -> Result<()> {
@@ -572,31 +573,75 @@ fn command_perf(paths: &BenchPaths, args: &[String]) -> Result<()> {
     let data_dir = PathBuf::from(parsed.required("--data-dir")?);
     let output = PathBuf::from(parsed.required("--output")?);
     let code_enabled = parsed.flag("--code-enabled");
+
+    // Every flag is validated before any dataset or engine work.
+    let suites = perf::Suites::parse(parsed.value("--suite").unwrap_or("all"))?;
+    let stage = perf::parse_stage(parsed.value("--stage").unwrap_or("single"))?;
+    let repetitions = match parsed.value("--repetitions") {
+        Some(value) => perf::parse_positive("--repetitions", value, 1_000_000)?,
+        None => perf::DEFAULT_REPETITIONS,
+    };
+    let queries = parsed
+        .value("--queries")
+        .map(|value| perf::parse_positive("--queries", value, perf::MAX_QUERIES as u64))
+        .transpose()?
+        .map(|value| value as usize);
+    let tier = perf::budget::Tier::parse(parsed.value("--tier").unwrap_or("T2"))?;
+    let cpus = parsed
+        .value("--cpus")
+        .map(|value| {
+            perf::platform::parse_cpu_list(value)
+                .map_err(|error| Failure::usage(format!("--cpus: {error}")))
+        })
+        .transpose()?;
+    let memory_limit_bytes = parsed
+        .value("--memory-limit")
+        .map(|value| perf::parse_positive("--memory-limit", value, u64::MAX))
+        .transpose()?;
+    let declaration = perf::budget::TierDeclaration {
+        tier,
+        cpus,
+        memory_limit_bytes,
+    };
+    let host = perf::capture_host();
+    perf::budget::validate_tier(&declaration, &host)?;
+
     let config = environment::load_run_config(&config_path)?;
     let corpus = corpus::resolve(paths, &corpus_id, code_enabled)?;
-    let dataset = corpus::load_dataset(&corpus, Split::Dev, EvaluationConfiguration::Default, None)
+    let evaluation_configuration = corpus.evaluation_configuration(code_enabled);
+    let dataset = corpus::load_dataset(&corpus, Split::Dev, evaluation_configuration, None)
         .map_err(|error| Failure::dataset(error.to_string()))?;
-
-    let tier = parsed.value("--tier").unwrap_or("T2").to_string();
-    if !matches!(tier.as_str(), "T0" | "T1" | "T1-emulated" | "T2") {
-        return Err(Failure::usage("--tier must be T0, T1, T1-emulated, or T2"));
+    if dataset.split != Split::Dev {
+        return Err(Failure::dataset("perf only measures the dev split"));
     }
-    if tier == "T1-emulated"
-        && (parsed.value("--cpus").is_none() || parsed.value("--memory-limit").is_none())
-    {
-        return Err(Failure::usage(
-            "--tier T1-emulated requires --cpus and --memory-limit",
-        ));
-    }
-    let _ = (
-        parsed.value("--suite"),
-        parsed.value("--stage"),
-        parsed.value("--repetitions"),
-        parsed.value("--queries"),
-    );
+    let options = perf::PerfOptions {
+        suites,
+        stage,
+        repetitions,
+        queries,
+        declaration,
+        host,
+        config_path,
+        seed: seed_of(&parsed),
+        metadata: report_metadata(
+            &parsed,
+            &corpus.id,
+            &format!("perf {} {}", corpus.id, tier.as_str()),
+            "WP-1.6",
+            "SPEC-0003",
+        ),
+    };
     perf::run(
-        paths, &corpus, &dataset, &config, &data_dir, &output, &tier, args,
+        paths, &corpus, &dataset, &config, &data_dir, &output, &options, args,
     )
+}
+
+/// Hidden child process for the cold-start suite (never documented).
+fn command_startup_probe(args: &[String]) -> Result<()> {
+    let parsed = parse_flags(args, &["--data-dir", "--config"])?;
+    let data_dir = PathBuf::from(parsed.required("--data-dir")?);
+    let config = environment::load_run_config(Path::new(parsed.required("--config")?))?;
+    perf::startup::run_probe(&data_dir, &config)
 }
 
 // ---------------------------------------------------------------------------
