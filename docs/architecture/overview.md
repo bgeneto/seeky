@@ -166,11 +166,10 @@ Rules:
 <app-data>/                          e.g. %APPDATA%\ai.seeky.desktop\
   seeky.db                           SQLite (WAL): source of truth
   index/
-    gen-<id>/                        one directory per index generation (one lineage per embedding channel)
-      lexical/                       Tantivy segments (if selected) — or inside seeky.db (FTS5); text channel only
-      filename/                      filename/path index; text channel only
-      vectors/                       vector segments (flat/quantized or HNSW files)
-      GENERATION.json                channel, model/chunker/tokenizer recipe + checksums
+    components/<build-key>/          one external index instance (lexical, filename, or vectors), shared by
+                                     every generation with the same build key; FTS5 and as-built indexes live in seeky.db
+    gen-<id>/GENERATION.json         one per index generation (one lineage per embedding channel):
+                                     recipe, space key, referenced instances, checksums
   cache/embeddings/                  content-addressed embedding cache (if outside SQLite)
   assets/                            provisioned runtimes/models (versioned, immutable)
   logs/                              rotating, redacted
@@ -184,9 +183,9 @@ Core tables in `seeky.db` (detailed in the storage spec):
 | `files` | Path, file identity, signature (size, mtime_ns, optional file ID), type, language, content hash, SimHash, duplicate cluster, length statistics, status |
 | `passages` | File, ordinal, compressed text, offsets, locator (page/slide/sheet/line), heading path, token length, passage hash, source (extracted or OCR) |
 | `visual_units` | File, ordinal, kind (image, slide, figure, page region), locator, pixel size, content hash; populated only when the visual pack is enabled ([ADR-0023](../adr/0023-multimodal-ready-engine.md)) |
-| `embedding_cache` | (unit hash, generation) → vector (quantized and/or full), for passages and visual units |
+| `embedding_cache` | (space key, embed key) → vector, for passages and visual units; reused by every generation of the same embedding space |
 | `jobs` | Durable, idempotent indexing jobs with priority and attempts |
-| `generations` | Index generations per embedding channel: channel, model ID/revision, modalities, dimension, recipe versions, status |
+| `generations` | Index generations per embedding channel: channel, recipe and space keys, referenced index instances, coverage, status ([SPEC-0006](../specs/SPEC-0006-storage-index-backends-and-generations.md)) |
 | `models` | Installed model manifests and verification state |
 | `settings` | Key/value user settings |
 

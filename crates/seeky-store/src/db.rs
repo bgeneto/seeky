@@ -1,6 +1,6 @@
 use crate::{Context, Result};
 use rusqlite::{Connection, OptionalExtension, params};
-use seeky_core::{Counts, DocumentView, FileSignature, Root};
+use seeky_core::{Counts, DocumentView, FileSignature, ResolvedFilter, Root};
 use std::path::{Path, PathBuf};
 
 #[derive(Clone, Debug)]
@@ -23,6 +23,8 @@ pub struct ChunkContext {
     pub page: Option<i64>,
     pub start: i64,
     pub end: i64,
+    pub size: i64,
+    pub modified_ns: i64,
 }
 
 pub fn open(path: &Path) -> Result<Connection> {
@@ -373,21 +375,50 @@ pub fn all_embeddings(conn: &Connection) -> Result<Vec<(i64, Vec<f32>)>> {
 }
 
 pub fn bm25(conn: &Connection, query: &str, limit: usize) -> Result<Vec<(i64, f64)>> {
-    let mut stmt = conn.prepare(
+    bm25_filtered(conn, query, limit, None)
+}
+
+/// Lexical BM25 candidates, optionally restricted by pushed-down predicates.
+///
+/// The predicate is applied in the same SQL statement, before `LIMIT`, so the
+/// cap acts on the already-filtered stream (SPEC-0002 R22).
+pub fn bm25_filtered(
+    conn: &Connection,
+    query: &str,
+    limit: usize,
+    filter: Option<&ResolvedFilter>,
+) -> Result<Vec<(i64, f64)>> {
+    let mut sql = String::from(
         "SELECT c.id, bm25(chunks_fts)
          FROM chunks_fts
          JOIN chunks c ON c.id = chunks_fts.rowid
-         WHERE chunks_fts MATCH ?1
-         ORDER BY bm25(chunks_fts)
-         LIMIT ?2",
-    )?;
-    let rows = stmt.query_map(params![query, limit as i64], |row| {
+         JOIN documents d ON d.id = c.doc_id
+         WHERE chunks_fts MATCH ?",
+    );
+    let mut values = vec![rusqlite::types::Value::Text(query.to_string())];
+    if let Some(filter) = filter {
+        push_filter_predicates(filter, &mut sql, &mut values);
+    }
+    sql.push_str(" ORDER BY bm25(chunks_fts), c.id LIMIT ?");
+    values.push(rusqlite::types::Value::Integer(limit as i64));
+    let mut stmt = conn.prepare(&sql)?;
+    let rows = stmt.query_map(rusqlite::params_from_iter(values.iter()), |row| {
         Ok((row.get(0)?, row.get(1)?))
     })?;
     Ok(rows.collect::<rusqlite::Result<Vec<_>>>()?)
 }
 
 pub fn filename_chunks(conn: &Connection, query: &str, limit: usize) -> Result<Vec<i64>> {
+    filename_chunks_filtered(conn, query, limit, None)
+}
+
+/// Filename/path candidates, optionally restricted by pushed-down predicates.
+pub fn filename_chunks_filtered(
+    conn: &Connection,
+    query: &str,
+    limit: usize,
+    filter: Option<&ResolvedFilter>,
+) -> Result<Vec<i64>> {
     let mut terms: Vec<String> = Vec::new();
     for token in query.split(|character: char| !character.is_alphanumeric()) {
         let term = token.trim().to_lowercase();
@@ -405,26 +436,111 @@ pub fn filename_chunks(conn: &Connection, query: &str, limit: usize) -> Result<V
          JOIN documents d ON d.id = c.doc_id
          WHERE c.ord = 0 AND (",
     );
+    let mut values = Vec::with_capacity(terms.len() * 2);
     for (index, _) in terms.iter().enumerate() {
         if index > 0 {
             sql.push_str(" OR ");
         }
         sql.push_str("(instr(lower(d.title), ?) > 0 OR instr(lower(d.path), ?) > 0)");
     }
-    sql.push_str(&format!(
-        ") ORDER BY d.modified DESC, d.title LIMIT {}",
-        limit.clamp(1, 200)
-    ));
-
-    let mut values = Vec::with_capacity(terms.len() * 2);
+    sql.push(')');
     for term in &terms {
-        values.push(term.clone());
-        values.push(term.clone());
+        values.push(rusqlite::types::Value::Text(term.clone()));
+        values.push(rusqlite::types::Value::Text(term.clone()));
     }
+    if let Some(filter) = filter {
+        push_filter_predicates(filter, &mut sql, &mut values);
+    }
+    sql.push_str(" ORDER BY d.modified DESC, d.title, c.id LIMIT ?");
+    values.push(rusqlite::types::Value::Integer(limit.clamp(1, 200) as i64));
 
     let mut stmt = conn.prepare(&sql)?;
     let rows = stmt.query_map(rusqlite::params_from_iter(values.iter()), |row| row.get(0))?;
     Ok(rows.collect::<rusqlite::Result<Vec<_>>>()?)
+}
+
+/// Chunk IDs whose document satisfies every SQL-expressible predicate.
+///
+/// Used by the dense retriever to apply filters before its candidate cap.
+pub fn chunk_ids_matching(conn: &Connection, filter: &ResolvedFilter) -> Result<Vec<i64>> {
+    let mut sql = String::from(
+        "SELECT c.id
+         FROM chunks c
+         JOIN documents d ON d.id = c.doc_id
+         WHERE 1 = 1",
+    );
+    let mut values = Vec::new();
+    push_filter_predicates(filter, &mut sql, &mut values);
+    sql.push_str(" ORDER BY c.id");
+    let mut stmt = conn.prepare(&sql)?;
+    let rows = stmt.query_map(rusqlite::params_from_iter(values.iter()), |row| row.get(0))?;
+    Ok(rows.collect::<rusqlite::Result<Vec<_>>>()?)
+}
+
+/// First metadata field required by an active predicate but absent from the
+/// index. Fails closed (SPEC-0002 R23).
+pub fn missing_filter_metadata(
+    conn: &Connection,
+    filter: &ResolvedFilter,
+) -> Result<Option<&'static str>> {
+    let exists = |sql: &str| -> Result<bool> {
+        Ok(conn.query_row(sql, [], |_row| Ok(())).optional()?.is_some())
+    };
+    if !filter.extensions.is_empty() && exists("SELECT 1 FROM documents WHERE ext = '' LIMIT 1")? {
+        return Ok(Some("extension"));
+    }
+    if (filter.modified_after_ns.is_some() || filter.modified_before_ns.is_some())
+        && exists("SELECT 1 FROM documents WHERE modified_ns <= 0 LIMIT 1")?
+    {
+        return Ok(Some("modified"));
+    }
+    if (filter.min_bytes.is_some() || filter.max_bytes.is_some())
+        && exists("SELECT 1 FROM documents WHERE size < 0 LIMIT 1")?
+    {
+        return Ok(Some("size"));
+    }
+    Ok(None)
+}
+
+fn push_filter_predicates(
+    filter: &ResolvedFilter,
+    sql: &mut String,
+    values: &mut Vec<rusqlite::types::Value>,
+) {
+    if !filter.extensions.is_empty() {
+        sql.push_str(" AND d.ext IN (");
+        for (index, extension) in filter.extensions.iter().enumerate() {
+            if index > 0 {
+                sql.push(',');
+            }
+            sql.push('?');
+            values.push(rusqlite::types::Value::Text(extension.clone()));
+        }
+        sql.push(')');
+    }
+    if let Some(after) = filter.modified_after_ns {
+        sql.push_str(" AND d.modified_ns >= ?");
+        values.push(rusqlite::types::Value::Integer(after));
+    }
+    if let Some(before) = filter.modified_before_ns {
+        sql.push_str(" AND d.modified_ns < ?");
+        values.push(rusqlite::types::Value::Integer(before));
+    }
+    if let Some(prefix) = &filter.folder_absolute_prefix {
+        sql.push_str(" AND substr(replace(d.path, '\\', '/'), 1, ?) = ?");
+        values.push(rusqlite::types::Value::Integer(
+            prefix.chars().count() as i64
+        ));
+        values.push(rusqlite::types::Value::Text(prefix.clone()));
+    }
+    if let Some(minimum) = filter.min_bytes {
+        sql.push_str(" AND d.size >= ?");
+        values.push(rusqlite::types::Value::Integer(minimum as i64));
+    }
+    if let Some(maximum) = filter.max_bytes {
+        sql.push_str(" AND d.size <= ?");
+        values.push(rusqlite::types::Value::Integer(maximum as i64));
+    }
 }
 
 pub fn chunk_contexts(conn: &Connection, ids: &[i64]) -> Result<Vec<ChunkContext>> {
@@ -434,7 +550,7 @@ pub fn chunk_contexts(conn: &Connection, ids: &[i64]) -> Result<Vec<ChunkContext
     let placeholders = ids.iter().map(|_| "?").collect::<Vec<_>>().join(",");
     let sql = format!(
         "SELECT c.id, c.doc_id, d.title, d.path, d.ext, c.text, c.page,
-                c.start_offset, c.end_offset
+                c.start_offset, c.end_offset, d.size, d.modified_ns
          FROM chunks c JOIN documents d ON d.id = c.doc_id
          WHERE c.id IN ({placeholders})"
     );
@@ -452,6 +568,8 @@ pub fn chunk_contexts(conn: &Connection, ids: &[i64]) -> Result<Vec<ChunkContext
             page: row.get(6)?,
             start: row.get(7)?,
             end: row.get(8)?,
+            size: row.get(9)?,
+            modified_ns: row.get(10)?,
         })
     })?;
     let mut result = rows.collect::<rusqlite::Result<Vec<_>>>()?;
@@ -528,6 +646,24 @@ pub trait SearchStore {
     fn bm25(&self, query: &str, limit: usize) -> Result<Vec<(i64, f64)>>;
     fn filename_chunks(&self, query: &str, limit: usize) -> Result<Vec<i64>>;
     fn chunk_contexts(&self, ids: &[i64]) -> Result<Vec<ChunkContext>>;
+    /// Lexical candidates with pushed-down predicates applied before `limit`.
+    fn bm25_filtered(
+        &self,
+        query: &str,
+        limit: usize,
+        filter: Option<&ResolvedFilter>,
+    ) -> Result<Vec<(i64, f64)>>;
+    /// Filename candidates with pushed-down predicates applied before `limit`.
+    fn filename_chunks_filtered(
+        &self,
+        query: &str,
+        limit: usize,
+        filter: Option<&ResolvedFilter>,
+    ) -> Result<Vec<i64>>;
+    /// Chunk IDs whose document satisfies every predicate.
+    fn chunk_ids_matching(&self, filter: &ResolvedFilter) -> Result<Vec<i64>>;
+    /// First required metadata field that is absent from the index.
+    fn missing_filter_metadata(&self, filter: &ResolvedFilter) -> Result<Option<&'static str>>;
 }
 
 impl SearchStore for Connection {
@@ -545,5 +681,31 @@ impl SearchStore for Connection {
 
     fn chunk_contexts(&self, ids: &[i64]) -> Result<Vec<ChunkContext>> {
         chunk_contexts(self, ids)
+    }
+
+    fn bm25_filtered(
+        &self,
+        query: &str,
+        limit: usize,
+        filter: Option<&ResolvedFilter>,
+    ) -> Result<Vec<(i64, f64)>> {
+        bm25_filtered(self, query, limit, filter)
+    }
+
+    fn filename_chunks_filtered(
+        &self,
+        query: &str,
+        limit: usize,
+        filter: Option<&ResolvedFilter>,
+    ) -> Result<Vec<i64>> {
+        filename_chunks_filtered(self, query, limit, filter)
+    }
+
+    fn chunk_ids_matching(&self, filter: &ResolvedFilter) -> Result<Vec<i64>> {
+        chunk_ids_matching(self, filter)
+    }
+
+    fn missing_filter_metadata(&self, filter: &ResolvedFilter) -> Result<Option<&'static str>> {
+        missing_filter_metadata(self, filter)
     }
 }

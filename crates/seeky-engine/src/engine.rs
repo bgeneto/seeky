@@ -1,13 +1,16 @@
 use crate::Result;
+use crate::config_snapshot::EngineConfigSnapshot;
 use crate::indexer::{self, IndexContext, PreparedFile};
 use notify::event::{ModifyKind, RenameMode};
 use notify::{Event, EventKind, RecommendedWatcher, RecursiveMode, Watcher};
 use seeky_core::{
-    Backend, DocId, EngineInfo, EngineStatus, FileSignature, IndexHealth, IndexProgress,
-    IndexSummary, Root, RootId, SearchRequest, SearchResponse,
+    Backend, CandidateDepths, DeliveryStage, DocId, EngineInfo, EngineStatus, FileSignature,
+    FilterSupport, IndexHealth, IndexProgress, IndexSummary, MetadataFilter, QueryEmbeddingProbe,
+    QueryEmbeddingTiming, Root, RootId, SearchMode, SearchOptions, SearchOutcome, SearchRequest,
+    SearchResponse, SearchTelemetry,
 };
 use seeky_infer::{
-    Engine as InferenceEngine, available_backends, find_gety_model_root, resolve_npu_dir,
+    Embedder, Engine as InferenceEngine, available_backends, find_gety_model_root, resolve_npu_dir,
 };
 use seeky_store::{self as db, ChunkInput};
 use std::collections::HashMap;
@@ -21,6 +24,17 @@ macro_rules! internal {
     ($($argument:tt)*) => {
         EngineError::Internal(format!($($argument)*))
     };
+}
+
+fn elapsed_ns(started: Instant) -> u64 {
+    started.elapsed().as_nanos().min(u64::MAX as u128) as u64
+}
+
+fn map_search_error(error: seeky_search::Error) -> EngineError {
+    match error {
+        seeky_search::Error::Storage(error) => EngineError::Storage(error),
+        seeky_search::Error::Internal(message) => EngineError::Internal(message),
+    }
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -43,6 +57,8 @@ pub enum EngineError {
     Io(#[from] std::io::Error),
     #[error("internal error: {0}")]
     Internal(String),
+    #[error("metadata unavailable: {0}")]
+    MetadataUnavailable(String),
 }
 
 impl From<seeky_core::Error> for EngineError {
@@ -90,7 +106,7 @@ pub struct Engine {
 
 struct Inner {
     db: Arc<Mutex<db::Connection>>,
-    engine: Arc<Mutex<Option<InferenceEngine>>>,
+    engine: Arc<Mutex<Option<Box<dyn Embedder>>>>,
     backend: Arc<Mutex<Backend>>,
     watcher: Arc<WatchManager>,
     health: Arc<Mutex<IndexHealth>>,
@@ -319,11 +335,11 @@ fn ensure_engine(state: &Inner) -> Result<()> {
         EngineError::ModelUnavailable("gety-embed-v0 not found; set SEEKY_GETY_MODEL_DIR".into())
     })?;
     let backend = backend_from_state(state)?;
-    *engine = Some(InferenceEngine::create(
+    *engine = Some(Box::new(InferenceEngine::create(
         backend,
         model_root,
         &state.npu_dir,
-    )?);
+    )?));
     Ok(())
 }
 
@@ -351,7 +367,7 @@ fn status_of(state: &Inner) -> Result<EngineStatus> {
         .lock()
         .map_err(|_| internal!("engine lock poisoned"))?
         .as_ref()
-        .map(InferenceEngine::info);
+        .map(|engine| engine.info());
     let available = available_backends(state.model_root.as_deref(), &state.npu_dir);
     let mut health = state
         .health
@@ -395,10 +411,49 @@ impl Engine {
         config: EngineConfig,
         events: Arc<dyn EngineEvents>,
     ) -> Result<Engine> {
+        Self::open_lexical(config, events)
+    }
+
+    /// Open a lexical-only engine: no semantic model, PDFium disabled.
+    ///
+    /// This is the supported headless lexical mode used by `seeky-bench` and by
+    /// hardware-free tests. It is additive and does not change `open`.
+    #[allow(clippy::needless_pass_by_value)] // mirrors `open`
+    pub fn open_lexical(config: EngineConfig, events: Arc<dyn EngineEvents>) -> Result<Engine> {
         let mut resolved = config.resolve()?;
         resolved.model_root = None;
         resolved.pdfium_dll = resolved.data_dir.join("missing-pdfium.dll");
         Self::open_resolved(resolved, events, true)
+    }
+
+    /// Inject a deterministic embedder for hardware-free tests.
+    #[doc(hidden)]
+    #[allow(clippy::needless_pass_by_value)] // mirrors `open`
+    pub fn open_with_embedder_for_test(
+        config: EngineConfig,
+        events: Arc<dyn EngineEvents>,
+        embedder: Box<dyn Embedder>,
+    ) -> Result<Engine> {
+        let engine = Self::open_resolved(config.resolve()?, events, false)?;
+        *engine
+            .inner
+            .engine
+            .lock()
+            .map_err(|_| internal!("engine lock poisoned"))? = Some(embedder);
+        Ok(engine)
+    }
+
+    /// Override model discovery for tests that need a controlled model root.
+    #[doc(hidden)]
+    #[allow(clippy::needless_pass_by_value)] // mirrors `open`
+    pub fn open_with_model_root_for_test(
+        config: EngineConfig,
+        events: Arc<dyn EngineEvents>,
+        model_root: Option<PathBuf>,
+    ) -> Result<Engine> {
+        let mut resolved = config.resolve()?;
+        resolved.model_root = model_root;
+        Self::open_resolved(resolved, events, false)
     }
 
     fn open_resolved(
@@ -615,7 +670,7 @@ impl Engine {
             .lock()
             .map_err(|_| internal!("engine lock poisoned"))?
             .as_ref()
-            .map(InferenceEngine::info)
+            .map(|engine| engine.info())
             .ok_or_else(|| internal!("engine not initialized"))
     }
 
@@ -714,30 +769,122 @@ impl Engine {
     }
 
     pub fn search(&self, request: &SearchRequest) -> Result<SearchResponse> {
+        Ok(self
+            .search_with(request, &SearchOptions::default())?
+            .response)
+    }
+
+    /// Evaluation and perf entry point; never exposed as a shell command.
+    pub fn search_with(
+        &self,
+        request: &SearchRequest,
+        options: &SearchOptions,
+    ) -> Result<SearchOutcome> {
+        if options.filters.is_some() && options.mode != SearchMode::Evaluation {
+            return Err(EngineError::InvalidInput(
+                "metadata filters require evaluation mode".into(),
+            ));
+        }
+        let limit = match options.mode {
+            SearchMode::Interactive => request.limit.unwrap_or(20).clamp(1, 50),
+            SearchMode::Evaluation => {
+                let Some(limit) = request.limit else {
+                    return Err(EngineError::InvalidInput(
+                        "evaluation search requires an explicit limit".into(),
+                    ));
+                };
+                if !(1..=1000).contains(&limit) {
+                    return Err(EngineError::InvalidInput(
+                        "evaluation limit must be in 1..=1000".into(),
+                    ));
+                }
+                limit
+            }
+        };
         let started = Instant::now();
-        let limit = request.limit.unwrap_or(20);
         let _span = tracing::info_span!("search", limit).entered();
+
         let semantic_used = ensure_engine(&self.inner).is_ok();
+        let mut query_embedding = None;
         let query_vector = if semantic_used {
-            let mut engine = self
-                .inner
-                .engine
-                .lock()
-                .map_err(|_| internal!("engine lock poisoned"))?;
-            engine
-                .as_mut()
-                .and_then(|engine| engine.embed(std::slice::from_ref(&request.query)).ok())
-                .and_then(|mut vectors| vectors.pop())
+            let embed_started = Instant::now();
+            let embedded = {
+                let mut engine = self
+                    .inner
+                    .engine
+                    .lock()
+                    .map_err(|_| internal!("engine lock poisoned"))?;
+                match engine.as_mut() {
+                    Some(engine) => {
+                        let identity = engine.identity();
+                        engine
+                            .embed(std::slice::from_ref(&request.query))
+                            .map(|mut vectors| (vectors.pop(), Some(identity)))
+                    }
+                    None => Ok((None, None)),
+                }
+            };
+            match embedded {
+                Ok((vector, identity)) => {
+                    if options.telemetry && vector.is_some() {
+                        query_embedding = Some(QueryEmbeddingTiming {
+                            duration_ns: elapsed_ns(embed_started),
+                            cache_hit: false,
+                            model: identity,
+                        });
+                    }
+                    vector
+                }
+                // v1 behavior: an embedding failure degrades to lexical search.
+                Err(_) => None,
+            }
         } else {
             None
         };
-        let conn = self
-            .inner
-            .db
-            .lock()
-            .map_err(|_| internal!("db lock poisoned"))?;
-        let hits = seeky_search::search(&*conn, &request.query, query_vector.as_deref(), limit)
-            .map_err(|error| EngineError::Storage(error.into_storage()))?;
+
+        let filter = match &options.filters {
+            Some(filter) => Some(self.resolve_filter(filter)?),
+            None => None,
+        };
+
+        let candidate_depths = match options.mode {
+            SearchMode::Interactive => CandidateDepths {
+                filename: 40,
+                lexical: 80,
+                dense: if query_vector.is_some() { 80 } else { 0 },
+            },
+            SearchMode::Evaluation => CandidateDepths {
+                filename: limit.max(40),
+                lexical: limit.max(80),
+                dense: if query_vector.is_some() {
+                    limit.max(80)
+                } else {
+                    0
+                },
+            },
+        };
+
+        let result = {
+            let conn = self
+                .inner
+                .db
+                .lock()
+                .map_err(|_| internal!("db lock poisoned"))?;
+            seeky_search::search_with_store(
+                &*conn,
+                &seeky_search::SearchParameters {
+                    query: &request.query,
+                    query_vector: query_vector.as_deref(),
+                    limit,
+                    candidate_depths,
+                    filter: filter.as_ref(),
+                    filter_support: FilterSupport::FULL,
+                    telemetry: options.telemetry,
+                },
+            )
+            .map_err(map_search_error)?
+        };
+
         let backend = self
             .inner
             .engine
@@ -746,12 +893,118 @@ impl Engine {
             .as_ref()
             .map(|engine| engine.info().backend)
             .unwrap_or_else(|| "BM25".to_string());
-        Ok(SearchResponse {
-            hits,
+        let response = SearchResponse {
+            hits: result.hits,
             backend,
             semantic_used: query_vector.is_some(),
             took_ms: started.elapsed().as_millis() as u64,
+        };
+        let telemetry = if options.telemetry {
+            Some(SearchTelemetry {
+                schema_version: SearchTelemetry::SCHEMA_VERSION,
+                delivery_stage: DeliveryStage::Single,
+                total_ns: elapsed_ns(started),
+                query_embedding,
+                stages: result.stages,
+                results_requested: limit,
+                results_returned: response.hits.len(),
+            })
+        } else {
+            None
+        };
+        Ok(SearchOutcome {
+            response,
+            depth: result.depth,
+            filter: result.filter,
+            telemetry,
         })
+    }
+
+    fn resolve_filter(&self, filter: &MetadataFilter) -> Result<seeky_core::ResolvedFilter> {
+        let folder_root = match &filter.folder {
+            Some(folder) => {
+                let conn = self
+                    .inner
+                    .db
+                    .lock()
+                    .map_err(|_| internal!("db lock poisoned"))?;
+                let root = db::get_root(&conn, &folder.root_id)?.ok_or_else(|| {
+                    EngineError::NotFound(format!("filter root: {}", folder.root_id))
+                })?;
+                Some(root.path)
+            }
+            None => None,
+        };
+        let resolved = filter
+            .resolve(folder_root.as_deref())
+            .map_err(|error| EngineError::InvalidInput(error.to_string()))?;
+        {
+            let conn = self
+                .inner
+                .db
+                .lock()
+                .map_err(|_| internal!("db lock poisoned"))?;
+            if let Some(field) = seeky_store::missing_filter_metadata(&conn, &resolved)? {
+                return Err(EngineError::MetadataUnavailable(field.to_string()));
+            }
+        }
+        Ok(resolved)
+    }
+
+    /// One uncached batch-1 query embedding. The vector and text are dropped.
+    pub fn probe_query_embedding(&self, text: &str) -> Result<QueryEmbeddingProbe> {
+        if self.inner.test_lexical {
+            return Ok(QueryEmbeddingProbe::Unavailable);
+        }
+        // A test embedder can be injected without a deployed model root. Only
+        // ask the real model loader when a root exists; otherwise the slot
+        // itself decides availability.
+        if self.inner.model_root.is_some() {
+            match ensure_engine(&self.inner) {
+                Ok(()) => {}
+                Err(EngineError::ModelUnavailable(_)) => {
+                    return Ok(QueryEmbeddingProbe::Unavailable);
+                }
+                Err(error) => return Err(error),
+            }
+        }
+        let started = Instant::now();
+        let mut engine = self
+            .inner
+            .engine
+            .lock()
+            .map_err(|_| internal!("engine lock poisoned"))?;
+        let Some(engine) = engine.as_mut() else {
+            return Ok(QueryEmbeddingProbe::Unavailable);
+        };
+        let identity = engine.identity();
+        let mut vectors = engine.embed(&[text.to_string()])?;
+        // The vector is intentionally dropped: only duration and identity leave.
+        vectors.clear();
+        Ok(QueryEmbeddingProbe::Available {
+            model: identity,
+            duration_ns: elapsed_ns(started),
+        })
+    }
+
+    /// Canonical, privacy-safe semantic configuration for hashing.
+    pub fn config_snapshot(&self) -> Result<EngineConfigSnapshot> {
+        let backend = backend_from_state(&self.inner)?;
+        let model = if self.inner.test_lexical {
+            None
+        } else {
+            match &self.inner.model_root {
+                Some(model_root) => Some(
+                    seeky_infer::describe_active_model(backend, model_root, &self.inner.npu_dir)
+                        .map_err(|_| EngineError::MetadataUnavailable("model.sha256".into()))?,
+                ),
+                None => None,
+            }
+        };
+        let threads = std::thread::available_parallelism()
+            .map(|value| u32::try_from(value.get()).unwrap_or(u32::MAX))
+            .unwrap_or(1);
+        EngineConfigSnapshot::build(backend, model.as_ref(), threads)
     }
 
     pub fn document(&self, id: &DocId) -> Result<Option<seeky_core::DocumentView>> {

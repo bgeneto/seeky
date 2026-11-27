@@ -1,0 +1,359 @@
+"""Run the preregistered PP-OCRv5 pipeline and quantization variants."""
+
+from __future__ import annotations
+
+import gc
+import time
+from dataclasses import replace
+from pathlib import Path
+from typing import Any
+
+import cv2
+import numpy as np
+import psutil
+
+from .artifacts import sha256_file, write_json
+from .benchmark import summarize_latencies
+from .deadline import Deadline, bounded_gate
+from .metrics import (
+    character_error_rate,
+    normalize_ocr_text,
+    strip_diacritics,
+    word_error_rate,
+)
+from .ocr_data import load_ocr_manifest
+from .quantize import ArrayCalibrationReader, quantize_dynamic_model, quantize_static_model
+from .system import RunningProfile, apply_profile, capture_environment, high_performance_power_scheme, wait_for_quiet_window
+
+TIMED_PASSES = 3
+WARMUP_PAGES = 3
+
+
+class OcrRunError(RuntimeError):
+    """An OCR model, calibration, or measurement failure."""
+
+
+def _new_engine(model_root: Path, *, det_path: Path | None = None, rec_path: Path | None = None, threads: int = 8):
+    try:
+        from rapidocr import LangDet, LangRec, ModelType, OCRVersion, RapidOCR
+
+        params: dict[str, Any] = {
+            "Det.ocr_version": OCRVersion.PPOCRV5,
+            "Det.lang_type": LangDet.CH,
+            "Det.model_type": ModelType.MOBILE,
+            "Rec.ocr_version": OCRVersion.PPOCRV5,
+            "Rec.lang_type": LangRec.LATIN,
+            "Rec.model_type": ModelType.MOBILE,
+            "Global.use_cls": False,
+            "Global.model_root_dir": str(model_root),
+            "EngineConfig.onnxruntime.intra_op_num_threads": threads,
+            "EngineConfig.onnxruntime.inter_op_num_threads": 1,
+        }
+        if det_path is not None:
+            params["Det.model_path"] = str(det_path)
+        if rec_path is not None:
+            params["Rec.model_path"] = str(rec_path)
+        return RapidOCR(params=params)
+    except Exception as error:
+        raise OcrRunError("PP-OCR engine could not be initialized") from error
+
+
+def _page_text(engine: Any, image_path: Path) -> str:
+    try:
+        result = engine(image_path)
+    except Exception as error:
+        raise OcrRunError("PP-OCR page inference failed") from error
+    texts = getattr(result, "txts", None)
+    if texts is None:
+        return ""
+    return "\n".join(str(text) for text in texts)
+
+
+def _det_input(image_path: Path) -> np.ndarray:
+    image = cv2.imread(str(image_path), cv2.IMREAD_COLOR)
+    if image is None:
+        raise OcrRunError("rendered OCR page cannot be decoded")
+    height, width = image.shape[:2]
+    scale = 736.0 / min(height, width)
+    target_width = max(32, ((round(width * scale) + 31) // 32) * 32)
+    target_height = max(32, ((round(height * scale) + 31) // 32) * 32)
+    resized = cv2.resize(
+        image,
+        (target_width, target_height),
+        interpolation=cv2.INTER_LINEAR,
+    )
+    normalized = (resized.astype(np.float32) / 255.0 - 0.5) / 0.5
+    return np.transpose(normalized, (2, 0, 1))[None, ...]
+
+
+def _rec_crops(engine: Any, image_path: Path) -> list[np.ndarray]:
+    try:
+        result = engine(image_path, use_rec=False)
+    except Exception as error:
+        raise OcrRunError("PP-OCR detector calibration pass failed") from error
+    boxes = getattr(result, "boxes", None)
+    image = cv2.imread(str(image_path), cv2.IMREAD_COLOR)
+    if image is None or boxes is None:
+        raise OcrRunError("PP-OCR detector returned no calibration boxes")
+    crops = []
+    for box in boxes:
+        points = np.asarray(box, dtype=np.float32)
+        x0, y0 = np.maximum(np.floor(points.min(axis=0)).astype(int), 0)
+        x1, y1 = np.ceil(points.max(axis=0)).astype(int)
+        x1, y1 = min(x1, image.shape[1]), min(y1, image.shape[0])
+        if x1 - x0 < 4 or y1 - y0 < 4:
+            continue
+        crop = image[y0:y1, x0:x1]
+        target_width = max(16, min(320, round(crop.shape[1] * 48 / crop.shape[0])))
+        resized = cv2.resize(crop, (target_width, 48), interpolation=cv2.INTER_LINEAR)
+        normalized = (resized.astype(np.float32) / 255.0 - 0.5) / 0.5
+        crops.append(np.transpose(normalized, (2, 0, 1))[None, ...])
+    if not crops:
+        raise OcrRunError("PP-OCR produced no recognizer calibration crops")
+    return crops
+
+
+def _prepare_variants(
+    workspace: Path,
+    image_paths: list[Path],
+    profile: RunningProfile,
+    *,
+    deadline: Deadline | None = None,
+) -> tuple[dict[str, tuple[Path, Path]], dict[str, str]]:
+    model_root = workspace / "models" / "ppocr"
+    model_root.mkdir(parents=True, exist_ok=True)
+    if deadline is not None:
+        deadline.check("ocr:prepare:fp32")
+    fp32_engine = _new_engine(model_root, threads=profile.ort_threads)
+    fp32_det = model_root / "ch_PP-OCRv5_det_mobile.onnx"
+    fp32_rec = model_root / "latin_PP-OCRv5_rec_mobile.onnx"
+    _det_input(image_paths[0])
+    _page_text(fp32_engine, image_paths[0])
+    if not fp32_det.exists() or not fp32_rec.exists():
+        raise OcrRunError("PP-OCR fp32 ONNX assets were not provisioned")
+    variants = {"fp32": (fp32_det, fp32_rec)}
+    dynamic_det = workspace / "variants" / "ppocr" / "int8-dynamic" / "det.onnx"
+    dynamic_rec = workspace / "variants" / "ppocr" / "int8-dynamic" / "rec.onnx"
+    if not dynamic_det.exists():
+        if deadline is not None:
+            deadline.check("ocr:prepare:int8-dynamic-det")
+        quantize_dynamic_model(fp32_det, dynamic_det)
+    if not dynamic_rec.exists():
+        if deadline is not None:
+            deadline.check("ocr:prepare:int8-dynamic-rec")
+        quantize_dynamic_model(fp32_rec, dynamic_rec)
+    variants["int8-dynamic"] = (dynamic_det, dynamic_rec)
+
+    static_det = workspace / "variants" / "ppocr" / "int8-static-qdq" / "det.onnx"
+    static_rec = workspace / "variants" / "ppocr" / "int8-static-qdq" / "rec.onnx"
+    failures: dict[str, str] = {}
+    if not static_det.exists():
+        if deadline is not None:
+            deadline.check("ocr:prepare:int8-static-det")
+        det_rows = []
+        for index, path in enumerate(image_paths[:8]):
+            if deadline is not None:
+                deadline.check(f"ocr:prepare:int8-static-det:page-{index}")
+            det_rows.append({"x": _det_input(path)})
+        try:
+            quantize_static_model(
+                fp32_det,
+                static_det,
+                ArrayCalibrationReader(fp32_det, det_rows),
+            )
+        except Exception as error:
+            failures["static_det"] = type(error).__name__
+    if not static_rec.exists():
+        if deadline is not None:
+            deadline.check("ocr:prepare:int8-static-rec")
+        try:
+            rec_rows = []
+            for index, path in enumerate(image_paths[:8]):
+                if deadline is not None:
+                    deadline.check(f"ocr:prepare:int8-static-rec:page-{index}")
+                for crop in _rec_crops(fp32_engine, path)[:16]:
+                    rec_rows.append({"x": crop})
+                if len(rec_rows) >= 128:
+                    break
+            if len(rec_rows) < 32:
+                raise OcrRunError("static recognizer calibration set is too small")
+            quantize_static_model(
+                fp32_rec,
+                static_rec,
+                ArrayCalibrationReader(fp32_rec, rec_rows[:128]),
+            )
+        except Exception as error:
+            failures["static_rec"] = type(error).__name__
+    if static_det.exists() and static_rec.exists():
+        variants["int8-static-qdq"] = (static_det, static_rec)
+    return variants, failures
+
+
+def _scores(truth: dict[str, str], hypotheses: dict[str, str]) -> dict[str, Any]:
+    page_cer = []
+    page_wer = []
+    page_cer_insensitive = []
+    page_wer_insensitive = []
+    inserted_words = 0
+    reference_words = 0
+    for page_id, reference in truth.items():
+        if not reference:
+            continue
+        hypothesis = hypotheses[page_id]
+        page_cer.append(character_error_rate(reference, hypothesis))
+        page_wer.append(word_error_rate(reference, hypothesis))
+        page_cer_insensitive.append(
+            character_error_rate(strip_diacritics(reference), strip_diacritics(hypothesis))
+        )
+        page_wer_insensitive.append(
+            word_error_rate(strip_diacritics(reference), strip_diacritics(hypothesis))
+        )
+        reference_words += len(normalize_ocr_text(reference).split())
+    for page_id, reference in truth.items():
+        if reference:
+            continue
+        hypothesis = hypotheses[page_id]
+        inserted_words += len(normalize_ocr_text(hypothesis).split())
+    return {
+        "CER": float(np.mean(page_cer)),
+        "WER": float(np.mean(page_wer)),
+        "CER_diacritic_insensitive": float(np.mean(page_cer_insensitive)),
+        "WER_diacritic_insensitive": float(np.mean(page_wer_insensitive)),
+        "page_CER_p50": float(np.median(page_cer)),
+        "page_CER_p95": float(np.percentile(page_cer, 95)),
+        "inserted_word_rate_clean": inserted_words / reference_words,
+        "no_text_pages_with_output": sum(
+            bool(normalize_ocr_text(hypotheses[page_id]))
+            for page_id, reference in truth.items()
+            if not reference
+        ),
+        "no_text_page_count": sum(not reference for reference in truth.values()),
+    }
+
+
+def run_ocr_gate(
+    workspace: Path,
+    *,
+    profile: RunningProfile | None = None,
+    wait_seconds: float = 900.0,
+    deadline: Deadline | None = None,
+) -> dict[str, Any]:
+    gate_deadline = deadline or Deadline()
+    base_profile = profile or RunningProfile.t1_emulated()
+    selected_profile = replace(base_profile, background=True)
+    results: dict[str, Any] = {"schema": 1, "variants": {}}
+    with bounded_gate(
+        "ocr",
+        workspace=workspace,
+        deadline=gate_deadline,
+        results=results,
+    ):
+        profile_record = apply_profile(selected_profile)
+        manifest, truth = load_ocr_manifest(workspace)
+        image_paths = [workspace / "data" / "ocr" / page["image"] for page in manifest["pages"] if page["kind"] == "text"]
+        baseline_rss = psutil.Process().memory_info().rss
+        variants, variant_failures = _prepare_variants(
+            workspace,
+            image_paths,
+            selected_profile,
+            deadline=gate_deadline,
+        )
+        model_root = workspace / "models" / "ppocr"
+        results.update(
+            {
+                "label": "T1-emulated, provisional",
+                "model": "PP-OCRv5-mobile-det + latin-PP-OCRv5-mobile-rec",
+                "profile": profile_record,
+                "environment": capture_environment(),
+                "page_count": len(truth),
+                "text_page_count": len(image_paths),
+                "no_text_page_count": len(truth) - len(image_paths),
+                "timed_passes": TIMED_PASSES,
+                "warmup_pages": WARMUP_PAGES,
+                "baseline_rss_bytes": baseline_rss,
+                "variant_failures": variant_failures,
+            }
+        )
+        reference_hypotheses: dict[str, str] | None = None
+        for name, (det_path, rec_path) in variants.items():
+            gate_deadline.check(f"ocr:variant-{name}")
+            gc.collect()
+            started = time.perf_counter()
+            engine = _new_engine(model_root, det_path=det_path, rec_path=rec_path, threads=selected_profile.ort_threads)
+            cold_load_seconds = time.perf_counter() - started
+            hypotheses: dict[str, str] = {}
+            for index, record in enumerate(manifest["pages"]):
+                gate_deadline.check(f"ocr:{name}:page-{index}")
+                hypotheses[record["id"]] = _page_text(
+                    engine,
+                    workspace / "data" / "ocr" / record["image"],
+                )
+            if reference_hypotheses is None:
+                reference_hypotheses = hypotheses
+            gate_deadline.check(f"ocr:{name}:deterministic")
+            deterministic = _page_text(engine, image_paths[0]) == hypotheses[image_paths[0].stem]
+            quality = _scores(truth, hypotheses)
+            quality["reference_CER_delta"] = quality["CER"] - _scores(truth, reference_hypotheses)["CER"]
+            quality["reference_inserted_word_rate_delta"] = (
+                quality["inserted_word_rate_clean"]
+                - _scores(truth, reference_hypotheses)["inserted_word_rate_clean"]
+            )
+            passes_parity = quality["reference_CER_delta"] <= 0.005 and quality["reference_inserted_word_rate_delta"] <= 0
+            variant_dir = det_path.parent
+            files = []
+            for index, path in enumerate(sorted(variant_dir.glob("*.onnx*"))):
+                gate_deadline.check(f"ocr:{name}:size-file-{index}")
+                files.append(
+                    {"filename": path.name, "bytes": path.stat().st_size, "sha256": sha256_file(path)}
+                )
+            model_bytes = sum(item["bytes"] for item in files)
+            variant_result: dict[str, Any] = {
+                "path_label": f"ppocr/{name}",
+                "cold_load_seconds": cold_load_seconds,
+                "model_bytes": model_bytes,
+                "files": files,
+                "deterministic_repeat": deterministic,
+                "quality": quality,
+                "parity_passed": passes_parity and deterministic,
+                "timing": None,
+            }
+            if variant_result["parity_passed"]:
+                quiet = wait_for_quiet_window(
+                    timeout_seconds=wait_seconds,
+                    deadline=gate_deadline,
+                )
+                variant_result["quiet_window"] = quiet
+                if quiet["quiet"]:
+                    for index, path in enumerate(image_paths[:WARMUP_PAGES]):
+                        gate_deadline.check(f"ocr:{name}:warmup-{index}")
+                        _page_text(engine, path)
+                    samples = []
+                    with high_performance_power_scheme(deadline=gate_deadline) as power:
+                        for timed_pass in range(TIMED_PASSES):
+                            for index, path in enumerate(image_paths):
+                                gate_deadline.check(
+                                    f"ocr:{name}:pass-{timed_pass}:page-{index}"
+                                )
+                                started = time.perf_counter_ns()
+                                _page_text(engine, path)
+                                samples.append((time.perf_counter_ns() - started) / 1_000_000_000)
+                    timing = summarize_latencies(samples, resamples=2_000)
+                    timing["passes"] = TIMED_PASSES
+                    timing["background_priority"] = True
+                    peak_rss = int(getattr(psutil.Process().memory_info(), "peak_wset", psutil.Process().memory_info().rss))
+                    variance = {
+                        "power": power,
+                        "page": timing,
+                        "added_peak_rss_bytes_upper_bound": max(0, peak_rss - baseline_rss),
+                    }
+                    variant_result["timing"] = variance
+                    raw_dir = workspace / "raw" / "ocr"
+                    raw_dir.mkdir(parents=True, exist_ok=True)
+                    write_json(raw_dir / f"{name}-page-timings.json", {"seconds": samples})
+                else:
+                    variant_result["timing_skipped"] = "quiet window did not open"
+            results["variants"][name] = variant_result
+            write_json(workspace / "results" / "ocr.json", results)
+            del engine
+            gc.collect()
+    return results

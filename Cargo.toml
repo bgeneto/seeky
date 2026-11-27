@@ -3,7 +3,7 @@
 # profiles declared in member manifests.
 [workspace]
 resolver = "3"
-members = ["crates/*", "apps/desktop/src-tauri"]
+members = ["crates/*", "apps/desktop/src-tauri", "tools/seeky-bench"]
 
 [workspace.package]
 version = "0.1.0"

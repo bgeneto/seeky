@@ -6,13 +6,120 @@ use openvino::{
 use ort::execution_providers::CUDAExecutionProvider;
 use ort::session::Session;
 use ort::value::Tensor;
-use seeky_core::{Backend, EngineInfo};
+use seeky_core::{Backend, EngineInfo, ModelIdentity};
+use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
 use std::sync::OnceLock;
 use tokenizers::{PaddingParams, Tokenizer, TruncationParams};
 
 pub const DIM: usize = 384;
 const NPU_BUCKET: usize = 256;
+
+/// Public model identifier. Never a filesystem path.
+pub const MODEL_ID: &str = "gety-embed-v0";
+/// Public model revision label until a model manifest lands.
+pub const MODEL_REVISION: &str = "unversioned";
+/// Public preprocessing recipe identifier.
+pub const MODEL_PREPROCESSING: &str = "gety-tokenizer-v0/truncate-512/pad-1";
+
+/// The embedding capability used by the engine facade. A trait so hardware-free
+/// tests can supply a deterministic fake embedder (SPEC-0002 R20).
+pub trait Embedder: Send {
+    /// Deployment info for status.
+    fn info(&self) -> EngineInfo;
+    /// Public identity for telemetry and reports.
+    fn identity(&self) -> ModelIdentity;
+    /// Embed a batch of texts.
+    fn embed(&mut self, texts: &[String]) -> Result<Vec<Vec<f32>>>;
+}
+
+/// Public description of the active deployed model, including its content hash.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ActiveModel {
+    /// Task name.
+    pub task: String,
+    /// Public model identifier.
+    pub id: String,
+    /// Public revision label.
+    pub revision: String,
+    /// Deployed precision/provider variant.
+    pub variant: String,
+    /// Output dimension.
+    pub dimension: u32,
+    /// Execution provider label.
+    pub provider: String,
+    /// Preprocessing recipe identifier.
+    pub preprocessing: String,
+    /// Lowercase SHA-256 of the deployed model bytes.
+    pub sha256: String,
+}
+
+/// Describe the deployed model for `backend` and hash its bytes.
+pub fn describe_active_model(
+    backend: Backend,
+    model_root: &Path,
+    npu_dir: &Path,
+) -> Result<ActiveModel> {
+    let backend = match backend {
+        Backend::Auto => Backend::Cpu,
+        other => other,
+    };
+    let (variant, files) = match backend {
+        Backend::Cpu => (
+            "int8-cpu",
+            vec![model_root.join("onnx").join("model_uint8.onnx")],
+        ),
+        Backend::Cuda => (
+            "fp16-cuda",
+            vec![model_root.join("onnx_cuda").join("model_fp16.onnx")],
+        ),
+        Backend::Npu => (
+            "int8-npu",
+            vec![npu_dir.join("model.xml"), npu_dir.join("model.bin")],
+        ),
+        Backend::Auto => unreachable!("Auto resolves to CPU"),
+    };
+    let mut hasher = Sha256::new();
+    for path in &files {
+        ensure_file(path)?;
+        let bytes = std::fs::read(path)?;
+        hasher.update(&bytes);
+    }
+    Ok(ActiveModel {
+        task: "embedder".into(),
+        id: MODEL_ID.into(),
+        revision: MODEL_REVISION.into(),
+        variant: variant.into(),
+        dimension: DIM as u32,
+        provider: provider_label(backend).into(),
+        preprocessing: MODEL_PREPROCESSING.into(),
+        sha256: format!("{:x}", hasher.finalize()),
+    })
+}
+
+fn provider_label(backend: Backend) -> &'static str {
+    match backend {
+        Backend::Auto => "cpu",
+        Backend::Cpu => "cpu",
+        Backend::Cuda => "cuda",
+        Backend::Npu => "npu",
+    }
+}
+
+fn identity_for(backend: Backend) -> ModelIdentity {
+    let variant = match backend {
+        Backend::Cpu | Backend::Auto => "int8-cpu",
+        Backend::Cuda => "fp16-cuda",
+        Backend::Npu => "int8-npu",
+    };
+    ModelIdentity {
+        task: "embedder".into(),
+        id: MODEL_ID.into(),
+        revision: MODEL_REVISION.into(),
+        variant: variant.into(),
+        dimension: Some(DIM as u32),
+    }
+}
 
 pub struct Engine {
     backend: Backend,
@@ -166,6 +273,11 @@ impl Engine {
         self.info.clone()
     }
 
+    /// Public identity of the deployed embedder.
+    pub fn identity(&self) -> ModelIdentity {
+        identity_for(self.backend)
+    }
+
     pub fn embed(&mut self, texts: &[String]) -> Result<Vec<Vec<f32>>> {
         match self.backend {
             Backend::Cpu => self.embed_ort(texts, false),
@@ -253,6 +365,20 @@ impl Engine {
             result.push(normalize_row(data.to_vec()));
         }
         Ok(result)
+    }
+}
+
+impl Embedder for Engine {
+    fn info(&self) -> EngineInfo {
+        Engine::info(self)
+    }
+
+    fn identity(&self) -> ModelIdentity {
+        Engine::identity(self)
+    }
+
+    fn embed(&mut self, texts: &[String]) -> Result<Vec<Vec<f32>>> {
+        Engine::embed(self, texts)
     }
 }
 

@@ -1,0 +1,32 @@
+[package]
+name = "seeky-bench"
+description = "Internal headless benchmark harness for Seeky (never shipped)"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+publish = false
+
+[lib]
+name = "seeky_bench"
+path = "src/lib.rs"
+
+[[bin]]
+name = "seeky-bench"
+path = "src/main.rs"
+
+[dependencies]
+anyhow.workspace = true
+seeky-engine = { path = "../../crates/seeky-engine" }
+seeky-eval = { path = "../../crates/seeky-eval" }
+serde.workspace = true
+serde_json.workspace = true
+sha2.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true
+
+[lints]
+workspace = true

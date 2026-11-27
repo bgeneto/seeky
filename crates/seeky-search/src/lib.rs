@@ -8,12 +8,15 @@
 pub enum Error {
     #[error("storage error: {0}")]
     Storage(#[from] seeky_store::Error),
+    #[error("internal error: {0}")]
+    Internal(String),
 }
 
 impl Error {
     pub fn into_storage(self) -> seeky_store::Error {
         match self {
             Self::Storage(error) => error,
+            Self::Internal(message) => seeky_store::Error::Message(message),
         }
     }
 }
@@ -21,5 +24,5 @@ impl Error {
 pub type Result<T> = std::result::Result<T, Error>;
 
 mod search;
-pub use search::search;
+pub use search::{SearchParameters, SearchResult, search, search_with_store};
 pub use seeky_core::SearchHit;

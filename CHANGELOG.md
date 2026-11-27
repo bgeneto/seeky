@@ -20,8 +20,29 @@ roadmap (§6), with the date.
 - The maintainer accepted SPEC-0014 v0.2, an addendum that adds R17: a
   resizable preview panel (drag or keyboard, 300 px to 60% of the content
   area, width kept in `seeky.ui.previewWidth.v1`) to WP-7.1.
+- The maintainer accepted SPEC-0006 v0.2 (storage, index backends,
+  generations, embedding channels) at gate H7. PoC vectors are dropped on
+  migration and re-embedded. A generation is promoted once its coverage
+  matches the active one, so the first model turns semantic search on
+  progressively. Index components with equal build keys are shared
+  between generations under `index/components/<build-key>/`. The Q4–Q14
+  defaults stand, and the architecture docs and glossary now match the
+  spec.
 
-- The maintainer accepted the SPEC-0002 v1.1 evaluation extension (R17–R25:
+- `tools/model-export` implements the WP-0.6 ORT validation gate with
+  per-gate bounded timeouts (default 1800 s), timeout artifacts that cannot
+  produce K1-K4 verdicts, parity/quantization/NPU/OCR/VLM probes, and
+  preregistered kill criteria. The e5/granite fp32 and reranker fp32 proxies
+  fired K1; the final K1-K4 report remains pending.
+- `seeky-bench` implements WP-1.2: `index`, `eval`, `perf` (skeleton),
+  `compare`, and `report`; environment capture and semantic config hashing;
+  atomic, reproducible artifacts; fail-closed depth; test confirmation and an
+  exposure ledger; exact metadata filters with pushdown/post reporting. The
+  engine gains the accepted SPEC-0002 v1.1 evaluation API: depth to 1,000,
+  deterministic order, stage telemetry, an uncached query-embedding probe,
+  structured filters, and a config snapshot, plus an additive lexical-only
+  constructor and `Embedder` identity seam for the harness.
+- The maintainer accepted the SPEC-0002 v1.1 evaluation extension (R17-R25:
   evaluation depth to 1,000, stage and query-embedding telemetry, exact
   metadata filters, configuration snapshot) with its §9.7 proposals as
   written. WP-1.2 (`seeky-bench`) and WP-1.6 may start.
