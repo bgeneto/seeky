@@ -215,9 +215,9 @@ never compresses, summarizes, or rewrites.
 
 | Stage | Includes | Budget source |
 |---|---|---|
-| Instant | Analysis, filename, lexical, grouping | P1 in methodology |
-| Hybrid | + dense, fusion, document layer | P2 |
-| Refined | + reranking, diversity, snippets | P3 |
+| Instant | Analysis, filename, lexical, grouping | S1 in methodology |
+| Hybrid | + dense, fusion, document layer | S2 |
+| Refined | + reranking, diversity, snippets | S3 |
 
 Performance techniques required by design: resident models; query embedding in
 parallel with lexical/filename retrieval; LRU cache of query embeddings; bounded

@@ -84,7 +84,7 @@ Target layout after Phase 0 (do not create ahead of its work package):
    Draft from [`docs/specs/_template.md`](docs/specs/_template.md) and stop for
    acceptance — do not implement a Draft.
 3. **Declare the gate** before coding: which tests prove the requirement IDs,
-   which budgets/quality gates (P*, I*, R*, D*, O*, V*, Q*) the change can affect.
+   which budgets/quality gates (S*, I*, R*, D*, O*, V*, Q*) the change can affect.
 4. **Write failing tests first** (unit, property, integration, fuzz as the spec
    says). Reference requirement IDs in test names or doc comments
    (`// SPEC-0007-R4`). What each kind of change must test, and how: §6 Tests.

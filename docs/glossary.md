@@ -13,7 +13,7 @@
 | **Transcription model** | An OCR model that only transcribes visible text with deterministic decoding and a fixed prompt (ADR-0021); may be encoder-decoder or VLM-based |
 | **OCR hallucination rate** | Share of OCR output words not present on the page, plus text emitted for pages without text; a hard OCR gate |
 | **Tier T0/T1/T2** | Hardware tiers: floor laptop, reference laptop (budgets defined here, CPU-only), workstation (iteration only) |
-| **Budget** | A locked numeric target (P*, I*, R*, D*, O*, V*) such as Hybrid-stage p95 latency |
+| **Budget** | A locked numeric target (S*, I*, R*, D*, O*, V*) such as Hybrid-stage p95 latency |
 | **Passage** | Contiguous span of extracted text with offsets and a locator; the retrieval unit (a.k.a. chunk) |
 | **Document** | One indexed file; the presentation unit |
 | **Locator** | Where a passage or visual unit lives: page, slide, sheet/row/column, line, or figure |

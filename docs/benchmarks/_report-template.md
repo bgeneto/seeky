@@ -4,7 +4,7 @@
 |---|---|
 | Work package / spec | WP-x.y / SPEC-NNNN |
 | Hypothesis | What should improve, by how much, where |
-| Gate(s) | Budget/quality IDs from `methodology.md` (e.g. P2, Q2, Q6) |
+| Gate(s) | Budget/quality IDs from `methodology.md` (e.g. S2, Q2, Q6) |
 | Decision | Adopt / Reject / Inconclusive (and the ADR updated) |
 | Commit | `<sha>` (dirty tree not allowed) |
 | Config hash | `<hash of RankingConfig/EngineConfig>` |
@@ -29,7 +29,7 @@ Per-category table, paired differences with 95 % CIs and p-values.
 
 ### Performance
 
-| System | P1 p95 | P2 p95 | P3 p95 | passages/s | RSS idle | RSS peak | disk/1M | download |
+| System | S1 p95 | S2 p95 | S3 p95 | passages/s | RSS idle | RSS peak | disk/1M | download |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 
 ### Pareto view

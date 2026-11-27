@@ -38,7 +38,7 @@ Seeky 1.0 is successful when, on CPU-only reference hardware (tier T1) with
    default model download is **≤ 250 MB**.
 5. Every one of those claims is backed by a committed benchmark report.
 
-Budget and gate IDs (P1–P5, I1–I5, R1–R6, D1–D2, O1–O4, V1–V5, Q1–Q8) are defined in
+Budget and gate IDs (S1–S5, I1–I5, R1–R6, D1–D2, O1–O4, V1–V5, Q1–Q8) are defined in
 [`../benchmarks/methodology.md`](../benchmarks/methodology.md); they are
 provisional until locked by ADR at the end of Phase 1.
 
@@ -236,7 +236,7 @@ WP-2.13 adds fields and capabilities only; it selects no visual model and
 moves no visual work onto the 1.0 critical path.
 
 **Exit evidence:** component ADRs accepted; B1 beats B0 on Q1;
-P1/P2 met at `sdc-s` on T1 CPU-only; OCR finalists named.
+S1/S2 met at `sdc-s` on T1 CPU-only; OCR finalists named.
 
 ### Phase 3 — Indexing engine v2
 
@@ -245,7 +245,7 @@ P1/P2 met at `sdc-s` on T1 CPU-only; OCR finalists named.
 | WP | Work package | Spec | Depends | Deliverables |
 |---|---|---|---|---|
 | 3.1 | Durable job queue, scheduler, resource governor (background priority, CPU share, search preemption, battery policy, memory ceiling) | SPEC-0007 | 2.4 | Scheduler + governor |
-| 3.2 | Two-speed pipeline: fast lane (metadata, lexical, filename, signatures) and semantic lane (dynamic batching by token length) | SPEC-0007 | 3.1, 2.12 | Pipeline; gates I1, I2, P5 |
+| 3.2 | Two-speed pipeline: fast lane (metadata, lexical, filename, signatures) and semantic lane (dynamic batching by token length) | SPEC-0007 | 3.1, 2.12 | Pipeline; gates I1, I2, S5 |
 | 3.3 | Content-addressed embedding cache; rename/move/copy without re-embedding | SPEC-0007 | 3.2 | Gate I5 + cache hit-rate report |
 | 3.4 | Structured extraction (blocks, locators, offsets) for all formats; add ODT, RTF, EPUB, EML/MBOX; extractor bake-off where alternatives exist | SPEC-0008 | 2.4 | Extractors + fidelity report |
 | 3.5 | Extraction hardening: timeouts, memory caps, panic isolation, `cargo-fuzz` targets per format, malformed-file corpus | SPEC-0008 | 3.4 | Fuzz targets in CI (time-boxed) |
@@ -254,7 +254,7 @@ P1/P2 met at `sdc-s` on T1 CPU-only; OCR finalists named.
 | 3.8 | **Bake-off: OCR, Stages B + C** on the WP-2.11 finalists (ONNX export, quantization matrix, O1–O4 on T1 CPU-only; GPU pack measured separately against the methodology §8.6 margin); `OcrEngine` integration as an optional pack with OCR provenance per file | SPEC-0009 | 2.11, 3.4 | Report + ADR (CPU default OCR; GPU pack yes/no); OCR lane |
 | 3.9 | Language ID + per-language analyzer wiring | SPEC-0008 | 2.7, 3.4 | Language-aware lexical indexing |
 
-**Exit evidence:** I1–I5 and P5 met at `sdc-s` on T1; fuzzing clean for the
+**Exit evidence:** I1–I5 and S5 met at `sdc-s` on T1; fuzzing clean for the
 agreed CPU-hours; crash-recovery tests pass; B2 report.
 
 ### Phase 4 — Ranking engine v2: hierarchical and progressive
@@ -266,7 +266,7 @@ delivery within budgets.
 |---|---|---|---|---|
 | 4.1 | Refactor into `seeky-search` stage modules; `RankingConfig`; property tests for the invariants | SPEC-0010 | 2.12 | Stage pipeline; invariants green |
 | 4.2 | Query analysis and routing (quoted, identifier, filename-like, inline filters incl. pt/en dates, query class) | SPEC-0010 | 4.1 | Router + per-category report |
-| 4.3 | Progressive search sessions (Instant/Hybrid/Refined), cancellation, query-embedding LRU | SPEC-0002 v2 | 4.1 | Gates P1, P2, P4 |
+| 4.3 | Progressive search sessions (Instant/Hybrid/Refined), cancellation, query-embedding LRU | SPEC-0002 v2 | 4.1 | Gates S1, S2, S4 |
 | 4.4 | Document layer: grouping, candidate caps, aggregation (signal ablations) | SPEC-0010 | 4.1 | Ablation report |
 | 4.5 | Near-duplicate detection and collapsing (index-time SimHash, passage dedupe, boilerplate down-weighting) | SPEC-0010 | 4.4, 3.2 | Gate Q4 |
 | 4.6 | Length-bias correction (BM25 tuning, dense/rerank calibration, document prior) | SPEC-0010 | 4.4 | Ablation report |
@@ -277,7 +277,7 @@ delivery within budgets.
 | 4.11 | *(gated)* **Bake-off: learned sparse retrieval** | report | 4.7 | Report; adopt only if it wins at equal latency |
 | 4.12 | **B3 report**: full pipeline + leave-one-out ablations of every mechanism at `sdc-m` | — | 4.1–4.10 | Report B3 |
 
-**Exit evidence:** Q1–Q7 and P1–P4 met at `sdc-m` on T1 CPU-only; every
+**Exit evidence:** Q1–Q7 and S1–S4 met at `sdc-m` on T1 CPU-only; every
 mechanism has an ablation result; failing mechanisms ship disabled by config.
 
 ### Phase 5 — NPU acceleration (parallel track)

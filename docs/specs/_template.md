@@ -8,7 +8,7 @@
 | Phase / work packages | Phase N — WP-N.x, WP-N.y |
 | Crates touched | `seeky-…` |
 | Governing docs | vision §…, ADR-…, architecture/…md §… |
-| Benchmark gates | e.g. P2, I1, Q2 (from `docs/benchmarks/methodology.md`) |
+| Benchmark gates | e.g. S2, I1, Q2 (from `docs/benchmarks/methodology.md`) |
 
 ## 1. Problem and goal
 
@@ -27,7 +27,7 @@ what "done" looks like for the user and for the engine.
 | SPEC-NNNN-R1 | The engine shall … | unit test `crate::module::tests::name` | Open |
 | SPEC-NNNN-R2 | When …, the engine shall … | integration test | Open |
 | SPEC-NNNN-R3 | If …, then the engine shall … | fault-injection test | Open |
-| SPEC-NNNN-R4 | While indexing, the engine shall keep P2 within budget | benchmark gate P5 | Open |
+| SPEC-NNNN-R4 | While indexing, the engine shall keep S2 within budget | benchmark gate S5 | Open |
 
 Status: `Open` → `Implemented` (code and its test merged; the WP is named, for
 example `Implemented (WP-3.2)`) → `Verified` (benchmark gate passed; report
