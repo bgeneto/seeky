@@ -113,6 +113,7 @@ POOL_KEYS = {
 }
 PROVENANCE_KEYS = {"drafted_by", "verified_by", "state", "adjudicated_by"}
 LLM_PROVENANCE_KEY = "llm_prompt_sha256"
+TOOL_PROVENANCE_KEY = "tool_config_sha256"
 FILTER_KEYS = {
     "extensions",
     "modified_after",
@@ -132,6 +133,7 @@ DRAFT_ROOT_SUFFIX = ("bench", "qrels", "sdc", "drafts")
 _BCP47 = re.compile(r"^[A-Za-z]{2,8}(?:-[A-Za-z0-9]{1,8})*$")
 _HUMAN = re.compile(r"^human:\S+$")
 _LLM = re.compile(r"^llm:[^@\s]+@\S+$")
+_TOOL = re.compile(r"^tool:[^@\s]+@\S+$")
 _LABEL = re.compile(r"^[a-z0-9]+(?:_[a-z0-9]+)*$")
 
 
@@ -446,7 +448,7 @@ def _validate_provenance(
 ) -> dict[str, Any]:
     if not isinstance(value, dict):
         _prov("provenance must be an object", file=file, line=line, field=field)
-    unknown = set(value) - PROVENANCE_KEYS - {LLM_PROVENANCE_KEY}
+    unknown = set(value) - PROVENANCE_KEYS - {LLM_PROVENANCE_KEY, TOOL_PROVENANCE_KEY}
     if unknown:
         _bad(f"unknown provenance field(s): {sorted(unknown)}", file=file, line=line, field=field)
     missing = PROVENANCE_KEYS - set(value)
@@ -454,13 +456,27 @@ def _validate_provenance(
         _prov(f"provenance is missing {sorted(missing)}", file=file, line=line, field=field)
     drafted_by = value["drafted_by"]
     llm_draft = isinstance(drafted_by, str) and drafted_by.startswith("llm:")
-    if not (isinstance(drafted_by, str) and (_HUMAN.match(drafted_by) or _LLM.match(drafted_by))):
-        _prov("drafted_by must be human:<id> or llm:<model>@<revision>", file=file, line=line, field="drafted_by")
+    tool_draft = isinstance(drafted_by, str) and drafted_by.startswith("tool:")
+    if not (
+        isinstance(drafted_by, str)
+        and (_HUMAN.match(drafted_by) or _LLM.match(drafted_by) or _TOOL.match(drafted_by))
+    ):
+        _prov(
+            "drafted_by must be human:<id>, llm:<model>@<revision>, or tool:<id>@<version>",
+            file=file,
+            line=line,
+            field="drafted_by",
+        )
     if llm_draft:
         if LLM_PROVENANCE_KEY not in value or not _is_hex(value[LLM_PROVENANCE_KEY]):
             _prov("an LLM draft needs a lowercase SHA-256 llm_prompt_sha256", file=file, line=line, field=LLM_PROVENANCE_KEY)
     elif LLM_PROVENANCE_KEY in value:
         _bad("llm_prompt_sha256 is valid only for an LLM draft", file=file, line=line, field=LLM_PROVENANCE_KEY)
+    if tool_draft:
+        if TOOL_PROVENANCE_KEY not in value or not _is_hex(value[TOOL_PROVENANCE_KEY]):
+            _prov("a tool draft needs a lowercase SHA-256 tool_config_sha256", file=file, line=line, field=TOOL_PROVENANCE_KEY)
+    elif TOOL_PROVENANCE_KEY in value:
+        _bad("tool_config_sha256 is valid only for a tool draft", file=file, line=line, field=TOOL_PROVENANCE_KEY)
     verified_by = value["verified_by"]
     if not isinstance(verified_by, list) or not all(
         isinstance(item, str) and _HUMAN.match(item) for item in verified_by

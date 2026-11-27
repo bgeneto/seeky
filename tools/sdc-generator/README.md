@@ -83,6 +83,11 @@ use the combined `queries.draft.jsonl`, `qrels.draft.documents.jsonl`,
   panel, writes the §4.3 split files atomically, and records `file_sha256`.
   The output directory must not exist.
 
+Draft provenance is `human:<id>`, `llm:<model>@<revision>` with
+`llm_prompt_sha256`, or `tool:<id>@<version>` with `tool_config_sha256`. A tool
+or LLM draft is candidate data only: it has no authority over a relevance grade,
+and `publish` refuses any record without human verification.
+
 The minima applied by `freeze-split` and `publish` follow the set named by the
 spec: `sdc-smoke-*` sets use the R26 smoke minima (at least five dev queries
 per category, no test split); every other set, including a correction with a new

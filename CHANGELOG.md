@@ -55,6 +55,11 @@ roadmap (§6), with the date.
 
 ### Changed
 
+- SPEC-0004 0.2 accepts `tool:<id>@<version>` draft provenance with
+  `tool_config_sha256`. Tool drafts are candidate data only: they have no
+  authority over a relevance grade, and every item still requires human
+  verification (H6). LLM drafting remains offline with local, permissively
+  licensed open-weight models.
 - Added the deterministic SPDX-clean SDC generator and committed a 200-file,
   3.7 MB synthetic `sdc-smoke` corpus with all fourteen renderer formats,
   canonical passages, extraction truth, duplicates, versions, boilerplate, and

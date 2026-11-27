@@ -2,8 +2,8 @@
 
 | Field | Value |
 |---|---|
-| Status | Accepted (maintainer pre-approval in /goal) |
-| Version | 0.1 (text corpus v1; the WP-10.1 visual slice requires a later spec version) |
+| Status | Accepted (maintainer pre-approval in /goal; amendment approved 2026-11-27) |
+| Version | 0.2 (text corpus v1; adds tool-draft provenance; the WP-10.1 visual slice requires a later spec version) |
 | Owner | Maintainer |
 | Phase / work packages | Phase 1 — WP-1.3, WP-1.4; Phase 10 — WP-10.1 (later version) |
 | Crates touched | None. Offline generator under `tools/sdc-generator/`; data under `bench/`; consumed by `seeky-eval` (SPEC-0003) |
@@ -77,7 +77,7 @@ All requirements are open. The WP column is the implementation owner.
 | SPEC-0004-R17 | WP-1.4 | The full query set shall contain at least 100 Portuguese and 100 English monolingual queries overall and at least 40 of each per split, at least 30 cross-language queries per split, at least 20 queries each for Spanish, French, and German overall, and at least 10 non-Latin non-regression queries. | `language_and_cross_lingual_slices_meet_minima`; `non_latin_queries_are_non_regression_only` | Open |
 | SPEC-0004-R18 | WP-1.4 | Document judgments shall use the graded schema in §4.6 with integer relevance 0–3 and the rubric in §5.5, and shall allow a known-item target, its explicitly judged duplicates, and multiple relevant exploratory documents without collapsing them into an assumed single answer. | `document_qrels_validate_grades_and_references`; `known_item_duplicates_and_multiple_relevant_docs_are_representable` | Open |
 | SPEC-0004-R19 | WP-1.4 | Passage judgments shall reference stable canonical passage IDs and use integer relevance 0–3; where snippet evidence is supplied, its UTF-8 half-open offsets shall lie inside the referenced canonical passage and delimit the exact supporting text. | `passage_qrels_validate_grades_and_target_hashes`; `snippet_spans_are_ordered_in_bounds_and_exact` | Open |
-| SPEC-0004-R20 | WP-1.4 | Every query, document judgment, and passage judgment shall carry `drafted_by`, `verified_by`, and `state` provenance; an LLM-drafted item shall also carry immutable model/revision and prompt-hash fields, and an adjudicated item shall identify the human adjudicator and at least two distinct participating human reviewers. | `provenance_is_complete_for_human_and_llm_drafts`; `adjudication_requires_distinct_humans_and_adjudicator` | Open |
+| SPEC-0004-R20 | WP-1.4 | Every query, document judgment, and passage judgment shall carry `drafted_by`, `verified_by`, and `state` provenance; an LLM-drafted item shall also carry immutable model/revision and prompt-hash fields; a tool-drafted item shall carry an immutable tool id/version and config-hash field; and an adjudicated item shall identify the human adjudicator and at least two distinct participating human reviewers. A tool draft is candidate data only: it has no authority over a relevance grade and must pass human verification before any benchmark-eligible split. | `provenance_is_complete_for_human_llm_and_tool_drafts`; `tool_draft_has_no_grade_authority`; `adjudication_requires_distinct_humans_and_adjudicator` | Open |
 | SPEC-0004-R21 | WP-1.4 | When an LLM drafts queries or candidate judgments, the drafting tool shall run offline as development tooling, and a human shall verify the query intent and every relevance grade against the referenced corpus text before the item can enter a benchmark-eligible split. | workflow inspection; `llm_draft_cannot_be_promoted_without_human_verification`; network-boundary test of drafting tool | Open |
 | SPEC-0004-R22 | WP-1.4 | If an item is unverified or lacks required provenance, then the publisher shall refuse its promotion and the SDC loader shall reject any benchmark set containing it; rejected and draft records may retain an intended split only in the quarantined draft area and shall never enter `test`. | `draft_judgment_set_is_not_benchmark_eligible`; `unverified_item_never_enters_test`; `promotion_rejects_missing_provenance` | Open |
 | SPEC-0004-R23 | WP-1.4 | Once a judgment set has been used on `test`, the publisher shall keep its query membership and split assignments immutable and shall write corrections or additional judgments under a new judgment-set version rather than moving, deleting, or silently rewriting test history. | `frozen_test_membership_and_splits_are_immutable`; `correction_creates_new_judgment_set_version`; audit-trail inspection | Open |
@@ -613,11 +613,18 @@ Provenance fields have these rules:
 
 | Field | Rule |
 |---|---|
-| `drafted_by` | `human:<reviewer-id>` or `llm:<model-id>@<immutable-revision>`; never empty |
+| `drafted_by` | `human:<reviewer-id>`, `llm:<model-id>@<immutable-revision>`, or `tool:<tool-id>@<version>`; never empty |
 | `llm_prompt_sha256` | Required exactly for an LLM draft; hashes the versioned prompt template and actual input, which remain local drafting artifacts |
+| `tool_config_sha256` | Required exactly for a tool draft; hashes the versioned drafter configuration and input selection, which remain local drafting artifacts |
 | `verified_by` | Array of distinct `human:<reviewer-id>` values; empty only for `draft` or `rejected` |
 | `state` | `draft`, `verified`, `adjudicated`, or `rejected` |
 | `adjudicated_by` | Null except for `adjudicated`, where it names a human in `verified_by`; at least two distinct humans participate |
+
+A tool draft is candidate data, not a judgment. It may propose a target or a
+provisional grade, but it has no authority over relevance: every tool-drafted
+query, document judgment, and passage judgment is verified by a human (H6)
+before it can be promoted. Known-item and needle targets are likewise
+candidates for pooling, not automatic grades (5.4).
 
 A reviewer ID is a maintainer-issued pseudonym listed in `reviewers.json`, not
 an e-mail address, account name, legal name, or personal path. Human-authored
@@ -766,6 +773,8 @@ is run. The author records intent, category, languages, and any metadata
 filters; an LLM may propose additional text, but a human must make the intent
 coherent and answerable from the corpus. Known-item and needle queries identify
 at least one candidate target for pooling, not an automatic relevance grade.
+The same rule applies to every tool- or LLM-drafted record: it is a candidate,
+and its provisional grade never substitutes for human verification.
 
 After query drafting, queries are grouped by `(category, language_slice,
 configuration)`. Every nonempty stratum shall contain an even number of
@@ -802,7 +811,9 @@ from the default configuration, as required by ADR-0024; see resolved question
 | 3 | Directly satisfies the intent; for known item, the intended item or an explicitly relevant copy/version | Contains the exact target, answer-bearing text, or decisive evidence |
 
 Relevance is judged against the query intent and structured filters, not query
-term overlap. Unjudged means absent, not grade 0. Duplicate copies may all be
+term overlap. Tool- and LLM-drafted records are candidates only; a human sets or
+confirms every published grade, and a draft grade carries no authority.
+Unjudged means absent, not grade 0. Duplicate copies may all be
 relevant; duplicate-cluster labels, rather than arbitrary zero grades, allow
 deduplication metrics to distinguish redundancy from relevance. Exploratory
 queries may have many grade 2/3 documents and use subtopic labels for diversity
@@ -993,6 +1004,7 @@ corrections they name landed in the same commit.
 
 | Version | Date | Change |
 |---|---|---|
+| 0.2 | 2026-11-27 | Accepted (maintainer approval 2026-11-27): added `tool:<tool-id>@<version>` and `tool_config_sha256` provenance for offline deterministic drafters; tool drafts are candidate data with no grade authority and every item still requires human verification (H6) |
 | 0.1 | 2026-11-27 | WP-1.3 full-scale `sdc-s` materialized and `verify` passed: 10,000 rendered files, 109,689 passages, 112.5 MB, corpus hash `1d65b8ff04091850b8deefa34f5658bee0b87ec4ff29667f002f6cec88ac2ef0`; R1-R14 complete |
 | 0.1 | 2026-11-27 | WP-1.3 implemented R14: offline `judgments validate`, `freeze-split`, and `publish` with the canonical `bench/qrels/sdc/drafts` quarantine, schema/target-hash/provenance/minima/pool checks, immutable query digests, and atomic publication; R15-R27 remain with WP-1.4 |
 | 0.1 | 2026-11-27 | Accepted (maintainer pre-approval in /goal); resolved H1 questions 1-3 with the draft recommendations: documents-only default benchmarks, verified smoke judgments for WP-1.8, and isolated Python 3.12 tooling |

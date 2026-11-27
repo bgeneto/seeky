@@ -30,6 +30,7 @@ from support import (
 
 from sdc_generator.errors import SdcError
 from sdc_generator.judgments import (
+    _validate_provenance,
     freeze_split,
     publish,
     validate_judgment_set,
@@ -539,6 +540,59 @@ class JudgmentTestCase(unittest.TestCase):
         with self.assertRaises(SdcError) as caught:
             publish(root2, self.tmp / "out-missing")
         self.assertEqual(caught.exception.code, "PROVENANCE_INCOMPLETE")
+
+    def test_tool_draft_provenance_requires_a_config_hash(self) -> None:
+        # SPEC-0004-R20: tool drafts carry an immutable version and config hash.
+        base = {"verified_by": [], "state": "draft", "adjudicated_by": None}
+        accepted = {
+            "drafted_by": "tool:qrels-drafter@v1",
+            "tool_config_sha256": "a" * 64,
+            **base,
+        }
+        _validate_provenance(accepted, file="probe.jsonl")
+
+        missing = {"drafted_by": "tool:qrels-drafter@v1", **base}
+        with self.assertRaises(SdcError) as caught:
+            _validate_provenance(missing, file="probe.jsonl")
+        self.assertEqual(caught.exception.code, "PROVENANCE_INCOMPLETE")
+
+        misplaced = {
+            "drafted_by": "human:reviewer-a",
+            "tool_config_sha256": "a" * 64,
+            **base,
+        }
+        with self.assertRaises(SdcError) as caught:
+            _validate_provenance(misplaced, file="probe.jsonl")
+        self.assertEqual(caught.exception.code, "SCHEMA_INVALID")
+
+        llm = {
+            "drafted_by": "llm:local-model@rev1",
+            "llm_prompt_sha256": "b" * 64,
+            **base,
+        }
+        _validate_provenance(llm, file="probe.jsonl")
+
+    def test_tool_draft_has_no_grade_authority(self) -> None:
+        # SPEC-0004-R20/R21 and section 5.4: a tool grade never publishes.
+        root = _draft_root(self.tmp, "tool-authority")
+        _write_smoke_draft(root, corpus_root=self.corpus)
+        qrels_path = root / "qrels.draft.documents.jsonl"
+        rows = [json.loads(line) for line in qrels_path.read_text(encoding="utf-8").splitlines()]
+        rows[0]["provenance"] = {
+            "drafted_by": "tool:qrels-drafter@v1",
+            "tool_config_sha256": "c" * 64,
+            "verified_by": [],
+            "state": "draft",
+            "adjudicated_by": None,
+        }
+        _write_jsonl(qrels_path, rows)
+
+        summary = validate_judgment_set(root, self.corpus, allow_draft=True)
+        self.assertEqual(summary["state"], "draft")
+        freeze_split(root)
+        with self.assertRaises(SdcError) as caught:
+            publish(root, self.tmp / "out-tool-authority")
+        self.assertIn(caught.exception.code, {"TEST_NOT_ELIGIBLE", "PROVENANCE_INCOMPLETE"})
 
     def test_publish_refuses_an_existing_output_and_is_atomic(self) -> None:
         # SPEC-0004-R14, section 4.1.
