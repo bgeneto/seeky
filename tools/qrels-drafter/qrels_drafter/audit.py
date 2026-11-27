@@ -361,9 +361,15 @@ def language_report(queries: list[dict], documents: list[dict], corpus) -> dict:
         ],
     }
     if language_failures or copy_failures:
+        first = next(row for row in rows if not row["ok"])
+        detail = (
+            f"{first['query_id']} ({first['category']}, expected "
+            f"{first['expected_language']}, detected {first['detected_language']}, "
+            f"guard {first['guard']})"
+        )
         _fail(
             f"LLM language/copy audit failed: {language_failures} wrong-language and "
-            f"{copy_failures} copying queries"
+            f"{copy_failures} copying queries; first failure {detail}"
         )
     return summary
 
