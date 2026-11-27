@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import gc
+import re
 import time
 from dataclasses import replace
 from pathlib import Path
@@ -56,6 +57,18 @@ def _new_engine(model_root: Path, *, det_path: Path | None = None, rec_path: Pat
         return RapidOCR(params=params)
     except Exception as error:
         raise OcrRunError("PP-OCR engine could not be initialized") from error
+
+
+_PATH_TOKEN = re.compile(r"[A-Za-z]:[\\/]\S*|(?<!\w)/\S+")
+
+
+def _failure_reason(error: Exception) -> str:
+    """Name the root failure without any local path (committed output)."""
+    root: BaseException = error
+    while root.__cause__ is not None:
+        root = root.__cause__
+    message = _PATH_TOKEN.sub("<path>", str(root).splitlines()[0] if str(root) else "")
+    return f"{type(root).__name__}: {message}"[:300]
 
 
 def _page_text(engine: Any, image_path: Path) -> str:
@@ -279,19 +292,38 @@ def run_ocr_gate(
             gate_deadline.check(f"ocr:variant-{name}")
             gc.collect()
             started = time.perf_counter()
-            engine = _new_engine(model_root, det_path=det_path, rec_path=rec_path, threads=selected_profile.ort_threads)
-            cold_load_seconds = time.perf_counter() - started
-            hypotheses: dict[str, str] = {}
-            for index, record in enumerate(manifest["pages"]):
-                gate_deadline.check(f"ocr:{name}:page-{index}")
-                hypotheses[record["id"]] = _page_text(
-                    engine,
-                    workspace / "data" / "ocr" / record["image"],
+            try:
+                engine = _new_engine(
+                    model_root,
+                    det_path=det_path,
+                    rec_path=rec_path,
+                    threads=selected_profile.ort_threads,
                 )
+                cold_load_seconds = time.perf_counter() - started
+                hypotheses: dict[str, str] = {}
+                for index, record in enumerate(manifest["pages"]):
+                    gate_deadline.check(f"ocr:{name}:page-{index}")
+                    hypotheses[record["id"]] = _page_text(
+                        engine,
+                        workspace / "data" / "ocr" / record["image"],
+                    )
+                gate_deadline.check(f"ocr:{name}:deterministic")
+                deterministic = _page_text(engine, image_paths[0]) == hypotheses[image_paths[0].stem]
+            except OcrRunError as error:
+                # An unsupported variant is a reported result (preregistration
+                # §2), never a reason to abandon the remaining variants.
+                variant_failures[name] = _failure_reason(error)
+                results["variant_failures"] = variant_failures
+                write_json(workspace / "results" / "ocr.json", results)
+                continue
             if reference_hypotheses is None:
+                if name != "fp32":
+                    # A quantized output is never its own reference (§2).
+                    variant_failures[name] = "no fp32 reference output"
+                    results["variant_failures"] = variant_failures
+                    write_json(workspace / "results" / "ocr.json", results)
+                    continue
                 reference_hypotheses = hypotheses
-            gate_deadline.check(f"ocr:{name}:deterministic")
-            deterministic = _page_text(engine, image_paths[0]) == hypotheses[image_paths[0].stem]
             quality = _scores(truth, hypotheses)
             quality["reference_CER_delta"] = quality["CER"] - _scores(truth, reference_hypotheses)["CER"]
             quality["reference_inserted_word_rate_delta"] = (
