@@ -45,4 +45,4 @@ Template: [`_template.md`](_template.md).
 | [0020](0020-pluggable-index-backends.md) | Pluggable lexical/vector index backends; SQLite as metadata source of truth | Accepted |
 | [0021](0021-no-generative-models-in-product.md) | No generative models in the shipped product | Accepted |
 | [0022](0022-permissive-license-gate.md) | Permissive-license gate for code, models, and data | Accepted |
-| [0023](0023-multimodal-ready-engine.md) | Multimodal-ready engine; visual retrieval as an optional, gated pack | Proposed |
+| [0023](0023-multimodal-ready-engine.md) | Multimodal-ready engine; visual retrieval as an optional, gated pack | Accepted |

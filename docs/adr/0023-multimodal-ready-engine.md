@@ -1,6 +1,6 @@
 # ADR-0023 — Multimodal-ready engine; visual retrieval as an optional, gated pack
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-27
 - **Related:** [ADR-0003](0003-hybrid-retrieval-rrf.md), [ADR-0013](0013-hierarchical-multilingual-retrieval.md), [ADR-0018](0018-lexical-first-availability.md), [ADR-0019](0019-single-inference-engine.md), [ADR-0021](0021-no-generative-models-in-product.md), [ADR-0022](0022-permissive-license-gate.md); SPEC-0004, SPEC-0005, SPEC-0006, SPEC-0016 (planned); [candidates §1 and §14](../benchmarks/candidates.md); [methodology §5.6, §7, §8.9](../benchmarks/methodology.md); plan WP-2.6, WP-2.13, Phase 10
 
@@ -154,7 +154,8 @@ What those facts mean for Seeky:
 
 ## Evidence
 
-None yet (Proposed). Vendor-reported facts and their sources are recorded in
+No benchmark report yet: this ADR fixes contracts and process, not a
+component. Vendor-reported facts and their sources are recorded in
 [candidates §14](../benchmarks/candidates.md). The decision on the visual
 architecture and model will cite the Phase 10 bake-off report in
 [`../benchmarks/results/`](../benchmarks/results/README.md).

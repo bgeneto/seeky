@@ -505,7 +505,6 @@ Options discussed in earlier documents that this plan deliberately drops:
 | Windows ML as EP supplier | WP-5.6 |
 | Installer formats, signing certificate, manifest key management | SPEC-0015 / SPEC-0013 + maintainer |
 | macOS/Linux GA timing | Phase 8 results + maintainer |
-| Acceptance of ADR-0023 (multimodal-ready contracts, optional visual pack) | Maintainer |
 | EmbeddingGemma 2 license (Gemma Prohibited Use Policy pass-through) | WP-10.2 Stage 0 (and WP-2.6 if it enters the text bake-off) + maintainer |
 | Unified vs specialized visual architecture; visual model; pack shipped or not | WP-10.4 (gate Q8) + maintainer |
 | Visual pack in 1.0 or 1.1 | Maintainer, after Phase 8 |
@@ -529,7 +528,7 @@ Options discussed in earlier documents that this plan deliberately drops:
 | M1 Live incremental index | Done | 0.1.0 |
 | Phase 0 | In progress | WP-0.5 done (repository reorganization, AGENTS.md, templates); pre-flight done (fmt, clippy `-D warnings`, `hw-tests` feature, HTML fix, Auto never selects CUDA; [conformance audit](../validation/poc-conformance-audit.md)); WP-0.4 format gate done (rustfmt + Prettier in CI and a pre-commit hook) |
 | Phases 1–9 | Not started | — |
-| Phase 10 | Not started | Proposed by ADR-0023 (optional visual pack; off the 1.0 critical path) |
+| Phase 10 | Not started | Planned per ADR-0023, accepted 2026-11-27 (optional visual pack; off the 1.0 critical path) |
 
 ## 16. Immediate next actions
 

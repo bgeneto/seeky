@@ -47,7 +47,7 @@ All notable changes to Seeky are recorded here.
   ship (ADR-0021). OCR may use a transcription model of any architecture,
   including small VLMs, only with deterministic decoding, a fixed prompt, and a
   hallucination gate.
-- Proposed (ADR-0023): image search is planned as an optional, separately
+- ADR-0023: image search is planned as an optional, separately
   downloaded visual pack that ships only if its own bake-off passes, and never
   slows text search. The engine's data model, model manifest, and index
   generations become modality-aware from Phase 2. The default text embedding
