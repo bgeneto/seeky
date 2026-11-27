@@ -152,13 +152,13 @@ fn config_resolves_poc_locations() -> common::TestResult {
     assert_eq!(resolved.npu_dir, npu_dir);
     let expected_pdfium = if let Some(path) = std::env::var_os("SEEKY_PDFIUM_DLL") {
         PathBuf::from(path)
-    } else {
-        std::env::var_os("LOCALAPPDATA")
-            .map(PathBuf::from)
-            .unwrap_or_default()
+    } else if let Some(local_app_data) = std::env::var_os("LOCALAPPDATA") {
+        PathBuf::from(local_app_data)
             .join("Gety")
             .join("lib")
             .join("pdfium.dll")
+    } else {
+        PathBuf::from("pdfium.dll")
     };
     assert_eq!(resolved.pdfium_dll, expected_pdfium);
     Ok(())
