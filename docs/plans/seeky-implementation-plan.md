@@ -250,7 +250,7 @@ S1/S2 met at `sdc-s` on T1 CPU-only; OCR finalists named.
 
 | WP | Work package | Spec | Depends | Deliverables |
 |---|---|---|---|---|
-| 3.1 | Durable job queue, scheduler, resource governor (background priority, CPU share, search preemption, battery policy, memory ceiling) | SPEC-0007 | 2.4 | Scheduler + governor |
+| 3.1 | Durable job queue, scheduler, resource governor (background priority, CPU share, search preemption, battery policy, memory ceiling; modes default/full speed/paused per ADR-0025) | SPEC-0007 | 2.4 | Scheduler + governor |
 | 3.2 | Two-speed pipeline: fast lane (metadata, lexical, filename, signatures) and semantic lane (dynamic batching by token length) | SPEC-0007 | 3.1, 2.12 | Pipeline; gates I1, I2, S5 |
 | 3.3 | Content-addressed embedding cache; rename/move/copy without re-embedding | SPEC-0007 | 3.2 | Gate I5 + cache hit-rate report |
 | 3.4 | Structured extraction (blocks, locators, offsets) for all formats; add ODT, RTF, EPUB, EML/MBOX; extractor bake-off where alternatives exist; document vs source-code file classes with code indexing off by default ([ADR-0024](../adr/0024-source-code-indexing-opt-in.md)) | SPEC-0008 | 2.4 | Extractors + fidelity report |
@@ -290,7 +290,7 @@ mechanism has an ablation result; failing mechanisms ship disabled by config.
 
 | WP | Work package | Spec | Depends | Deliverables |
 |---|---|---|---|---|
-| 5.1 | Execution-provider abstraction: hardware detection, parity-on-load, per-workload selection, CPU fallback | SPEC-0012 | 2.1 | Provider layer |
+| 5.1 | Execution-provider abstraction: hardware detection, parity-on-load, measured power-aware per-workload selection (ADR-0025), CPU fallback | SPEC-0012 | 2.1 | Provider layer |
 | 5.2 | **[human: hardware]** Intel NPU: OpenVINO EP vs PoC native OpenVINO bake-off; shape buckets; compiled-model cache | SPEC-0012 | 5.1 | Report + ADR (native path kept only if it wins) |
 | 5.3 | **[human: hardware]** Qualcomm QNN EP (Snapdragon X, Windows ARM64) | SPEC-0012 | 5.1 | Report |
 | 5.4 | **[human: hardware]** AMD VitisAI EP (Ryzen AI) | SPEC-0012 | 5.1 | Report |

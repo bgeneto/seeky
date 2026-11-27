@@ -770,7 +770,7 @@ mixing both message syntaxes.
 
 Recorded so v2 starts from them; v1 must not implement them (R16). They
 follow [ADR-0025](../adr/0025-automatic-provider-opt-in-gpu-tier-full-speed.md)
-(Proposed) and the governor modes in
+(Accepted) and the governor modes in
 [SPEC-0007](SPEC-0007-indexing-pipeline.md) §5.1.
 
 - **Full speed (WP-7.4).** Next to the semantic-indexing status, the UI

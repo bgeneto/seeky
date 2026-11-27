@@ -1,6 +1,6 @@
 # ADR-0016 — CPU-first, NPU-ready, GPU-optional execution
 
-- **Status:** Accepted
+- **Status:** Accepted (amended by [ADR-0025](0025-automatic-provider-opt-in-gpu-tier-full-speed.md))
 - **Date:** 2026-11-27
 - **Supersedes:** backend parts of ADR-0004 and ADR-0014
 

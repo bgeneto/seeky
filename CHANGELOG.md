@@ -18,7 +18,7 @@ roadmap (§6), with the date.
 
 ### Changed
 
-- Proposed ADR-0025: the execution provider is chosen automatically per
+- ADR-0025 (Accepted): the execution provider is chosen automatically per
   workload (measured, power-aware, never a fixed order); the model is never
   chosen automatically. Adds a temporary, user-started "Full speed" indexing
   mode and an opt-in GPU quality tier (reranker first, embedder only with

@@ -7,15 +7,14 @@
 | Owner | Maintainer |
 | Phase / work packages | Phase 3 — WP-3.1, WP-3.2, WP-3.3, WP-3.6 |
 | Crates touched | `seeky-engine` (scheduler, governor), `seeky-infer` (provider choice per workload, with SPEC-0012), `seeky-core` (types) |
-| Governing docs | [vision](../product/vision.md) P1, P2, P4; [ADR-0016](../adr/0016-cpu-first-npu-ready-execution.md); [ADR-0025](../adr/0025-automatic-provider-opt-in-gpu-tier-full-speed.md) (Proposed); [architecture/indexing](../architecture/indexing.md) §2.6; [architecture/overview](../architecture/overview.md) §4 |
+| Governing docs | [vision](../product/vision.md) P1, P2, P4; [ADR-0016](../adr/0016-cpu-first-npu-ready-execution.md); [ADR-0025](../adr/0025-automatic-provider-opt-in-gpu-tier-full-speed.md); [architecture/indexing](../architecture/indexing.md) §2.6; [architecture/overview](../architecture/overview.md) §4 |
 | Benchmark gates | S5, I1–I3, R3 (from `docs/benchmarks/methodology.md` §5) |
 
 > **Partial draft.** Specs are written just-in-time (specs README). This
 > version records only the governor modes decided in ADR-0025, so the
 > decision is not lost before Phase 3. The job queue, two-speed lanes,
 > embedding cache, and reconcile sections are written at the start of
-> Phase 3, and this spec cannot be Accepted before they are complete and
-> ADR-0025 is Accepted.
+> Phase 3, and this spec cannot be Accepted before they are complete.
 
 ## 1. Problem and goal
 
@@ -129,7 +128,6 @@ governor mode change or hardware detection (R7).
 
 | Question | Owner / deadline | Blocking? |
 |---|---|---|
-| ADR-0025 acceptance | Maintainer, before this spec leaves Draft | Yes |
 | Default CPU-share cap and battery behavior values | WP-8.5 energy report | No (defaults provisional) |
 | Whether `paused` persists across restarts (R1 assumes yes) | Maintainer, Phase 3 start | No |
 | Remaining sections §5.2–§5.6 | Phase 3 spec author | Yes |

@@ -38,7 +38,7 @@ Template: [`_template.md`](_template.md).
 | [0013](0013-hierarchical-multilingual-retrieval.md) | SOTA multilingual hierarchical retrieval | Accepted |
 | [0014](0014-multilingual-model-backend-policy.md) | Multilingual model and backend policy | Superseded by 0016, 0019 |
 | [0015](0015-engine-first-architecture.md) | Engine-first architecture: UI-independent Rust engine | Accepted |
-| [0016](0016-cpu-first-npu-ready-execution.md) | CPU-first, NPU-ready, GPU-optional execution | Accepted |
+| [0016](0016-cpu-first-npu-ready-execution.md) | CPU-first, NPU-ready, GPU-optional execution | Accepted (amended by 0025) |
 | [0017](0017-spec-and-benchmark-driven-development.md) | Spec-Driven + Benchmark-Driven Development | Accepted |
 | [0018](0018-lexical-first-availability.md) | Lexical-first availability before model provisioning | Accepted |
 | [0019](0019-single-inference-engine.md) | ONNX Runtime as the single inference engine, with a validation gate | Accepted |
@@ -47,4 +47,4 @@ Template: [`_template.md`](_template.md).
 | [0022](0022-permissive-license-gate.md) | Permissive-license gate for code, models, and data | Accepted |
 | [0023](0023-multimodal-ready-engine.md) | Multimodal-ready engine; visual retrieval as an optional, gated pack | Accepted |
 | [0024](0024-source-code-indexing-opt-in.md) | Source-code indexing is opt-in; source files are never opened directly | Accepted |
-| [0025](0025-automatic-provider-opt-in-gpu-tier-full-speed.md) | Automatic provider selection, opt-in GPU quality tier, and full-speed indexing (amends 0016) | Proposed |
+| [0025](0025-automatic-provider-opt-in-gpu-tier-full-speed.md) | Automatic provider selection, opt-in GPU quality tier, and full-speed indexing (amends 0016) | Accepted |

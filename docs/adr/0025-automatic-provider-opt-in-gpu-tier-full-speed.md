@@ -1,6 +1,6 @@
 # ADR-0025 — Automatic provider selection, opt-in GPU quality tier, and full-speed indexing
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-27
 - **Amends:** [ADR-0016](0016-cpu-first-npu-ready-execution.md) §3–§4 (refines; does not reverse)
 - **Related:** [ADR-0019](0019-single-inference-engine.md), [ADR-0023](0023-multimodal-ready-engine.md) (generations and embedding channels), [ADR-0011](0011-slim-first-run-provisioning.md), [ADR-0012](0012-two-themes-minimal-ui-en-pt.md), SPEC-0007 (governor), SPEC-0012 (providers), [SPEC-0014](../specs/SPEC-0014-desktop-experience.md) (v2 UI), [methodology](../benchmarks/methodology.md) §5 and §8.6
