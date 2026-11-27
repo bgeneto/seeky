@@ -189,6 +189,8 @@ cd apps\desktop
 npm install                                    # also enables the Git hooks
 npm run build                                  # TypeScript + Vite build
 npm run format:check                           # Prettier (npm run format fixes)
+npm run i18n:check                             # en/pt catalog parity (SPEC-0014)
+npm run test:unit                              # hardware-free frontend unit tests
 npm run tauri dev                              # run the desktop app
 ```
 
