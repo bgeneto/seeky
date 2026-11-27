@@ -1267,7 +1267,7 @@ validation.
    `drop_points <= 1.0 + 1e-12` (the tolerance only absorbs binary floating
    representation, not a larger regression). A missing query, metric, or
    artifact is a fail, never a skip.
-5. Apply §5.6 ranking invariants and require `--repeat-candidate` to have
+5. Apply the R31 ranking invariants and require `--repeat-candidate` to have
    identical query/target order and scores within `1e-9`. If a repeat run is
    deterministic except for a documented engine nondeterminism, the gate is
    `inconclusive` until the engine fixes it; it is never relaxed silently.

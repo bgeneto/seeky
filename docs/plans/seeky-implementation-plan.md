@@ -668,9 +668,10 @@ finished items and add the next ones, so this list never points at done work.
    alongside — it needs no corpus or judgments, only T1 (or T1-emulated) time.
    WP-0.4 awaits maintainer approval of its disclosed license exceptions and
    advisory ignores (H4).
-3. Review and accept **SPEC-0003** (harness); secure access to a T1 reference
-   laptop (or define the T1-emulated profile). SPEC-0004 is Accepted with
-   maintainer pre-approval in /goal.
+3. Review and accept **SPEC-0003** (harness,
+   [Draft](../specs/SPEC-0003-evaluation-harness.md)); secure access to a T1
+   reference laptop (or define the T1-emulated profile). SPEC-0004 is Accepted
+   with maintainer pre-approval in /goal.
 4. Start WP-1.3 (corpus generator) when WP-0.2 merges (SPEC-0004 is Accepted);
    schedule human time for WP-1.4 judgments, including the `sdc-smoke-v1`
    subset required by WP-1.8.
