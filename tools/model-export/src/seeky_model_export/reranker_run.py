@@ -46,6 +46,11 @@ def result_filename(model: str) -> str:
     return "reranker.json" if model == PROXY_RERANKER else f"reranker-{model}.json"
 
 
+def raw_directory(workspace: Path, model: str) -> Path:
+    """Raw timings live beside their result file's name, one directory per model."""
+    return workspace / "raw" / Path(result_filename(model)).stem
+
+
 def _normalize_rows(matrix: np.ndarray) -> np.ndarray:
     norms = np.linalg.norm(matrix, axis=1)
     if np.any(norms == 0):
@@ -315,7 +320,7 @@ def run_reranker_gate(
                             stage=f"reranker:{name}:time",
                         )
                     variant_result["timing"] = {"power": power, "depth_50": timing["summary"]}
-                    raw_dir = workspace / "raw" / "reranker"
+                    raw_dir = raw_directory(workspace, model)
                     raw_dir.mkdir(parents=True, exist_ok=True)
                     write_json(raw_dir / f"{name}-timings.json", {"durations_seconds": timing["raw_seconds"]})
                 else:

@@ -206,3 +206,12 @@ def test_supplementary_reranker_is_reported_but_never_changes_frozen_k1(tmp_path
     assert supplementary["amendment"] == 3
     assert supplementary["affects_k1"] is False
     assert supplementary["qualified_variants"][0]["meets_target"] is True
+
+
+def test_each_reranker_keeps_its_own_raw_timings(tmp_path):
+    # The hs-rerank-1 run overwrote the proxy's raw/reranker/fp32-timings.json.
+    proxy = reranker_run.raw_directory(tmp_path, "gte-reranker")
+    supplementary = reranker_run.raw_directory(tmp_path, "hs-rerank-1")
+
+    assert proxy == tmp_path / "raw" / "reranker"
+    assert supplementary != proxy
