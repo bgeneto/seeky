@@ -1,4 +1,4 @@
-use anyhow::{Context, Result, anyhow};
+use crate::{Context, Result};
 use calamine::{Reader, open_workbook_auto};
 use pdfium_render::prelude::*;
 use regex::Regex;
@@ -33,7 +33,7 @@ fn pdfium_instance(dll: &Path) -> Result<&'static Pdfium> {
             .map(Pdfium::new)
             .map_err(|e| format!("bind pdfium {}: {e}", dll.display()))
     });
-    instance.as_ref().map_err(|e| anyhow!("{e}"))
+    instance.as_ref().map_err(|e| error!("{e}"))
 }
 
 pub fn supported_ext(ext: &str) -> bool {
@@ -102,7 +102,7 @@ fn extract_text(path: &Path) -> Result<String> {
     }
     let nul = bytes.iter().filter(|b| **b == 0).count();
     if nul * 100 / bytes.len() > 2 {
-        return Err(anyhow!("binary file skipped"));
+        return Err(error!("binary file skipped"));
     }
     Ok(String::from_utf8_lossy(&bytes).to_string())
 }
@@ -111,7 +111,7 @@ fn extract_pdf(path: &Path, pdfium_dll: &Path) -> Result<String> {
     let pdfium = pdfium_instance(pdfium_dll)?;
     let document = pdfium
         .load_pdf_from_file(path, None)
-        .map_err(|e| anyhow!("load PDF {}: {e}", path.display()))?;
+        .map_err(|e| error!("load PDF {}: {e}", path.display()))?;
     let mut text = String::new();
     for page in document.pages().iter() {
         if let Ok(page_text) = page.text() {

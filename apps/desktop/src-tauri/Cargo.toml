@@ -26,32 +26,17 @@ path = "src/main.rs"
 [features]
 # Runs tests that need local assets or hardware (Gety model files, PDFium,
 # CUDA, Intel NPU). Off by default so `cargo test` is hardware-free.
-hw-tests = []
+hw-tests = ["seeky-engine/hw-tests"]
 
 [build-dependencies]
 tauri-build = { workspace = true }
 
 [dependencies]
-tauri = { workspace = true }
-tauri-plugin-opener = { workspace = true }
-serde = { workspace = true }
-serde_json = { workspace = true }
-rusqlite = { workspace = true }
-walkdir = { workspace = true }
-notify = { workspace = true }
-regex = { workspace = true }
 anyhow = { workspace = true }
-thiserror = { workspace = true }
-zip = { workspace = true }
-calamine = { workspace = true }
-pdfium-render = { workspace = true }
-ort = { workspace = true }
-openvino = { workspace = true }
-openvino-sys = { workspace = true }
-tokenizers = { workspace = true }
-half = { workspace = true }
+seeky-engine = { path = "../../../crates/seeky-engine" }
+tauri = { workspace = true }
 tauri-plugin-dialog = { workspace = true }
-blake3 = { workspace = true }
+tauri-plugin-opener = { workspace = true }
 
 [lints]
 workspace = true

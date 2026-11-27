@@ -1,40 +1,30 @@
-use crate::db::{self, ChunkContext};
-use anyhow::Result;
-use rusqlite::Connection;
-use serde::Serialize;
+use crate::Result;
+use seeky_core::SearchHit;
+use seeky_store::{ChunkContext, SearchStore};
 use std::collections::{HashMap, HashSet};
 
-#[derive(Clone, Debug, Serialize)]
-pub struct SearchHit {
-    pub chunk_id: i64,
-    pub doc_id: String,
-    pub title: String,
-    pub path: String,
-    pub ext: String,
-    pub snippet: String,
-    pub score: f64,
-    pub page: Option<i64>,
-    pub start: i64,
-    pub end: i64,
-    pub matched: Vec<String>,
-}
-
 pub fn search(
-    conn: &Connection,
+    store: &dyn SearchStore,
     query: &str,
     query_vector: Option<&[f32]>,
     limit: usize,
 ) -> Result<Vec<SearchHit>> {
     let limit = limit.clamp(1, 50);
-    let lexical = match fts_query(query) {
-        Some(fts) => db::bm25(conn, &fts, 80)?,
-        None => Vec::new(),
+    let lexical = {
+        let _span = tracing::info_span!("search.lexical", limit = 80_usize).entered();
+        match fts_query(query) {
+            Some(fts) => store.bm25(&fts, 80)?,
+            None => Vec::new(),
+        }
     };
     let semantic = match query_vector {
-        Some(vector) => dense(conn, vector, 80)?,
+        Some(vector) => dense(store, vector, 80)?,
         None => Vec::new(),
     };
-    let filename_ids = db::filename_chunks(conn, query, 40)?;
+    let filename_ids = {
+        let _span = tracing::info_span!("search.filename", limit = 40_usize).entered();
+        store.filename_chunks(query, 40)?
+    };
 
     let lexical_ids: Vec<i64> = lexical.iter().map(|(id, _)| *id).collect();
     let semantic_ids: Vec<i64> = semantic.iter().map(|(id, _)| *id).collect();
@@ -42,13 +32,16 @@ pub fn search(
     let semantic_set: HashSet<i64> = semantic_ids.iter().copied().collect();
     let filename_set: HashSet<i64> = filename_ids.iter().copied().collect();
 
-    let fused = rrf(&[lexical_ids, semantic_ids, filename_ids], 60.0);
+    let fused = {
+        let _span = tracing::info_span!("search.fuse").entered();
+        rrf(&[lexical_ids, semantic_ids, filename_ids], 60.0)
+    };
     let mut top: Vec<(i64, f64)> = fused.into_iter().take(limit).collect();
     if top.is_empty() {
         return Ok(Vec::new());
     }
     let ids: Vec<i64> = top.iter().map(|(id, _)| *id).collect();
-    let contexts = db::chunk_contexts(conn, &ids)?;
+    let contexts = store.chunk_contexts(&ids)?;
     let by_id: HashMap<i64, ChunkContext> = contexts
         .into_iter()
         .map(|context| (context.chunk_id, context))
@@ -60,6 +53,7 @@ pub fn search(
         .fold(f64::MIN, f64::max)
         .max(1e-12);
 
+    let _span = tracing::info_span!("search.snippets", results = top.len()).entered();
     let mut hits = Vec::new();
     for (id, score) in top.drain(..) {
         if let Some(context) = by_id.get(&id) {
@@ -107,12 +101,13 @@ fn fts_query(query: &str) -> Option<String> {
     }
 }
 
-fn dense(conn: &Connection, query: &[f32], limit: usize) -> Result<Vec<(i64, f32)>> {
-    if query.len() != crate::inference::DIM {
+fn dense(store: &dyn SearchStore, query: &[f32], limit: usize) -> Result<Vec<(i64, f32)>> {
+    let _span = tracing::info_span!("search.dense", limit).entered();
+    if query.len() != seeky_infer::DIM {
         return Ok(Vec::new());
     }
     let mut scored = Vec::new();
-    for (chunk_id, vector) in db::all_embeddings(conn)? {
+    for (chunk_id, vector) in store.all_embeddings()? {
         if vector.len() != query.len() {
             continue;
         }

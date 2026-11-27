@@ -1,16 +1,7 @@
-use anyhow::{Context, Result};
+use crate::{Context, Result};
 use rusqlite::{Connection, OptionalExtension, params};
-use serde::Serialize;
+use seeky_core::{Counts, DocumentView, FileSignature, Root};
 use std::path::{Path, PathBuf};
-use std::time::{SystemTime, UNIX_EPOCH};
-
-#[derive(Clone, Debug, Serialize)]
-pub struct Root {
-    pub id: String,
-    pub path: String,
-    pub documents: i64,
-    pub watch_enabled: bool,
-}
 
 #[derive(Clone, Debug)]
 pub struct ChunkInput {
@@ -21,28 +12,7 @@ pub struct ChunkInput {
     pub embedding: Option<Vec<f32>>,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct FileSignature {
-    pub size: i64,
-    pub modified_ns: i64,
-}
-
-impl FileSignature {
-    pub fn from_metadata(metadata: &std::fs::Metadata) -> Self {
-        let modified_ns = metadata
-            .modified()
-            .ok()
-            .and_then(|time| time.duration_since(UNIX_EPOCH).ok())
-            .map(|duration| duration.as_nanos().min(i64::MAX as u128) as i64)
-            .unwrap_or(0);
-        Self {
-            size: metadata.len() as i64,
-            modified_ns,
-        }
-    }
-}
-
-#[derive(Clone, Debug, Serialize)]
+#[derive(Clone, Debug)]
 pub struct ChunkContext {
     pub chunk_id: i64,
     pub doc_id: String,
@@ -53,25 +23,6 @@ pub struct ChunkContext {
     pub page: Option<i64>,
     pub start: i64,
     pub end: i64,
-}
-
-#[derive(Clone, Debug, Serialize)]
-pub struct DocumentView {
-    pub id: String,
-    pub title: String,
-    pub path: String,
-    pub ext: String,
-    pub size: i64,
-    pub modified: i64,
-    pub content: String,
-}
-
-#[derive(Clone, Debug, Serialize)]
-pub struct Counts {
-    pub documents: i64,
-    pub chunks: i64,
-    pub roots: i64,
-    pub embeddings: i64,
 }
 
 pub fn open(path: &Path) -> Result<Connection> {
@@ -189,10 +140,7 @@ fn ensure_column(conn: &Connection, table: &str, column: &str, declaration: &str
 }
 
 pub fn now_secs() -> i64 {
-    SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .map(|duration| duration.as_secs() as i64)
-        .unwrap_or(0)
+    seeky_core::now_secs()
 }
 
 fn root_from_row(row: &rusqlite::Row<'_>) -> rusqlite::Result<Root> {
@@ -214,7 +162,7 @@ pub fn add_root(conn: &Connection, path: &str) -> Result<Root> {
          ON CONFLICT(path) DO NOTHING",
         params![id, path_str, now_secs()],
     )?;
-    get_root_by_path(conn, &path_str)?.ok_or_else(|| anyhow::anyhow!("root not found after insert"))
+    get_root_by_path(conn, &path_str)?.ok_or_else(|| error!("root not found after insert"))
 }
 
 pub fn get_root(conn: &Connection, id: &str) -> Result<Option<Root>> {
@@ -516,6 +464,16 @@ pub fn chunk_contexts(conn: &Connection, ids: &[i64]) -> Result<Vec<ChunkContext
     Ok(result)
 }
 
+pub fn document_path(conn: &Connection, id: &str) -> Result<Option<PathBuf>> {
+    conn.query_row(
+        "SELECT path FROM documents WHERE id = ?1",
+        params![id],
+        |row| row.get::<_, String>(0).map(PathBuf::from),
+    )
+    .optional()
+    .map_err(Into::into)
+}
+
 pub fn get_document(conn: &Connection, id: &str) -> Result<Option<DocumentView>> {
     conn.query_row(
         "SELECT id, title, path, ext, size, modified, content FROM documents WHERE id = ?1",
@@ -561,4 +519,31 @@ pub fn db_path_for_display(path: &Path) -> String {
         .unwrap_or_else(|_| PathBuf::from(path))
         .to_string_lossy()
         .to_string()
+}
+
+/// The storage operations used by retrieval, without exposing SQLite to the
+/// search crate.
+pub trait SearchStore {
+    fn all_embeddings(&self) -> Result<Vec<(i64, Vec<f32>)>>;
+    fn bm25(&self, query: &str, limit: usize) -> Result<Vec<(i64, f64)>>;
+    fn filename_chunks(&self, query: &str, limit: usize) -> Result<Vec<i64>>;
+    fn chunk_contexts(&self, ids: &[i64]) -> Result<Vec<ChunkContext>>;
+}
+
+impl SearchStore for Connection {
+    fn all_embeddings(&self) -> Result<Vec<(i64, Vec<f32>)>> {
+        all_embeddings(self)
+    }
+
+    fn bm25(&self, query: &str, limit: usize) -> Result<Vec<(i64, f64)>> {
+        bm25(self, query, limit)
+    }
+
+    fn filename_chunks(&self, query: &str, limit: usize) -> Result<Vec<i64>> {
+        filename_chunks(self, query, limit)
+    }
+
+    fn chunk_contexts(&self, ids: &[i64]) -> Result<Vec<ChunkContext>> {
+        chunk_contexts(self, ids)
+    }
 }

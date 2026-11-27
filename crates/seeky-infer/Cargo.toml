@@ -10,10 +10,16 @@ authors.workspace = true
 publish = false
 
 [features]
-# Hardware/asset tests (SPEC-0001 R15); empty until this crate has any.
 hw-tests = []
 
 [dependencies]
+half.workspace = true
+openvino.workspace = true
+openvino-sys.workspace = true
+ort.workspace = true
+seeky-core = { path = "../seeky-core" }
+thiserror.workspace = true
+tokenizers.workspace = true
 
 [lints]
 workspace = true

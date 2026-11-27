@@ -1,32 +1,9 @@
-use crate::db::{ChunkInput, FileSignature, Root};
-use crate::extract;
-use anyhow::{Result, anyhow};
-use serde::Serialize;
+use crate::{EngineError, Result};
+use seeky_core::{FileSignature, IndexProgress, IndexSummary, Root};
+use seeky_store::ChunkInput;
 use std::path::{Path, PathBuf};
 use std::time::UNIX_EPOCH;
 use walkdir::WalkDir;
-
-#[derive(Clone, Debug, Serialize)]
-pub struct IndexProgress {
-    pub phase: String,
-    pub current: usize,
-    pub total: usize,
-    pub file: String,
-    pub message: String,
-}
-
-#[derive(Clone, Debug, Serialize, Default)]
-pub struct IndexSummary {
-    pub scanned: usize,
-    pub files: usize,
-    pub chunks: usize,
-    pub unchanged: usize,
-    pub skipped: usize,
-    pub errors: usize,
-    pub removed: usize,
-    pub cancelled: bool,
-    pub details: Vec<String>,
-}
 
 #[derive(Clone, Debug)]
 pub struct PreparedFile {
@@ -64,11 +41,11 @@ pub trait IndexContext {
 }
 
 const MAX_FILE_BYTES: u64 = 25 * 1024 * 1024;
-const CHUNK_CHARS: usize = 1_200;
-const OVERLAP_CHARS: usize = 200;
 const MAX_DETAILS: usize = 50;
 
 pub fn scan_root(root_path: &Path) -> Vec<PathBuf> {
+    let span = tracing::info_span!("index.scan", files = tracing::field::Empty);
+    let _entered = span.enter();
     let mut files = Vec::new();
     for entry in WalkDir::new(root_path)
         .follow_links(false)
@@ -86,6 +63,7 @@ pub fn scan_root(root_path: &Path) -> Vec<PathBuf> {
             files.push(path.to_path_buf());
         }
     }
+    span.record("files", files.len());
     files
 }
 
@@ -176,6 +154,12 @@ pub fn index_file(
     path: &Path,
     pdfium: &Path,
 ) -> Result<FileOutcome> {
+    let extension = path
+        .extension()
+        .and_then(|extension| extension.to_str())
+        .unwrap_or("")
+        .to_ascii_lowercase();
+    let _span = tracing::info_span!("index.file", extension = %extension).entered();
     if is_ignored(path) || !is_supported_file(path) {
         return Ok(FileOutcome::Skipped {
             reason: "unsupported file".into(),
@@ -211,14 +195,17 @@ pub fn index_file(
         .iter()
         .map(|(text, _, _)| text.clone())
         .collect();
-    let vectors = context.embed(&texts)?;
+    let vectors = {
+        let _span = tracing::info_span!("index.embed", chunks = texts.len()).entered();
+        context.embed(&texts)?
+    };
     if vectors.len() != prepared.chunks.len() {
-        return Err(anyhow!(
+        return Err(EngineError::Internal(format!(
             "embedding count mismatch for {}: {} vectors for {} chunks",
             path.display(),
             vectors.len(),
             prepared.chunks.len()
-        ));
+        )));
     }
     let chunks: Vec<ChunkInput> = prepared
         .chunks
@@ -233,19 +220,33 @@ pub fn index_file(
             embedding: Some(embedding),
         })
         .collect();
-    let stored = context.store(&root.id, &prepared, &chunks)?;
+    let stored = {
+        let _span = tracing::info_span!("index.store", chunks = chunks.len()).entered();
+        context.store(&root.id, &prepared, &chunks)?
+    };
     Ok(FileOutcome::Updated { chunks: stored })
 }
 
 fn prepare_file(path: &Path, pdfium: &Path, metadata: &std::fs::Metadata) -> Result<PreparedFile> {
-    let text = extract::extract(path, pdfium)?;
+    let extension = path
+        .extension()
+        .and_then(|extension| extension.to_str())
+        .unwrap_or("")
+        .to_ascii_lowercase();
+    let text = {
+        let _span = tracing::info_span!("index.extract", extension = %extension).entered();
+        seeky_extract::extract(path, pdfium)?
+    };
     let text = text.trim().to_string();
     if text.chars().count() < 20 {
-        return Err(anyhow!("extracted text too short"));
+        return Err(EngineError::InvalidInput("extracted text too short".into()));
     }
-    let chunks = chunk_text(&text);
+    let chunks = {
+        let _span = tracing::info_span!("index.chunk", characters = text.chars().count()).entered();
+        seeky_extract::chunk_text(&text)
+    };
     if chunks.is_empty() {
-        return Err(anyhow!("no chunks produced"));
+        return Err(EngineError::InvalidInput("no chunks produced".into()));
     }
     let duration = metadata
         .modified()
@@ -289,7 +290,7 @@ pub fn is_supported_file(path: &Path) -> bool {
         .and_then(|extension| extension.to_str())
         .unwrap_or("")
         .to_ascii_lowercase();
-    extract::supported_ext(&ext)
+    seeky_extract::supported_ext(&ext)
 }
 
 pub fn is_ignored(path: &Path) -> bool {
@@ -325,54 +326,11 @@ pub fn is_ignored_under(root: &Path, path: &Path) -> bool {
         .any(|component| is_ignored(Path::new(component.as_os_str())))
 }
 
-fn chunk_text(text: &str) -> Vec<(String, usize, usize)> {
-    let chars: Vec<char> = text.chars().collect();
-    if chars.is_empty() {
-        return Vec::new();
-    }
-    let mut chunks = Vec::new();
-    let mut start = 0usize;
-    while start < chars.len() {
-        let mut end = (start + CHUNK_CHARS).min(chars.len());
-        if end < chars.len() {
-            // Prefer a paragraph/sentence/whitespace boundary near the end.
-            let window_start = end.saturating_sub(180);
-            if let Some(position) = (window_start..end)
-                .rev()
-                .find(|index| matches!(chars[*index], '\n' | '.' | '!' | '?' | ';' | ' '))
-            {
-                end = position + 1;
-            }
-        }
-        let chunk: String = chars[start..end].iter().collect();
-        let trimmed = chunk.trim();
-        if trimmed.chars().count() >= 40 {
-            let leading = chunk
-                .chars()
-                .take_while(|character| character.is_whitespace())
-                .count();
-            let trailing = chunk
-                .chars()
-                .rev()
-                .take_while(|character| character.is_whitespace())
-                .count();
-            chunks.push((trimmed.to_string(), start + leading, end - trailing));
-        }
-        if end >= chars.len() {
-            break;
-        }
-        start = end.saturating_sub(OVERLAP_CHARS);
-    }
-    chunks
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::db;
-    use crate::inference::{Backend, Engine, find_gety_model_root, resolve_npu_dir};
-    use crate::search;
-    use rusqlite::Connection;
+    use seeky_infer::{Backend, Engine, find_gety_model_root, resolve_npu_dir};
+    use seeky_store::{self as db, Connection};
 
     struct DirectContext<'a> {
         conn: &'a mut Connection,
@@ -381,11 +339,11 @@ mod tests {
 
     impl IndexContext for DirectContext<'_> {
         fn signature(&mut self, _root_id: &str, path: &Path) -> Result<Option<FileSignature>> {
-            db::document_signature(self.conn, path)
+            Ok(db::document_signature(self.conn, path)?)
         }
 
         fn embed(&mut self, texts: &[String]) -> Result<Vec<Vec<f32>>> {
-            self.engine.embed(texts)
+            Ok(self.engine.embed(texts)?)
         }
 
         fn store(
@@ -394,7 +352,7 @@ mod tests {
             prepared: &PreparedFile,
             chunks: &[ChunkInput],
         ) -> Result<usize> {
-            db::upsert_document(
+            Ok(db::upsert_document(
                 self.conn,
                 root_id,
                 &prepared.path,
@@ -405,11 +363,11 @@ mod tests {
                 prepared.modified_ns,
                 &prepared.content,
                 chunks,
-            )
+            )?)
         }
 
         fn prune_missing(&mut self, root_id: &str, keep: &[PathBuf]) -> Result<usize> {
-            db::prune_missing(self.conn, root_id, keep)
+            Ok(db::prune_missing(self.conn, root_id, keep)?)
         }
     }
 
@@ -438,12 +396,14 @@ mod tests {
         )
         .unwrap();
         std::fs::copy(
-            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/renewal.pdf"),
+            PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+                .join("../seeky-extract/tests/fixtures/renewal.pdf"),
             dir.join("renewal.pdf"),
         )
         .unwrap();
         std::fs::copy(
-            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/sample.docx"),
+            PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+                .join("../seeky-extract/tests/fixtures/sample.docx"),
             dir.join("sample.docx"),
         )
         .unwrap();
@@ -452,8 +412,8 @@ mod tests {
         let npu_dir = resolve_npu_dir(None);
         let mut engine = Engine::create(Backend::Cpu, &model_root, &npu_dir).expect("engine");
         let db_path = dir.join("seeky.db");
-        let mut conn = crate::db::open(&db_path).expect("db");
-        let root = crate::db::add_root(&conn, dir.to_str().unwrap()).expect("root");
+        let mut conn = db::open(&db_path).expect("db");
+        let root = db::add_root(&conn, dir.to_str().unwrap()).expect("root");
         let pdfium = PathBuf::from(std::env::var("LOCALAPPDATA").unwrap())
             .join("Gety")
             .join("lib")
@@ -469,7 +429,7 @@ mod tests {
         };
         assert_eq!(summary.files, 5, "summary={summary:?}");
         assert!(summary.chunks >= 5, "summary={summary:?}");
-        assert_eq!(crate::db::counts(&conn).unwrap().documents, 5);
+        assert_eq!(db::counts(&conn).unwrap().documents, 5);
 
         // A second scan skips every unchanged file.
         let summary2 = {
@@ -504,7 +464,7 @@ mod tests {
             .expect("embed query")
             .pop()
             .expect("vector");
-        let hits = search::search(&conn, "atlas", Some(&query_vector), 10).expect("search");
+        let hits = seeky_search::search(&conn, "atlas", Some(&query_vector), 10).expect("search");
         assert!(
             hits.iter().any(
                 |hit| hit.title == "atlas-notes" && hit.matched.iter().any(|m| m == "filename")
@@ -514,7 +474,7 @@ mod tests {
 
         // Rename: remove the old path and index the new one.
         std::fs::rename(dir.join("atlas-notes.txt"), dir.join("atlas-renamed.txt")).unwrap();
-        crate::db::delete_document_by_path(&conn, &dir.join("atlas-notes.txt")).unwrap();
+        db::delete_document_by_path(&conn, &dir.join("atlas-notes.txt")).unwrap();
         let summary4 = {
             let mut context = DirectContext {
                 conn: &mut conn,
@@ -523,7 +483,7 @@ mod tests {
             index_root(&mut context, &root, &pdfium, &mut progress).expect("reindex after rename")
         };
         assert_eq!(summary4.files, 1, "summary4={summary4:?}");
-        assert_eq!(crate::db::counts(&conn).unwrap().documents, 5);
+        assert_eq!(db::counts(&conn).unwrap().documents, 5);
 
         // Delete: a full reindex prunes the missing document.
         std::fs::remove_file(dir.join("atlas-renamed.txt")).unwrap();
@@ -535,7 +495,7 @@ mod tests {
             index_root(&mut context, &root, &pdfium, &mut progress).expect("reindex after delete")
         };
         assert_eq!(summary5.removed, 1, "summary5={summary5:?}");
-        assert_eq!(crate::db::counts(&conn).unwrap().documents, 4);
+        assert_eq!(db::counts(&conn).unwrap().documents, 4);
 
         let _ = std::fs::remove_dir_all(&dir);
     }
