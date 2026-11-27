@@ -1,5 +1,10 @@
 :root {
-  font-family: "Segoe UI Variable", "Segoe UI", system-ui, -apple-system, sans-serif;
+  font-family:
+    "Segoe UI Variable",
+    "Segoe UI",
+    system-ui,
+    -apple-system,
+    sans-serif;
   color: #e8edf4;
   background: #0b0e12;
   font-synthesis: none;
@@ -48,7 +53,11 @@ button {
   grid-template-columns: 236px minmax(0, 1fr);
   height: 100vh;
   background:
-    radial-gradient(800px 420px at 70% -10%, rgba(64, 105, 180, 0.16), transparent 70%),
+    radial-gradient(
+      800px 420px at 70% -10%,
+      rgba(64, 105, 180, 0.16),
+      transparent 70%
+    ),
     var(--bg);
 }
 
@@ -133,7 +142,11 @@ button {
 
 .nav-item.active {
   color: var(--text);
-  background: linear-gradient(90deg, rgba(109, 155, 255, 0.16), rgba(109, 155, 255, 0.04));
+  background: linear-gradient(
+    90deg,
+    rgba(109, 155, 255, 0.16),
+    rgba(109, 155, 255, 0.04)
+  );
   border-color: rgba(109, 155, 255, 0.18);
 }
 
@@ -205,7 +218,9 @@ button {
   border-radius: 999px;
   background: rgba(16, 21, 28, 0.88);
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.22);
-  transition: border-color 150ms ease, box-shadow 150ms ease;
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease;
 }
 
 .searchbox:focus-within {
@@ -756,7 +771,10 @@ button {
   background: transparent;
   color: var(--muted);
   font-size: 11px;
-  transition: border-color 120ms ease, background 120ms ease, color 120ms ease;
+  transition:
+    border-color 120ms ease,
+    background 120ms ease,
+    color 120ms ease;
 }
 
 .watch-button:hover {
@@ -996,7 +1014,11 @@ button {
 
 .backend-option.selected {
   border-color: rgba(109, 155, 255, 0.62);
-  background: linear-gradient(180deg, rgba(109, 155, 255, 0.12), rgba(109, 155, 255, 0.03));
+  background: linear-gradient(
+    180deg,
+    rgba(109, 155, 255, 0.12),
+    rgba(109, 155, 255, 0.03)
+  );
 }
 
 .backend-option.unavailable {

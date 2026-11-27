@@ -21,7 +21,8 @@ const BACKENDS = [
     id: "auto",
     label: "Auto",
     detail: "NPU → CPU",
-    blurb: "Use the NPU when available, otherwise the CPU. Never selects a GPU.",
+    blurb:
+      "Use the NPU when available, otherwise the CPU. Never selects a GPU.",
   },
   {
     id: "cpu",
@@ -104,19 +105,42 @@ function Highlighted({ text, query }: { text: string; query: string }) {
   );
 }
 
-function Icon({ name }: { name: "search" | "folder" | "sliders" | "database" | "bolt" | "file" | "x" | "arrow" }) {
+function Icon({
+  name,
+}: {
+  name:
+    | "search"
+    | "folder"
+    | "sliders"
+    | "database"
+    | "bolt"
+    | "file"
+    | "x"
+    | "arrow";
+}) {
   const paths: Record<string, string> = {
     search: "M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16Zm10 2-4.35-4.35",
-    folder: "M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z",
-    sliders: "M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6",
-    database: "M12 2c4.97 0 9 1.79 9 4s-4.03 4-9 4-9-1.79-9-4 4.03-4 9-4Z M3 6v6c0 2.21 4.03 4 9 4s9-1.79 9-4V6 M3 12v6c0 2.21 4.03 4 9 4s9-1.79 9-4v-6",
+    folder:
+      "M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z",
+    sliders:
+      "M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6",
+    database:
+      "M12 2c4.97 0 9 1.79 9 4s-4.03 4-9 4-9-1.79-9-4 4.03-4 9-4Z M3 6v6c0 2.21 4.03 4 9 4s9-1.79 9-4V6 M3 12v6c0 2.21 4.03 4 9 4s9-1.79 9-4v-6",
     bolt: "M13 2 3 14h7l-1 8 10-12h-7l1-8Z",
     file: "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6Z M14 2v6h6",
     x: "M18 6 6 18M6 6l12 12",
     arrow: "M5 12h14M12 5l7 7-7 7",
   };
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
       <path d={paths[name]} />
     </svg>
   );
@@ -147,9 +171,12 @@ function App() {
 
   useEffect(() => {
     refresh();
-    const progressListener = listen<IndexProgress>("index-progress", (event) => {
-      setProgress(event.payload);
-    });
+    const progressListener = listen<IndexProgress>(
+      "index-progress",
+      (event) => {
+        setProgress(event.payload);
+      },
+    );
     const healthListener = listen<IndexHealth>("index-health", (event) => {
       setStatus((current) =>
         current ? { ...current, health: event.payload } : current,
@@ -234,7 +261,8 @@ function App() {
     }
   }
 
-  async function toggleWatch(root: Root) {    try {
+  async function toggleWatch(root: Root) {
+    try {
       const updated = await invoke<Root>("set_root_watching", {
         id: root.id,
         enabled: !root.watch_enabled,
@@ -255,11 +283,21 @@ function App() {
     setIndexing(root.path);
     setError(null);
     setNotice(null);
-    setProgress({ phase: "scan", current: 0, total: 0, file: root.path, message: "Scanning…" });
+    setProgress({
+      phase: "scan",
+      current: 0,
+      total: 0,
+      file: root.path,
+      message: "Scanning…",
+    });
     try {
-      const summary = await invoke<IndexSummary>("start_index", { path: root.path });
+      const summary = await invoke<IndexSummary>("start_index", {
+        path: root.path,
+      });
       if (summary.cancelled) {
-        setNotice(`Index cancelled after ${summary.files} files / ${summary.chunks} chunks.`);
+        setNotice(
+          `Index cancelled after ${summary.files} files / ${summary.chunks} chunks.`,
+        );
       } else {
         const parts = [`${summary.files} updated`];
         if (summary.unchanged) parts.push(`${summary.unchanged} unchanged`);
@@ -290,10 +328,11 @@ function App() {
     setProbing(backend);
     setError(null);
     try {
-      const info = await invoke<{ backend: string; device: string; model: string }>(
-        "probe_backend",
-        { backend },
-      );
+      const info = await invoke<{
+        backend: string;
+        device: string;
+        model: string;
+      }>("probe_backend", { backend });
       await refresh();
       setNotice(`${info.backend} ready · ${info.device}`);
     } catch (err) {
@@ -306,7 +345,9 @@ function App() {
 
   async function openDocument(hit: SearchHit) {
     try {
-      const doc = await invoke<DocumentView | null>("get_document", { id: hit.doc_id });
+      const doc = await invoke<DocumentView | null>("get_document", {
+        id: hit.doc_id,
+      });
       setSelected(doc);
       if (!doc) setError("Document not found in the index.");
     } catch (err) {
@@ -342,15 +383,24 @@ function App() {
         <div className="brand-tag">local semantic search</div>
 
         <nav className="nav">
-          <button className={view === "search" ? "nav-item active" : "nav-item"} onClick={() => setView("search")}>
+          <button
+            className={view === "search" ? "nav-item active" : "nav-item"}
+            onClick={() => setView("search")}
+          >
             <Icon name="search" />
             Search
           </button>
-          <button className={view === "files" ? "nav-item active" : "nav-item"} onClick={() => setView("files")}>
+          <button
+            className={view === "files" ? "nav-item active" : "nav-item"}
+            onClick={() => setView("files")}
+          >
             <Icon name="folder" />
             Local Files
           </button>
-          <button className={view === "settings" ? "nav-item active" : "nav-item"} onClick={() => setView("settings")}>
+          <button
+            className={view === "settings" ? "nav-item active" : "nav-item"}
+            onClick={() => setView("settings")}
+          >
             <Icon name="sliders" />
             Settings
           </button>
@@ -388,7 +438,11 @@ function App() {
             />
             {searching && <span className="spinner" />}
             {query && !searching && (
-              <button className="clear" onClick={() => setQuery("")} aria-label="Clear search">
+              <button
+                className="clear"
+                onClick={() => setQuery("")}
+                aria-label="Clear search"
+              >
                 <Icon name="x" />
               </button>
             )}
@@ -412,7 +466,11 @@ function App() {
           </div>
         )}
 
-        <div className={selected && view === "search" ? "content with-preview" : "content"}>
+        <div
+          className={
+            selected && view === "search" ? "content with-preview" : "content"
+          }
+        >
           <section className="results-area">
             {view === "search" && (
               <>
@@ -425,14 +483,18 @@ function App() {
                       your personal semantic file search.
                     </h1>
                     <p>
-                      Index your folders once. Then ask in plain language and get the
-                      passages that matter — with citations, on your machine.
+                      Index your folders once. Then ask in plain language and
+                      get the passages that matter — with citations, on your
+                      machine.
                     </p>
                     <div className="hero-actions">
                       <button className="primary" onClick={addFolder}>
                         Add a folder
                       </button>
-                      <button className="secondary" onClick={() => setView("settings")}>
+                      <button
+                        className="secondary"
+                        onClick={() => setView("settings")}
+                      >
                         Choose CPU / CUDA / NPU
                       </button>
                     </div>
@@ -464,26 +526,37 @@ function App() {
                     </span>
                     {response && (
                       <span className="result-meta">
-                        {response.semantic_used ? "hybrid BM25 + embeddings" : "BM25 only"} ·{" "}
-                        {response.backend}
+                        {response.semantic_used
+                          ? "hybrid BM25 + embeddings"
+                          : "BM25 only"}{" "}
+                        · {response.backend}
                       </span>
                     )}
                   </div>
                 )}
 
-                {query.trim() && response && response.hits.length === 0 && !searching && (
-                  <div className="empty-state">
-                    <Icon name="search" />
-                    <h3>No matches</h3>
-                    <p>Try a broader phrase, or add and index another folder.</p>
-                  </div>
-                )}
+                {query.trim() &&
+                  response &&
+                  response.hits.length === 0 &&
+                  !searching && (
+                    <div className="empty-state">
+                      <Icon name="search" />
+                      <h3>No matches</h3>
+                      <p>
+                        Try a broader phrase, or add and index another folder.
+                      </p>
+                    </div>
+                  )}
 
                 <div className="result-list">
                   {response?.hits.map((hit) => (
                     <button
                       key={hit.chunk_id}
-                      className={selected?.id === hit.doc_id ? "result selected" : "result"}
+                      className={
+                        selected?.id === hit.doc_id
+                          ? "result selected"
+                          : "result"
+                      }
                       onClick={() => openDocument(hit)}
                     >
                       <div className="result-icon">
@@ -504,7 +577,11 @@ function App() {
                         <div className="result-tags">
                           {hit.matched.map((kind) => (
                             <span key={kind} className={`tag ${kind}`}>
-                              {kind === "semantic" ? "semantic" : kind === "filename" ? "filename" : "BM25"}
+                              {kind === "semantic"
+                                ? "semantic"
+                                : kind === "filename"
+                                  ? "filename"
+                                  : "BM25"}
                             </span>
                           ))}
                         </div>
@@ -521,7 +598,10 @@ function App() {
                   <div>
                     <div className="eyebrow">INDEX</div>
                     <h2>Local Files</h2>
-                    <p>Folders Seeky can watch and search. Nothing leaves this machine.</p>
+                    <p>
+                      Folders Seeky can watch and search. Nothing leaves this
+                      machine.
+                    </p>
                   </div>
                   <button className="primary" onClick={addFolder}>
                     <Icon name="folder" />
@@ -555,7 +635,11 @@ function App() {
                           className={`watch-button ${root.watch_enabled ? "on" : ""}`}
                           onClick={() => toggleWatch(root)}
                           aria-pressed={root.watch_enabled}
-                          title={root.watch_enabled ? "Pause filesystem watching" : "Resume filesystem watching"}
+                          title={
+                            root.watch_enabled
+                              ? "Pause filesystem watching"
+                              : "Resume filesystem watching"
+                          }
                         >
                           <span className="watch-dot" />
                           {root.watch_enabled ? "Watching" : "Paused"}
@@ -563,7 +647,9 @@ function App() {
                         <button
                           className="secondary"
                           onClick={() => indexRoot(root)}
-                          disabled={Boolean(indexing) || Boolean(health?.indexing)}
+                          disabled={
+                            Boolean(indexing) || Boolean(health?.indexing)
+                          }
                         >
                           {indexing === root.path
                             ? "Indexing…"
@@ -571,7 +657,11 @@ function App() {
                               ? "Reindex"
                               : "Index"}
                         </button>
-                        <button className="icon-button" onClick={() => removeRoot(root)} aria-label="Remove folder">
+                        <button
+                          className="icon-button"
+                          onClick={() => removeRoot(root)}
+                          aria-label="Remove folder"
+                        >
                           <Icon name="x" />
                         </button>
                       </div>
@@ -583,15 +673,22 @@ function App() {
                   <div className="health-heading">
                     <div>
                       <div className="panel-heading">Index health</div>
-                      <p>{health?.last_message ?? "No indexing activity yet."}</p>
+                      <p>
+                        {health?.last_message ?? "No indexing activity yet."}
+                      </p>
                     </div>
                     <div className="health-actions">
                       {health?.indexing && (
-                        <button className="ghost-button" onClick={cancelIndexing}>
+                        <button
+                          className="ghost-button"
+                          onClick={cancelIndexing}
+                        >
                           Cancel
                         </button>
                       )}
-                      <span className={`health-state ${health?.indexing ? "busy" : ""}`}>
+                      <span
+                        className={`health-state ${health?.indexing ? "busy" : ""}`}
+                      >
                         {health?.indexing ? "Indexing" : "Idle"}
                       </span>
                     </div>
@@ -630,7 +727,9 @@ function App() {
                   )}
                   {health && health.details.length > 0 && (
                     <details className="health-details">
-                      <summary>Recent extraction issues ({health.details.length})</summary>
+                      <summary>
+                        Recent extraction issues ({health.details.length})
+                      </summary>
                       <ul>
                         {health.details.slice(0, 6).map((detail, index) => (
                           <li key={`${index}-${detail}`}>{detail}</li>
@@ -639,8 +738,8 @@ function App() {
                     </details>
                   )}
                   <p className="health-hint">
-                    Live changes are applied automatically. Use Reindex to pick up edits made while
-                    Seeky was closed.
+                    Live changes are applied automatically. Use Reindex to pick
+                    up edits made while Seeky was closed.
                   </p>
                 </div>
 
@@ -670,8 +769,8 @@ function App() {
                     <strong>How indexing works</strong>
                     <p>
                       Seeky extracts text, chunks it, embeds every chunk with
-                      <code> gety-embed-v0</code>, and stores both BM25 and vector
-                      indexes in one SQLite file.
+                      <code> gety-embed-v0</code>, and stores both BM25 and
+                      vector indexes in one SQLite file.
                     </p>
                   </div>
                 </div>
@@ -684,7 +783,10 @@ function App() {
                   <div>
                     <div className="eyebrow">INFERENCE</div>
                     <h2>Hardware & models</h2>
-                    <p>Switch backends without changing the index. All models are local.</p>
+                    <p>
+                      Switch backends without changing the index. All models are
+                      local.
+                    </p>
                   </div>
                 </div>
 
@@ -705,11 +807,17 @@ function App() {
                         <div className="backend-option-head">
                           <strong>{backend.label}</strong>
                           {selected && <span className="pill">active</span>}
-                          {!available && <span className="pill muted">unavailable</span>}
+                          {!available && (
+                            <span className="pill muted">unavailable</span>
+                          )}
                         </div>
-                        <div className="backend-option-detail">{backend.detail}</div>
+                        <div className="backend-option-detail">
+                          {backend.detail}
+                        </div>
                         <p>{backend.blurb}</p>
-                        {probing === backend.id && <span className="spinner inline" />}
+                        {probing === backend.id && (
+                          <span className="spinner inline" />
+                        )}
                       </button>
                     );
                   })}
@@ -731,7 +839,8 @@ function App() {
                       </dl>
                     ) : (
                       <p className="muted">
-                        No engine loaded yet. Choose a backend or run a search/index.
+                        No engine loaded yet. Choose a backend or run a
+                        search/index.
                       </p>
                     )}
                   </div>
@@ -752,13 +861,21 @@ function App() {
                     <div className="panel-heading">Model paths</div>
                     <dl>
                       <dt>Gety model</dt>
-                      <dd className="path">{cleanPath(status?.model_root ?? "not found")}</dd>
+                      <dd className="path">
+                        {cleanPath(status?.model_root ?? "not found")}
+                      </dd>
                       <dt>OpenVINO IR</dt>
-                      <dd className="path">{cleanPath(status?.npu_model ?? "not found")}</dd>
+                      <dd className="path">
+                        {cleanPath(status?.npu_model ?? "not found")}
+                      </dd>
                       <dt>PDFium</dt>
-                      <dd className="path">{cleanPath(status?.pdfium ?? "not found")}</dd>
+                      <dd className="path">
+                        {cleanPath(status?.pdfium ?? "not found")}
+                      </dd>
                       <dt>Database</dt>
-                      <dd className="path">{cleanPath(status?.db_path ?? "not found")}</dd>
+                      <dd className="path">
+                        {cleanPath(status?.db_path ?? "not found")}
+                      </dd>
                     </dl>
                   </div>
                 </div>
@@ -768,9 +885,10 @@ function App() {
                   <div>
                     <strong>Backend notes</strong>
                     <p>
-                      CUDA uses the FP16 Gety export and NVIDIA’s runtime. NPU uses the
-                      OpenVINO IR on Intel AI Boost. CPU uses the uint8 ONNX export. The
-                      first load compiles/loads the model and may take a few seconds.
+                      CUDA uses the FP16 Gety export and NVIDIA’s runtime. NPU
+                      uses the OpenVINO IR on Intel AI Boost. CPU uses the uint8
+                      ONNX export. The first load compiles/loads the model and
+                      may take a few seconds.
                     </p>
                   </div>
                 </div>
@@ -786,17 +904,26 @@ function App() {
                   <h3>{selected.title}</h3>
                   <div className="preview-path">{cleanPath(selected.path)}</div>
                 </div>
-                <button className="icon-button" onClick={() => setSelected(null)} aria-label="Close preview">
+                <button
+                  className="icon-button"
+                  onClick={() => setSelected(null)}
+                  aria-label="Close preview"
+                >
                   <Icon name="x" />
                 </button>
               </div>
               <div className="preview-meta">
                 <span>{selected.ext.toUpperCase()}</span>
                 <span>{formatBytes(selected.size)}</span>
-                <span>{new Date(selected.modified * 1000).toLocaleDateString()}</span>
+                <span>
+                  {new Date(selected.modified * 1000).toLocaleDateString()}
+                </span>
               </div>
               <div className="preview-body">
-                <Highlighted text={selected.content.slice(0, 12000)} query={query} />
+                <Highlighted
+                  text={selected.content.slice(0, 12000)}
+                  query={query}
+                />
               </div>
               <div className="preview-foot">
                 <button className="primary" onClick={openFile}>
@@ -823,7 +950,8 @@ function App() {
               </span>
             ) : (
               <span>
-                {counts?.documents ?? 0} files searchable · {counts?.chunks ?? 0} chunks
+                {counts?.documents ?? 0} files searchable ·{" "}
+                {counts?.chunks ?? 0} chunks
               </span>
             )}
           </div>
@@ -833,7 +961,9 @@ function App() {
             </div>
           )}
           <div className="status-right">
-            <span>{status?.engine?.backend ?? status?.backend_label ?? "not loaded"}</span>
+            <span>
+              {status?.engine?.backend ?? status?.backend_label ?? "not loaded"}
+            </span>
             <span className="status-sep">·</span>
             <span>384-d</span>
           </div>
