@@ -1,0 +1,342 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [4 0 R 6 0 R 8 0 R 10 0 R] /Count 4 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+4 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents 5 0 R >>
+endobj
+5 0 obj
+<< /Length 1765 >>
+stream
+BT
+/F1 10 Tf
+12 TL
+50 790 Td
+(General context) Tj
+T*
+T*
+(Corrective actions were recorded with a deadline, an owner, and completion evidence.) Tj
+T*
+T*
+(Measurement uncertainty was estimated from three independent replicates per point.) Tj
+T*
+T*
+(Annex B describes the data model and the validation rules applied.) Tj
+T*
+T*
+(The monitoring system recorded three scheduled outages and no unplanned outage.) Tj
+T*
+T*
+(Supporting documentation includes procedures, diagrams, and checklists used in the) Tj
+T*
+(field.) Tj
+T*
+T*
+(The preventive maintenance plan was completed for ninety-four percent of scheduled) Tj
+T*
+(interventions.) Tj
+T*
+T*
+(Year-on-year comparison should be read with care because the measurement perimeter) Tj
+T*
+(changed.) Tj
+T*
+T*
+(Future work includes extending the perimeter to two new sites and automating inventory) Tj
+T*
+(reconciliation.) Tj
+T*
+T*
+(The communication plan provides monthly summary reports and one consolidated annual) Tj
+T*
+(report.) Tj
+T*
+T*
+(Availability indicators stayed above the contractual threshold in every month analysed.) Tj
+T*
+T*
+(The XT-4471 calibration protocol requires verification of three independent standards) Tj
+T*
+(before each measurement series.) Tj
+T*
+T*
+(The equipment inventory was reconciled with accounting records at the end of the third) Tj
+T*
+(quarter.) Tj
+T*
+T*
+(All entities mentioned are fictitious and the values exist only for search-engine) Tj
+T*
+(evaluation.) Tj
+T*
+T*
+(For each risk, the team defined a mitigation measure, a tracking indicator, and a review) Tj
+T*
+(interval.) Tj
+T*
+T*
+(Specific consumption per unit area fell consistently over the period.) Tj
+T*
+T*
+(Risk analysis) Tj
+T*
+T*
+(Each cycle produces an immutable record that is compared with the previous cycle to) Tj
+ET
+endstream
+endobj
+6 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents 7 0 R >>
+endobj
+7 0 obj
+<< /Length 1903 >>
+stream
+BT
+/F1 10 Tf
+12 TL
+50 790 Td
+(detect abrupt changes.) Tj
+T*
+T*
+(Results by domain are presented in normalised tables to allow direct comparison.) Tj
+T*
+T*
+(Improvement opportunities were identified in the calibration of temperature and humidity) Tj
+T*
+(sensors.) Tj
+T*
+T*
+(The assessed perimeter covers seven sites across three districts, all identified by) Tj
+T*
+(internal codes with no reference to individuals.) Tj
+T*
+T*
+(Data collection ran in weekly cycles with automatic validation for missing values and) Tj
+T*
+(out-of-range readings.) Tj
+T*
+T*
+(The technical team documented every intervention, including component replacements and) Tj
+T*
+(configuration adjustments.) Tj
+T*
+T*
+(Annex C presents the complete time series by domain and by site.) Tj
+T*
+T*
+(The first section describes the institutional context and the programme objectives,) Tj
+T*
+(including commitments made with partner organisations.) Tj
+T*
+T*
+(Local team training was reinforced with practical sessions on data recording and) Tj
+T*
+(incident response.) Tj
+T*
+T*
+(Variation between sites is explained mainly by differences in size and intensity of use.) Tj
+T*
+T*
+(The risk analysis considers equipment failure, supplier unavailability, and extreme) Tj
+T*
+(weather events.) Tj
+T*
+T*
+(Sensitivity analysis shows that the results are robust to small changes in calibration) Tj
+T*
+(parameters.) Tj
+T*
+T*
+(The conclusions highlight the overall stability of indicators and the need for continued) Tj
+T*
+(monitoring.) Tj
+T*
+T*
+(The XT-4471 calibration protocol requires the compensation valve to be checked against) Tj
+T*
+(the reference pressure gauge before any official measurement, as recorded in the) Tj
+T*
+(metrology control page.) Tj
+T*
+T*
+(Annex A lists the internal codes used throughout the document.) Tj
+T*
+T*
+(Deviations above five percent were investigated individually and justified in the) Tj
+T*
+(technical annex.) Tj
+ET
+endstream
+endobj
+8 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents 9 0 R >>
+endobj
+9 0 obj
+<< /Length 1836 >>
+stream
+BT
+/F1 10 Tf
+12 TL
+50 790 Td
+(Corrective actions were recorded with a deadline, an owner, and completion evidence.) Tj
+T*
+T*
+(Measurement uncertainty was estimated from three independent replicates per point.) Tj
+T*
+T*
+(Annex B describes the data model and the validation rules applied.) Tj
+T*
+T*
+(The monitoring system recorded three scheduled outages and no unplanned outage.) Tj
+T*
+T*
+(Supporting documentation includes procedures, diagrams, and checklists used in the) Tj
+T*
+(field.) Tj
+T*
+T*
+(The preventive maintenance plan was completed for ninety-four percent of scheduled) Tj
+T*
+(interventions.) Tj
+T*
+T*
+(Year-on-year comparison should be read with care because the measurement perimeter) Tj
+T*
+(changed.) Tj
+T*
+T*
+(Future work includes extending the perimeter to two new sites and automating inventory) Tj
+T*
+(reconciliation.) Tj
+T*
+T*
+(The communication plan provides monthly summary reports and one consolidated annual) Tj
+T*
+(report.) Tj
+T*
+T*
+(Availability indicators stayed above the contractual threshold in every month analysed.) Tj
+T*
+T*
+(The XT-4471 calibration protocol requires verification of three independent standards) Tj
+T*
+(before each measurement series.) Tj
+T*
+T*
+(The equipment inventory was reconciled with accounting records at the end of the third) Tj
+T*
+(quarter.) Tj
+T*
+T*
+(All entities mentioned are fictitious and the values exist only for search-engine) Tj
+T*
+(evaluation.) Tj
+T*
+T*
+(For each risk, the team defined a mitigation measure, a tracking indicator, and a review) Tj
+T*
+(interval.) Tj
+T*
+T*
+(Specific consumption per unit area fell consistently over the period.) Tj
+T*
+T*
+(Each cycle produces an immutable record that is compared with the previous cycle to) Tj
+T*
+(detect abrupt changes.) Tj
+T*
+T*
+(Results by domain are presented in normalised tables to allow direct comparison.) Tj
+ET
+endstream
+endobj
+10 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents 11 0 R >>
+endobj
+11 0 obj
+<< /Length 1275 >>
+stream
+BT
+/F1 10 Tf
+12 TL
+50 790 Td
+(Improvement opportunities were identified in the calibration of temperature and humidity) Tj
+T*
+(sensors.) Tj
+T*
+T*
+(The assessed perimeter covers seven sites across three districts, all identified by) Tj
+T*
+(internal codes with no reference to individuals.) Tj
+T*
+T*
+(Data collection ran in weekly cycles with automatic validation for missing values and) Tj
+T*
+(out-of-range readings.) Tj
+T*
+T*
+(The technical team documented every intervention, including component replacements and) Tj
+T*
+(configuration adjustments.) Tj
+T*
+T*
+(Annex C presents the complete time series by domain and by site.) Tj
+T*
+T*
+(The first section describes the institutional context and the programme objectives,) Tj
+T*
+(including commitments made with partner organisations.) Tj
+T*
+T*
+(Local team training was reinforced with practical sessions on data recording and) Tj
+T*
+(incident response.) Tj
+T*
+T*
+(Variation between sites is explained mainly by differences in size and intensity of use.) Tj
+T*
+T*
+(Monitoring method) Tj
+T*
+T*
+(The risk analysis considers equipment failure, supplier unavailability, and extreme) Tj
+T*
+(weather events.) Tj
+T*
+T*
+(Sensitivity analysis shows that the results are robust to small changes in calibration) Tj
+T*
+(parameters.) Tj
+ET
+endstream
+endobj
+12 0 obj
+<< /Title (Consolidated Technical Dossier ó collection conservation) /Producer (Seeky SDC) >>
+endobj
+xref
+0 13
+0000000000 65535 f 
+0000000015 00000 n 
+0000000064 00000 n 
+0000000140 00000 n 
+0000000237 00000 n 
+0000000363 00000 n 
+0000002179 00000 n 
+0000002305 00000 n 
+0000004259 00000 n 
+0000004385 00000 n 
+0000006272 00000 n 
+0000006400 00000 n 
+0000007727 00000 n 
+trailer
+<< /Size 13 /Root 1 0 R /Info 12 0 R /ID [<beb63de34a943a9a9b6bc028f9b33d0d> <beb63de34a943a9a9b6bc028f9b33d0d>] >>
+startxref
+7837
+%%EOF

@@ -1,0 +1,66 @@
+From: "SDC Synthetic Sender" <sender@example.com>
+To: "SDC Synthetic Recipient" <recipient@example.org>
+Subject: Relatório Técnico — recuperação de informação
+Date: Mon, 12 May 2025 11:11:33 GMT
+Message-ID: <fa10d10e-f510-4004-a1ed-55322a6e2c16@example.invalid>
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="sdc-ae594174907f4a8ef14919e8"
+
+This is a multi-part message in MIME format.
+
+--sdc-ae594174907f4a8ef14919e8
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+Este documento não substitui aconselhamento jurídico ou técnico especializado.
+
+Metodologia
+
+Identificador do relatório técnico: RT-2023-0052.
+
+O anexo metodológico detalha os critérios de inclusão e exclusão.
+
+O objetivo principal é compreender como diferentes configurações afetam o desempenho observado em condições realistas.
+
+O efeito observado mantém-se após ajuste para o tamanho do documento e para o número de secções.
+
+Resumo
+
+Os dados recolhidos são inteiramente sintéticos e não incluem informação pessoal.
+
+Os próximos passos incluem replicar o estudo numa segunda localização e alargar a amostra.
+
+A referência interna do conjunto de dados é b2fc776c-c566-453d-b70c-037c3bc83118.
+
+Comparar sempre com uma linha de base simples.
+
+Documentar as limitações de forma explícita.
+
+Reportar intervalos de confiança e não apenas médias.
+
+Versão de trabalho sujeita a revisão periódica.
+
+--sdc-ae594174907f4a8ef14919e8
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+<html><body>
+<p>Este documento não substitui aconselhamento jurídico ou técnico especializado.</p>
+<h2>Metodologia</h2>
+<p>Identificador do relatório técnico: RT-2023-0052.</p>
+<p>O anexo metodológico detalha os critérios de inclusão e exclusão.</p>
+<p>O objetivo principal é compreender como diferentes configurações afetam o desempenho observado em condições realistas.</p>
+<p>O efeito observado mantém-se após ajuste para o tamanho do documento e para o número de secções.</p>
+<h2>Resumo</h2>
+<p>Os dados recolhidos são inteiramente sintéticos e não incluem informação pessoal.</p>
+<p>Os próximos passos incluem replicar o estudo numa segunda localização e alargar a amostra.</p>
+<p>A referência interna do conjunto de dados é b2fc776c-c566-453d-b70c-037c3bc83118.</p>
+<ul>
+<li>Comparar sempre com uma linha de base simples.</li>
+<li>Documentar as limitações de forma explícita.</li>
+<li>Reportar intervalos de confiança e não apenas médias.</li>
+</ul>
+<p>Versão de trabalho sujeita a revisão periódica.</p>
+</body></html>
+
+--sdc-ae594174907f4a8ef14919e8--

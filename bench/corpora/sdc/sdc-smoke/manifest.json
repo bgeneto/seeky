@@ -1,0 +1,1036 @@
+{
+  "code_enabled_roots": [
+    "files/documents",
+    "files/code"
+  ],
+  "corpus_hash": "365511dd074fea2c577f75cf160fc933c398954b8b3949a8c67d0a5c80118234",
+  "corpus_id": "sdc-smoke",
+  "default_roots": [
+    "files/documents"
+  ],
+  "document_count": 200,
+  "files": [
+    {
+      "byte_count": 498,
+      "path": "files/code/go/Extraction pipeline helper 2.go",
+      "sha256": "b66c35106f3a3e86f0222c9250cb7fed1225fdf029647ca60c5c3dd3f995092e"
+    },
+    {
+      "byte_count": 327,
+      "path": "files/code/go/Extraction pipeline helper 7.go",
+      "sha256": "4518feff6c1e1f8cbe7a8c23209f4702e02a3d6dbc2a1c161c44c834e7ab35d2"
+    },
+    {
+      "byte_count": 326,
+      "path": "files/code/go/Extraction pipeline helper 8.go",
+      "sha256": "cea6eaea3e76376b4cd08633d75f56ab9a9e522e193e35d62b4818a238f9e18f"
+    },
+    {
+      "byte_count": 495,
+      "path": "files/code/go/Index maintenance module 16.go",
+      "sha256": "63d51ed34510cab6793b11d34c862264ffa1241a1a093ef8f9301a049e701316"
+    },
+    {
+      "byte_count": 495,
+      "path": "files/code/go/Index maintenance module 20.go",
+      "sha256": "2831283f162bb62d91d373fcb2129be601914f14483bd447c1f177c8d777b576"
+    },
+    {
+      "byte_count": 323,
+      "path": "files/code/go/Index maintenance module 3.go",
+      "sha256": "f827e332735a7a85bcbf6a3faddd64345cc98404cd3bf118be0f59727a9885ec"
+    },
+    {
+      "byte_count": 338,
+      "path": "files/code/go/Index maintenance module 5.go",
+      "sha256": "631917298c74cd199c6e3c15ca00d7b49546e52725593dbe0ff8943888d77b73"
+    },
+    {
+      "byte_count": 495,
+      "path": "files/code/go/Search ranking utilities 15.go",
+      "sha256": "6fcec48eabaddf1dcc026f0385b7cffd82109d4131d112b63953530110464450"
+    },
+    {
+      "byte_count": 553,
+      "path": "files/code/javascript/Extraction pipeline helper 19.js",
+      "sha256": "86bb389f1b069761d479b1cd4daff1cb6bfff244e8a2ff5a1a18c78e728bcf64"
+    },
+    {
+      "byte_count": 547,
+      "path": "files/code/javascript/Index maintenance module 13.js",
+      "sha256": "9716bfb721aaead47c72b675daa6fd5be470f52d60e9702db2df8416a059d733"
+    },
+    {
+      "byte_count": 544,
+      "path": "files/code/javascript/Index maintenance module 4.js",
+      "sha256": "495a9577ffc79c63d43595cd92761a272d1687ffcae2a460abad2f245ad88c5b"
+    },
+    {
+      "byte_count": 547,
+      "path": "files/code/javascript/Search ranking utilities 14.js",
+      "sha256": "f5488d735a3621112e9fa9512a9f7bbf599f910448487fd9e5dbd1893c1d7352"
+    },
+    {
+      "byte_count": 465,
+      "path": "files/code/python/Extraction pipeline helper 12.py",
+      "sha256": "7b8cce09c655b6eabcadfd992761ebdf29a5bd5b2c265e89d261b1ba133b2a18"
+    },
+    {
+      "byte_count": 732,
+      "path": "files/code/python/Search ranking utilities 18.py",
+      "sha256": "d80a9c450b8800283a574b7f60b43f79b84a22fb1a798888ad702f1278ceddb9"
+    },
+    {
+      "byte_count": 729,
+      "path": "files/code/python/Search ranking utilities 6.py",
+      "sha256": "7e3799328a66d72116fbba6835bd5a77d1817aa26f4e79950b1cc9f8c37f034e"
+    },
+    {
+      "byte_count": 402,
+      "path": "files/code/rust/Extraction pipeline helper 10.rs",
+      "sha256": "321c93d81fea549d955fef45b7f1661b17ac6612e67eb193d2c44d68e6083c70"
+    },
+    {
+      "byte_count": 398,
+      "path": "files/code/rust/Index maintenance module 11.rs",
+      "sha256": "1e7518de93d56ff97a9480014f8cc4a65bc42c9797a84cc53b688fb2dd600a93"
+    },
+    {
+      "byte_count": 930,
+      "path": "files/code/rust/Index maintenance module 9.rs",
+      "sha256": "6e63befb2d3871106871a00ca896b8c03c8197ba02a1fa6a6679b2bdacaaa9e3"
+    },
+    {
+      "byte_count": 721,
+      "path": "files/code/rust/Search ranking utilities 17.rs",
+      "sha256": "dfb19149683bf4425c6e9d6daa955dbcc8673172a63bf8ad47fcb213f2e71379"
+    },
+    {
+      "byte_count": 374,
+      "path": "files/code/sql/Index maintenance module 1.sql",
+      "sha256": "ff7ccbb0506d00f85fc3ef7a74e2d5e0460aa17f72137f8bf40857e58069b49c"
+    },
+    {
+      "byte_count": 1993,
+      "path": "files/documents/contracts/2018/Maintenance Contract Amendment — Delta Cooperative.eml",
+      "sha256": "af632cc8b6f4ecf35cf42edfa6932e3877e3d28f55e3c2cf52843636ce32cd36"
+    },
+    {
+      "byte_count": 3083,
+      "path": "files/documents/contracts/2018/Service Agreement — Delta Cooperative.epub",
+      "sha256": "be4ef978fbac4481906728356a7e9b5a22be8e47ebb47ba99e054508be4cd6c2"
+    },
+    {
+      "byte_count": 136478,
+      "path": "files/documents/contracts/2018/scans/Service Agreement — Delta Cooperative (digitalizado 10).png",
+      "sha256": "37e2c483bf73905327df817e6717c8794cb7b56ce9af70790667e4774d8e832d"
+    },
+    {
+      "byte_count": 603,
+      "path": "files/documents/contracts/2019/Maintenance Contract Amendment — Gamma Group.md",
+      "sha256": "4c286e6e7d9398e723a34afb97f211eaa446a3fe5097c447b342620c9cd65d24"
+    },
+    {
+      "byte_count": 6041,
+      "path": "files/documents/contracts/2019/Service Agreement — Client Beta.xlsx",
+      "sha256": "c995bea915f33edf38402e2ddff2ff877e8fd767652f39e431b95e77d5a45689"
+    },
+    {
+      "byte_count": 603,
+      "path": "files/documents/contracts/2019/arquivo/Maintenance Contract Amendment — Gamma Group (cópia idêntica 02).md",
+      "sha256": "4c286e6e7d9398e723a34afb97f211eaa446a3fe5097c447b342620c9cd65d24"
+    },
+    {
+      "byte_count": 2744,
+      "path": "files/documents/contracts/2020/Service Agreement — Client Alpha.epub",
+      "sha256": "faea3fdeafa4a0be948f7c773a361cd4d70aac6cdb58bb5af8736c064bb06b2b"
+    },
+    {
+      "byte_count": 424,
+      "path": "files/documents/contracts/2020/arquivo/Service Agreement — Client Alpha (cópia de texto 05).txt",
+      "sha256": "95ae9f3b481545b223a41c693c53060a076e292c22a7cafeeebac4a66ed506fd"
+    },
+    {
+      "byte_count": 534,
+      "path": "files/documents/contracts/2021/Supply Agreement — records management.md",
+      "sha256": "db1a6ac9ab506df2693e66ef37ad6e58d553b65b3075424591e419d913fefb46"
+    },
+    {
+      "byte_count": 1355,
+      "path": "files/documents/contracts/2021/Supply Agreement — technical training.pdf",
+      "sha256": "b70ba7f719c57f9f58f317a6a441bd8cc46e86797b61b2b6422f0c29d6c97937"
+    },
+    {
+      "byte_count": 664,
+      "path": "files/documents/contracts/2021/revisoes/Supply Agreement — records management (versão próxima 10).md",
+      "sha256": "b9f0261c7e82ca3fb482d96c67791e953d59c720c9cc0324912485f87683225d"
+    },
+    {
+      "byte_count": 1093,
+      "path": "files/documents/contracts/2022/Service Agreement — Client Beta.html",
+      "sha256": "d1dd3e52dba0da9cca2f89ae8be1013fa653819333b069db2fc575e8d207eba6"
+    },
+    {
+      "byte_count": 1477,
+      "path": "files/documents/contracts/versoes/Supply Agreement — building maintenance (v1).pdf",
+      "sha256": "ac45b8b62ce82da82c24491c6094dfd7a486351accc41b7cddefcda278234be1"
+    },
+    {
+      "byte_count": 1623,
+      "path": "files/documents/contracts/versoes/Supply Agreement — building maintenance (v2).pdf",
+      "sha256": "aba39a6d2ab44ce6d94831f7eabb95422d831e9328d54f1282fd6a0ec6f9e97c"
+    },
+    {
+      "byte_count": 6084,
+      "path": "files/documents/contratos/2019/Acordo de Fornecimento — manutenção predial.xlsx",
+      "sha256": "e08b82a2da8991cf7b95d31bbe1d009315f01fbba93a753a0bd82f5e56312c4c"
+    },
+    {
+      "byte_count": 1557,
+      "path": "files/documents/contratos/2019/Contrato de Prestação de Serviços — Grupo Gama.pdf",
+      "sha256": "7cc64e20f9c56485f3c3e39e0520b34427773e6471d079e062f0d5eb131367de"
+    },
+    {
+      "byte_count": 6084,
+      "path": "files/documents/contratos/2019/arquivo/Acordo de Fornecimento — manutenção predial (cópia idêntica 01).xlsx",
+      "sha256": "e08b82a2da8991cf7b95d31bbe1d009315f01fbba93a753a0bd82f5e56312c4c"
+    },
+    {
+      "byte_count": 135906,
+      "path": "files/documents/contratos/2019/scans/Contrato de Prestação de Serviços — Grupo Gama (digitalizado 09).pdf",
+      "sha256": "bb94308b15ece39b9234f322683021713fa3d55cbc7ad632d404b8125328ac8b"
+    },
+    {
+      "byte_count": 12353,
+      "path": "files/documents/contratos/2021/Acordo de Fornecimento — formação técnica.pptx",
+      "sha256": "5f8b42b8345e2f194d38c218b0a4f11fe5fcddd6e0aa62ba9b6f96ab828b1d70"
+    },
+    {
+      "byte_count": 2342,
+      "path": "files/documents/contratos/2021/Contrato de Prestação de Serviços — Cliente Beta.eml",
+      "sha256": "c3d972e391cc41e95743524b9e1070bfa0d8d508a889954231d221d12525d267"
+    },
+    {
+      "byte_count": 786,
+      "path": "files/documents/contratos/2021/arquivo/Contrato de Prestação de Serviços — Cliente Beta (cópia de texto 04).txt",
+      "sha256": "746a1eb106b483d08bb80fba4fa642d2720efffa30d1b48a5777f24a6d11a09a"
+    },
+    {
+      "byte_count": 1782,
+      "path": "files/documents/contratos/2022/Acordo de Fornecimento — energia solar.pdf",
+      "sha256": "ec5dea2af38abca1c85ba2a9e428fae5903d49e42e93789205da71bcf97bfe22"
+    },
+    {
+      "byte_count": 1158,
+      "path": "files/documents/contratos/2022/Aditivo ao Contrato de Manutenção — Grupo Gama.html",
+      "sha256": "231952740bd7bfa3cc2da0175ba9ec08a003ba6f234f6da6c4d2b76bd5ae6c47"
+    },
+    {
+      "byte_count": 828,
+      "path": "files/documents/contratos/2025/Aditivo ao Contrato de Manutenção — Cliente Beta.html",
+      "sha256": "46fe276b508fb049c2136a402343c080b4655f19de8f60614b6cdc3de1375b66"
+    },
+    {
+      "byte_count": 842,
+      "path": "files/documents/contratos/2025/Aditivo ao Contrato de Manutenção — Grupo Gama.md",
+      "sha256": "98478f3a4d88934c24ef3ff171716e9d5aa7abbc8a2468866269e9c16ad5bc97"
+    },
+    {
+      "byte_count": 5624,
+      "path": "files/documents/contratos/versoes/Contrato de Prestação de Serviços — Cliente Beta (v1).docx",
+      "sha256": "2477c4bea181196a694e94ca2eba80d9dbbddbb2263752323c1db78302d39d0e"
+    },
+    {
+      "byte_count": 5802,
+      "path": "files/documents/contratos/versoes/Contrato de Prestação de Serviços — Cliente Beta (v2).docx",
+      "sha256": "14ce81e09c47107537d007aa64ebd83389de8cac69798838683ac2eaaab11e39"
+    },
+    {
+      "byte_count": 5748,
+      "path": "files/documents/faturas/2018/Fatura de Serviços — Cliente Alfa.docx",
+      "sha256": "4e94355bd07057935a4e50ea827746327aa38c9be1def8bb8b700fff6fb13e14"
+    },
+    {
+      "byte_count": 5748,
+      "path": "files/documents/faturas/2018/arquivo/Fatura de Serviços — Cliente Alfa (cópia idêntica 03).docx",
+      "sha256": "4e94355bd07057935a4e50ea827746327aa38c9be1def8bb8b700fff6fb13e14"
+    },
+    {
+      "byte_count": 1213,
+      "path": "files/documents/faturas/2019/Fatura de Serviços — Cliente Beta.rtf",
+      "sha256": "f14b5ec5ef6af9273c16663c2fbac9af7c803aeb1c620cd5a6968384ae31297f"
+    },
+    {
+      "byte_count": 2995,
+      "path": "files/documents/faturas/2019/Recibo de Prestação — Cooperativa Delta.epub",
+      "sha256": "b01e071967d936020bbfa24129b802efc6633f08dd5c4deec4d4ea728af7b761"
+    },
+    {
+      "byte_count": 135906,
+      "path": "files/documents/faturas/2019/scans/Recibo de Prestação — Cooperativa Delta (digitalizado 11).pdf",
+      "sha256": "c6eaea932b1777701f6087814197849e68e9947cb5db575bd1aeea7ab9f09e68"
+    },
+    {
+      "byte_count": 2121,
+      "path": "files/documents/faturas/2022/Fatura de Serviços — Grupo Gama.eml",
+      "sha256": "5e2bc359f0ebc3ea38c42a3b04236ed69a399ae7f1bd1e0b7b0683c976f8d1e8"
+    },
+    {
+      "byte_count": 2413,
+      "path": "files/documents/faturas/2022/revisoes/Fatura de Serviços — Grupo Gama (versão próxima 11).eml",
+      "sha256": "491a753d6e1c60719eae131b61a56e86612b9bce53cfd097bc848bc6869e654b"
+    },
+    {
+      "byte_count": 772,
+      "path": "files/documents/faturas/2024/Nota de Débito — consultoria de processos.md",
+      "sha256": "f3e3bbdb49580747c7e1995fb80cbdcebffbf9e22a50f0df8743bab4b53171c6"
+    },
+    {
+      "byte_count": 1007,
+      "path": "files/documents/faturas/2024/arquivo/Nota de Débito — consultoria de processos (cópia de texto 06).html",
+      "sha256": "e9260d8f8d7442548a3394ba8d1cee3e0c950bdf6d19b0e93fbe23ea0f282724"
+    },
+    {
+      "byte_count": 2211,
+      "path": "files/documents/faturas/2025/Fatura de Serviços — Cliente Beta.eml",
+      "sha256": "b1b29486b4e40a515d3af0665bcfdba1906ce65a22253e02c22365e607b9ac33"
+    },
+    {
+      "byte_count": 5670,
+      "path": "files/documents/faturas/2025/Fatura de Serviços — Grupo Gama.docx",
+      "sha256": "08787f7465016014bcb214a2d2dc31caa0193fd3187c2b8465fdc1fc202bd362"
+    },
+    {
+      "byte_count": 593,
+      "path": "files/documents/faturas/versoes/Nota de Débito — consultoria de processos (v1).md",
+      "sha256": "bc8456f6888a5f0c4ce4a41c5782eda0b10145b3774c2681466fe3221b024169"
+    },
+    {
+      "byte_count": 719,
+      "path": "files/documents/faturas/versoes/Nota de Débito — consultoria de processos (v2).md",
+      "sha256": "b6c97b26a8dc2e2399bc5e8e47e6edd59fe9b13da25c9f7b2714ca6a15337c76"
+    },
+    {
+      "byte_count": 12669,
+      "path": "files/documents/invoices/2018/Debit Note — material transport.pptx",
+      "sha256": "6b9fc4d185c12fdc3fccb0c06ab0cd0af770e38df30a8b6b9482f85cd10b96c3"
+    },
+    {
+      "byte_count": 2707,
+      "path": "files/documents/invoices/2020/Delivery Receipt — Client Alpha.epub",
+      "sha256": "d53b55b3637dad8aac804141c5081775e73ca0250f67391c0d461d9620434880"
+    },
+    {
+      "byte_count": 1443,
+      "path": "files/documents/invoices/2020/Delivery Receipt — Gamma Group.pdf",
+      "sha256": "69e99d536b4164fec954213214b7d9569c9cfc4e4ae780d31b3b2034d9fde910"
+    },
+    {
+      "byte_count": 2947,
+      "path": "files/documents/invoices/2020/Service Invoice — Epsilon Institute.epub",
+      "sha256": "4e596dd00763df4bf1a70e0780e6f94220606fbf7a0cd773feef61d77970b4c0"
+    },
+    {
+      "byte_count": 2707,
+      "path": "files/documents/invoices/2020/arquivo/Delivery Receipt — Client Alpha (cópia idêntica 04).epub",
+      "sha256": "d53b55b3637dad8aac804141c5081775e73ca0250f67391c0d461d9620434880"
+    },
+    {
+      "byte_count": 1583,
+      "path": "files/documents/invoices/2020/revisoes/Delivery Receipt — Gamma Group (versão próxima 12).pdf",
+      "sha256": "80637bb85ed22067db4ddc102f034e25cb45740b1152f69f58dfc7f0de683447"
+    },
+    {
+      "byte_count": 6102,
+      "path": "files/documents/invoices/2022/Delivery Receipt — Client Alpha.xlsx",
+      "sha256": "f7ad0c23b05a617d562856c1c48ec4f431ba5aa6e3f53dbf11e8becd8bb685ee"
+    },
+    {
+      "byte_count": 3414,
+      "path": "files/documents/invoices/2022/Delivery Receipt — Client Beta.odt",
+      "sha256": "c1dc09460854aff70ba6e0960f6a6a59634f939cd2db9f3000d22a0c1cd267aa"
+    },
+    {
+      "byte_count": 347,
+      "path": "files/documents/invoices/2022/arquivo/Delivery Receipt — Client Alpha (cópia de texto 07).txt",
+      "sha256": "359a9099e304c1ea5257a57c3552bfd8659a652655425a9290c2b08c14097399"
+    },
+    {
+      "byte_count": 136478,
+      "path": "files/documents/invoices/2022/scans/Delivery Receipt — Client Beta (digitalizado 12).png",
+      "sha256": "3935d713a3002f43acef37d3271ff20e6f9ac6c4f86680c791559c2e82388b04"
+    },
+    {
+      "byte_count": 6105,
+      "path": "files/documents/invoices/2023/Service Invoice — Epsilon Institute.xlsx",
+      "sha256": "47c5885c31e91cdb659f4d64c84b47a1e12bc0f0d2472f8597983bccf51e57ff"
+    },
+    {
+      "byte_count": 2750,
+      "path": "files/documents/invoices/2024/Service Invoice — Client Beta.epub",
+      "sha256": "3661f40f3ce3f2be46839b84f5141e4f5a0aca229969514e6c101ad4fd5c8bd9"
+    },
+    {
+      "byte_count": 581,
+      "path": "files/documents/invoices/versoes/Delivery Receipt — Client Alpha (v1).txt",
+      "sha256": "eb0f3f145bb96fba18b7bf45b9565f1cd2b8ea0ef75e7ddad0de918fd8106e74"
+    },
+    {
+      "byte_count": 709,
+      "path": "files/documents/invoices/versoes/Delivery Receipt — Client Alpha (v2).txt",
+      "sha256": "4b2e61d96eaf8ba2e91c914fedcc5354b00a7b96d6f720f8556281e78ab48211"
+    },
+    {
+      "byte_count": 5552,
+      "path": "files/documents/manuais/2018/Manual de Operação — posto de trabalho.docx",
+      "sha256": "b5cec21944f7fb493163763fe5e29c41422c8e97ccb4c4c78908767938faa5a4"
+    },
+    {
+      "byte_count": 3259,
+      "path": "files/documents/manuais/2018/Procedimento Técnico — unidade de ventilação.epub",
+      "sha256": "e594af33302b65513487f4e641ae58ffef8817de9dda852fa974ac0fe9a2a474"
+    },
+    {
+      "byte_count": 5552,
+      "path": "files/documents/manuais/2018/arquivo/Manual de Operação — posto de trabalho (cópia idêntica 09).docx",
+      "sha256": "b5cec21944f7fb493163763fe5e29c41422c8e97ccb4c4c78908767938faa5a4"
+    },
+    {
+      "byte_count": 13135,
+      "path": "files/documents/manuais/2020/Guia de Instalação — Grupo Gama.pptx",
+      "sha256": "e155293dbe3824d31ff2e214797293c9cc5c50efc2dc5b00ed376b65a8caa967"
+    },
+    {
+      "byte_count": 12357,
+      "path": "files/documents/manuais/2020/Manual de Operação — unidade de ventilação.pptx",
+      "sha256": "82f7183f02931c19214bf7fd86079a7e1b63e5833f5b9a7f4777e518ba7b42c6"
+    },
+    {
+      "byte_count": 1131,
+      "path": "files/documents/manuais/2022/Manual de Operação — posto de trabalho.rtf",
+      "sha256": "b31c75855abc7e73559e553213d50bd1f75c738fb976ea8b0fd6873bb0cef207"
+    },
+    {
+      "byte_count": 3221,
+      "path": "files/documents/manuais/2022/Procedimento Técnico — rede local.epub",
+      "sha256": "82b5b97ad4b1e64e43c8e1e404e1f4cf10bb2a2ef12625171e1ebde63a3a19d2"
+    },
+    {
+      "byte_count": 711,
+      "path": "files/documents/manuais/2023/Manual de Operação — unidade de ventilação.md",
+      "sha256": "ee5f094b0288a0feb634ebde32b7cf433574979c5bf023754e3fd4fe26bd7677"
+    },
+    {
+      "byte_count": 136478,
+      "path": "files/documents/manuais/2023/scans/Manual de Operação — unidade de ventilação (digitalizado 04).png",
+      "sha256": "7be16715d3af1a21e0321b51adf7191d56b413d49d6800e6fa06aaa9d4cbc900"
+    },
+    {
+      "byte_count": 771,
+      "path": "files/documents/manuais/2025/Guia de Instalação — Grupo Gama.html",
+      "sha256": "e79d2eb3afcd18b694717ce2a6700ed5b13d3de1c58ec778d2a9c3cf9c1eb6ef"
+    },
+    {
+      "byte_count": 2863,
+      "path": "files/documents/manuals/2018/Installation Guide — Gamma Group.epub",
+      "sha256": "3924280f8e871a73ee73990b6ec55090fd5502a175972d097f0898cf7c06a227"
+    },
+    {
+      "byte_count": 2863,
+      "path": "files/documents/manuals/2018/arquivo/Installation Guide — Gamma Group (cópia idêntica 10).epub",
+      "sha256": "3924280f8e871a73ee73990b6ec55090fd5502a175972d097f0898cf7c06a227"
+    },
+    {
+      "byte_count": 826,
+      "path": "files/documents/manuals/2019/Operation Manual — heat pump.rtf",
+      "sha256": "12755b7e47a284f5e37c8c6c210d81bc15ff861665f60d1eb435fc1e0cfd075f"
+    },
+    {
+      "byte_count": 973,
+      "path": "files/documents/manuals/2019/revisoes/Operation Manual — heat pump (versão próxima 04).rtf",
+      "sha256": "ad8e5fd561c1eacb96edc12bd832da817a02cf3fc649193c2d6bc4e20ab5de7a"
+    },
+    {
+      "byte_count": 713,
+      "path": "files/documents/manuals/2021/Operation Manual — local network.html",
+      "sha256": "c95a17392ad19c34ed6868938e274aacbf36bcd865f5914bfc3a734809d45232"
+    },
+    {
+      "byte_count": 2991,
+      "path": "files/documents/manuals/2021/Operation Manual — ventilation unit.epub",
+      "sha256": "cb876436ef5c28408a4eb21c8cd66f101f7b657740e165df2a0884a0b15fcc56"
+    },
+    {
+      "byte_count": 3533,
+      "path": "files/documents/manuals/2022/Installation Guide — Epsilon Institute.odt",
+      "sha256": "482ba0729a14f486980eac39404ad089eb890c44c5aaf93c94c46d0bc96187f3"
+    },
+    {
+      "byte_count": 1592,
+      "path": "files/documents/manuals/2024/Operation Manual — ventilation unit.eml",
+      "sha256": "a55703cd114a9d292ef84bf8cf5b6a67fa7b224397901ec82a0ed53a1fe69ee5"
+    },
+    {
+      "byte_count": 135906,
+      "path": "files/documents/manuals/2024/scans/Operation Manual — ventilation unit (digitalizado 05).pdf",
+      "sha256": "801afffb72709cd0fe6485f67beacb7d202206e6bc9fb330e4abf7ec3a92e3c4"
+    },
+    {
+      "byte_count": 2003,
+      "path": "files/documents/manuals/2025/Operation Manual — local network.eml",
+      "sha256": "f1e346ce4b5f8262220b12793ec73e6dc619e8c07dee2eeadb6489139d3d4c6d"
+    },
+    {
+      "byte_count": 12687,
+      "path": "files/documents/manuals/2025/Operation Manual — ventilation unit.pptx",
+      "sha256": "9e9338c09ec06a96f44bb0da11f79f9fb7eef65bc82ddb4fa2aaaef5eae5aba7"
+    },
+    {
+      "byte_count": 614,
+      "path": "files/documents/notas/2018/Informe Breve — Grupo Gama.txt",
+      "sha256": "0c54e22350439847b8b3b4ed0daa639ed93afd748934860a52afb1b119f5fd2f"
+    },
+    {
+      "byte_count": 136478,
+      "path": "files/documents/notas/2018/scans/Informe Breve — Grupo Gama (digitalizado 06).png",
+      "sha256": "19cc2fab4e3d1f4de5f433e792e0adf0e7f32437f053743c28210dcbe5008aa7"
+    },
+    {
+      "byte_count": 2229,
+      "path": "files/documents/notas/2020/Informe Breve — Grupo Gama.eml",
+      "sha256": "109be7eb3dc0adae441c7b92c7b75a1b7f07d2403632a747db158995f9161619"
+    },
+    {
+      "byte_count": 5320,
+      "path": "files/documents/notas/2020/Notas de Reunión — logística urbana.docx",
+      "sha256": "909acfb4dba49ef59c7ceaf57b280b43b6a10410f37c03cd929864bee69cf6c2"
+    },
+    {
+      "byte_count": 2779,
+      "path": "files/documents/notas/2020/Resumen Ejecutivo — energía solar.epub",
+      "sha256": "a0c51a5426487ba693de3a7a91d7e80ef113aff30d046046474d9f7791b2c418"
+    },
+    {
+      "byte_count": 2779,
+      "path": "files/documents/notas/2020/arquivo/Resumen Ejecutivo — energía solar (cópia idêntica 11).epub",
+      "sha256": "a0c51a5426487ba693de3a7a91d7e80ef113aff30d046046474d9f7791b2c418"
+    },
+    {
+      "byte_count": 5502,
+      "path": "files/documents/notas/2020/revisoes/Notas de Reunión — logística urbana (versão próxima 05).docx",
+      "sha256": "52ef8f91d286a16ddecb4fa74ff5187a3f36bdbe5ebdcfb7128bb8238d43b9a4"
+    },
+    {
+      "byte_count": 1002,
+      "path": "files/documents/notas/2021/Resumen Ejecutivo — logística urbana.rtf",
+      "sha256": "063d7292adc3dd429e8d84e687d80e9831c6b6feff8c1834fc068c57e1045404"
+    },
+    {
+      "byte_count": 989,
+      "path": "files/documents/notas/2022/Notas de Reunión — gestión documental.rtf",
+      "sha256": "bf269926d1a12a4a704b708cf7a6175f4689d5fc047d8d154a70fe65db7eab53"
+    },
+    {
+      "byte_count": 3001,
+      "path": "files/documents/notas/2024/Notas de Reunión — formación interna.epub",
+      "sha256": "d4efed60298f110d175516ae105b1cdf4da5ce54beaa266f0e1305b66f463c09"
+    },
+    {
+      "byte_count": 5567,
+      "path": "files/documents/notas/2025/Informe Breve — Instituto Épsilon.xlsx",
+      "sha256": "5572e8c7daf5bb649d0cfb9e4728e2250ad1d4aab2d2690bd7333d38b890f63f"
+    },
+    {
+      "byte_count": 3332,
+      "path": "files/documents/notes/2018/Compte Rendu — formation interne.odt",
+      "sha256": "1c89b292d0a7a0b8b6ed4e341972d01e435d6390fdb8a21de075118b19f93e7e"
+    },
+    {
+      "byte_count": 5325,
+      "path": "files/documents/notes/2018/Compte Rendu — logistique urbaine.docx",
+      "sha256": "fd1796b66d741ac61fef2e0594481e8945a2763e86ff5c865cda3b611e730228"
+    },
+    {
+      "byte_count": 601,
+      "path": "files/documents/notes/2018/Compte Rendu — logistique urbaine.md",
+      "sha256": "a361bfdf6c562eb43ec60a5ca4d2859faef0652d012c62a5fe3456f91ffdcd8c"
+    },
+    {
+      "byte_count": 3477,
+      "path": "files/documents/notes/2018/revisoes/Compte Rendu — formation interne (versão próxima 06).odt",
+      "sha256": "8f7bf9b5d126b1c0a1c1398734597879b75559dd6deb65eb5e99c86826c84e67"
+    },
+    {
+      "byte_count": 135906,
+      "path": "files/documents/notes/2018/scans/Compte Rendu — logistique urbaine (digitalizado 07).pdf",
+      "sha256": "b0bc82bbefd3e9612f81261e071750f4848897fd21d3598c710532158556839e"
+    },
+    {
+      "byte_count": 5569,
+      "path": "files/documents/notes/2020/Note de Synthèse — Client Alpha.xlsx",
+      "sha256": "cd9b799b4a64cfc59f71c7149d442bd1bc4f321acd8ab468f40abbe535ee41a1"
+    },
+    {
+      "byte_count": 1428,
+      "path": "files/documents/notes/2022/Note de Synthèse — Groupe Gamma.pdf",
+      "sha256": "8771528c284d385b7bdf7c1b856c3cf07fe45a2da0ad91230ae79395e0f5abdd"
+    },
+    {
+      "byte_count": 12671,
+      "path": "files/documents/notes/2023/Compte Rendu — gestion documentaire.pptx",
+      "sha256": "66639205c6d5f568378ef7c46929f005a0ef88cf729d41394bfdbefaa5398d70"
+    },
+    {
+      "byte_count": 3363,
+      "path": "files/documents/notes/2023/Note de Synthèse — Groupe Gamma.odt",
+      "sha256": "ea5e6df7a5fa5c7d774cc1a65f251236e170a38b99eee6c2fa077510cf28bf0d"
+    },
+    {
+      "byte_count": 5569,
+      "path": "files/documents/notes/2023/Note de Synthèse — Groupe Gamma.xlsx",
+      "sha256": "a13a109a7bd3d65cb671f092735e23b291df023ea6e5e2d62751ddee9624e85b"
+    },
+    {
+      "byte_count": 3363,
+      "path": "files/documents/notes/2023/arquivo/Note de Synthèse — Groupe Gamma (cópia idêntica 12).odt",
+      "sha256": "ea5e6df7a5fa5c7d774cc1a65f251236e170a38b99eee6c2fa077510cf28bf0d"
+    },
+    {
+      "byte_count": 1501,
+      "path": "files/documents/notizen/2018/Besprechungsnotiz — Dokumentenverwaltung.eml",
+      "sha256": "f7a905a23fe5b7cdd8992d849f4468cce34d96396820b5eb8b85c478d614f366"
+    },
+    {
+      "byte_count": 734,
+      "path": "files/documents/notizen/2018/Besprechungsnotiz — Solarenergie.rtf",
+      "sha256": "1ca76ced8f418030f3c4124ec6ad92d784abc016b89ff201dea8f799ef98ecb0"
+    },
+    {
+      "byte_count": 1767,
+      "path": "files/documents/notizen/2018/revisoes/Besprechungsnotiz — Dokumentenverwaltung (versão próxima 07).eml",
+      "sha256": "a725c9ee6513d6e7a9df23b3088b17081a609473e905e6f99cad3946bef62bcc"
+    },
+    {
+      "byte_count": 136478,
+      "path": "files/documents/notizen/2018/scans/Besprechungsnotiz — Solarenergie (digitalizado 08).png",
+      "sha256": "b76d6fd5d648165e36fb8fdac0a6d012a575c278c1f5758bea0bc6d61ffa5115"
+    },
+    {
+      "byte_count": 2834,
+      "path": "files/documents/notizen/2019/Kurzbericht — Gruppe Gamma.epub",
+      "sha256": "6f273e2fae71fcb5c47738b7f38d64bf384d18eb0da924fb19d998d73e41a669"
+    },
+    {
+      "byte_count": 561,
+      "path": "files/documents/notizen/2020/Besprechungsnotiz — Dokumentenverwaltung.txt",
+      "sha256": "726cee2979189f066bbe8a7dd89aa8eb0ce2a6332cfd245578bb9b4572af666b"
+    },
+    {
+      "byte_count": 12664,
+      "path": "files/documents/notizen/2020/Besprechungsnotiz — Solarenergie.pptx",
+      "sha256": "0706472f5fb505cbcedc16d77fcd5f38b5200f4cf7d942e58209e30c24525924"
+    },
+    {
+      "byte_count": 459,
+      "path": "files/documents/notizen/2021/Kurzbericht — Kunde Alpha.txt",
+      "sha256": "2454683e7a1bb83a619902488b67d3b4df8bd93018a78959dc47ea5b9115f9f8"
+    },
+    {
+      "byte_count": 12277,
+      "path": "files/documents/notizen/2023/Zusammenfassung — Solarenergie.pptx",
+      "sha256": "490a0e4fbc76f0f5fca9bda2ff015c60ba8f78cd922abc5a4224b701d86ce4f2"
+    },
+    {
+      "byte_count": 730,
+      "path": "files/documents/notizen/2025/Zusammenfassung — Solarenergie.rtf",
+      "sha256": "a8d14860874b3c08d93998e99e03077d0cb99d925e00b2bd3add2359e83a7a33"
+    },
+    {
+      "byte_count": 594,
+      "path": "files/documents/notizen/2025/arquivo/Zusammenfassung — Solarenergie (cópia de texto 01).html",
+      "sha256": "2fcca1f36fe3d26676c5b090c15182745f7c1770a6a86ef31b846f1bb9a9e1fc"
+    },
+    {
+      "byte_count": 3378,
+      "path": "files/documents/pesquisa/2020/Estudo Exploratório — Cliente Alfa.odt",
+      "sha256": "5fd0fa98c593ae00b45fa15b9c8fd89853425b7fceb4774ff08fc143704ec537"
+    },
+    {
+      "byte_count": 1854,
+      "path": "files/documents/pesquisa/2020/Notas de Investigação — recuperação de informação.eml",
+      "sha256": "cc5878a591cce814b5c2e19a395dc52686a25f3eaa5c1a6df39ccb173dd9d2a6"
+    },
+    {
+      "byte_count": 1962,
+      "path": "files/documents/pesquisa/2020/Relatório Técnico — eficiência energética.eml",
+      "sha256": "17c28f76759648ab623ae4f36bc4b5f75678af7815fac04fc105c57fcb8612da"
+    },
+    {
+      "byte_count": 2146,
+      "path": "files/documents/pesquisa/2020/revisoes/Notas de Investigação — recuperação de informação (versão próxima 02).eml",
+      "sha256": "0886a89ec76bf6dbb03df9f2e771a023bbe81df67dad47735c7e500dfe17f542"
+    },
+    {
+      "byte_count": 136478,
+      "path": "files/documents/pesquisa/2020/scans/Relatório Técnico — eficiência energética (digitalizado 02).png",
+      "sha256": "305d668c96c10a5761c2c745b284789e126f8a64b68d814aabfd1c6c353ecd28"
+    },
+    {
+      "byte_count": 5861,
+      "path": "files/documents/pesquisa/2021/Relatório Técnico — conservação de documentos.docx",
+      "sha256": "09c48c0aa72228110f8a0f2c0191eb3c0177e484e0fc500fe26a9ddeaed69b7e"
+    },
+    {
+      "byte_count": 3107,
+      "path": "files/documents/pesquisa/2022/Estudo Exploratório — Instituto Épsilon.epub",
+      "sha256": "61959cf610898b698962c76e3afb381d943ce6bd187359dd7dab07d76efbc345"
+    },
+    {
+      "byte_count": 1518,
+      "path": "files/documents/pesquisa/2023/Estudo Exploratório — Grupo Gama.pdf",
+      "sha256": "ea07de5cbfe32181a91ae20d8dbc859dce1b0986cbff1adfc1ed335bf093db54"
+    },
+    {
+      "byte_count": 2648,
+      "path": "files/documents/pesquisa/2023/Relatório Técnico — recuperação de informação.eml",
+      "sha256": "3e0eede1641d89cd4485e143a9983cd05721678ddddb559921b388525e6f2cae"
+    },
+    {
+      "byte_count": 1952,
+      "path": "files/documents/pesquisa/2024/Estudo Exploratório — Cliente Alfa.eml",
+      "sha256": "06a9e4cbe9691297e936b2c0553e52f7d9a404d8dffe94bc88d3386b170e7ad5"
+    },
+    {
+      "byte_count": 1952,
+      "path": "files/documents/pesquisa/2024/arquivo/Estudo Exploratório — Cliente Alfa (cópia idêntica 07).eml",
+      "sha256": "06a9e4cbe9691297e936b2c0553e52f7d9a404d8dffe94bc88d3386b170e7ad5"
+    },
+    {
+      "byte_count": 849,
+      "path": "files/documents/pesquisa/versoes/Notas de Investigação — qualidade do ar interior (v1).html",
+      "sha256": "be714ac5298e249f511c98b25f7b27325e527f263a66238170d60ac704478eec"
+    },
+    {
+      "byte_count": 981,
+      "path": "files/documents/pesquisa/versoes/Notas de Investigação — qualidade do ar interior (v2).html",
+      "sha256": "9e0227b287331bab05468d33d644cbe0c8195bdc6b77b7eb89b96c06a6faf749"
+    },
+    {
+      "byte_count": 542,
+      "path": "files/documents/policies/2019/Internal Information Security Policy — 2019.md",
+      "sha256": "0db00a1792e6b0110d77fd11fcbd8a464d5af978fbbce86aa212ce28efcf1896"
+    },
+    {
+      "byte_count": 3009,
+      "path": "files/documents/policies/2019/Records Retention Standard — Gamma Group.epub",
+      "sha256": "7386d9a8890bed238e173828753b4c89146c530d060c9def2d22f7aa2b3bb34f"
+    },
+    {
+      "byte_count": 672,
+      "path": "files/documents/policies/2019/revisoes/Internal Information Security Policy — 2019 (versão próxima 01).md",
+      "sha256": "9d51f32d087107ef7bb5a945cf99658d412c0ae5e67be588fa4ca85e9a433004"
+    },
+    {
+      "byte_count": 614,
+      "path": "files/documents/policies/2020/Good Practice Handbook — business continuity.txt",
+      "sha256": "989909ea9e79f71ef2cc6c64a636ab2365f737584b45ecaa484f2c6b58f4f469"
+    },
+    {
+      "byte_count": 688,
+      "path": "files/documents/policies/2022/Internal Information Security Policy — 2022.md",
+      "sha256": "f84eefa723b8ef9d658a5e3c50db049473c9293cdf3e859292bdbb903908e765"
+    },
+    {
+      "byte_count": 135906,
+      "path": "files/documents/policies/2022/scans/Internal Information Security Policy — 2022 (digitalizado 01).pdf",
+      "sha256": "54d76ec1523a5d435aa93d74477d9d501420adbce1d017b2bd657538656c90ba"
+    },
+    {
+      "byte_count": 2860,
+      "path": "files/documents/policies/2023/Internal Information Security Policy — 2023.epub",
+      "sha256": "ea6235f8f672f32f37b2867f42261cb1c37e61f75393f4d1159d0c09ec7d61f4"
+    },
+    {
+      "byte_count": 2860,
+      "path": "files/documents/policies/2023/arquivo/Internal Information Security Policy — 2023 (cópia idêntica 06).epub",
+      "sha256": "ea6235f8f672f32f37b2867f42261cb1c37e61f75393f4d1159d0c09ec7d61f4"
+    },
+    {
+      "byte_count": 1060,
+      "path": "files/documents/policies/2024/Records Retention Standard — Gamma Group.rtf",
+      "sha256": "115f13cdbd7e989e2ac1cf9d297064aae73e97c67ff31d3f1b89705b80c989cb"
+    },
+    {
+      "byte_count": 5815,
+      "path": "files/documents/policies/2025/Good Practice Handbook — business continuity.docx",
+      "sha256": "0c21d1a5be90fddfa2eb045e6652665f20815a489872eeaa0aff9e01e5c6ae5a"
+    },
+    {
+      "byte_count": 1142,
+      "path": "files/documents/policies/2025/Internal Information Security Policy — 2025.rtf",
+      "sha256": "f7b095d5906a0d9d7379811951d2f47b75d069068cf31f43fef741628b8570f1"
+    },
+    {
+      "byte_count": 3463,
+      "path": "files/documents/policies/versoes/Internal Information Security Policy — 2020 (v1).odt",
+      "sha256": "59b5117bba73d1f739894ae90f2ee387f8a8dbcf20be12a28f9b01a44d704860"
+    },
+    {
+      "byte_count": 3606,
+      "path": "files/documents/policies/versoes/Internal Information Security Policy — 2020 (v2).odt",
+      "sha256": "202c1c5e3e1332a46c58c00ec5516520286ebf3fc7ad39cd6fa5d7a739eb3390"
+    },
+    {
+      "byte_count": 1506,
+      "path": "files/documents/politicas/2018/Manual de Boas Práticas — continuidade de negócio.rtf",
+      "sha256": "92c2d0af58befe99d77d8ca76f65a22c35c7f2e2bc8fb9dfb3c603845d18c75b"
+    },
+    {
+      "byte_count": 959,
+      "path": "files/documents/politicas/2019/Política Interna de Segurança da Informação — 2019.html",
+      "sha256": "5cb36bed9b49a90f77278ec7aa27fe88a4d66c33952e775336b96b85351011ba"
+    },
+    {
+      "byte_count": 2562,
+      "path": "files/documents/politicas/2020/Norma de Retenção Documental — Grupo Gama.eml",
+      "sha256": "03fc0e8c5de5e4de28c08c3a67a64142c11431c192f098ec74a16728fd0d5270"
+    },
+    {
+      "byte_count": 791,
+      "path": "files/documents/politicas/2020/Política Interna de Segurança da Informação — 2020.html",
+      "sha256": "c091e0f89a7e8d74455900fd161535c409ddfb0aca0bd1d053cdf85308dfa5ed"
+    },
+    {
+      "byte_count": 791,
+      "path": "files/documents/politicas/2020/arquivo/Política Interna de Segurança da Informação — 2020 (cópia idêntica 05).html",
+      "sha256": "c091e0f89a7e8d74455900fd161535c409ddfb0aca0bd1d053cdf85308dfa5ed"
+    },
+    {
+      "byte_count": 731,
+      "path": "files/documents/politicas/2021/Manual de Boas Práticas — classificação da informação.md",
+      "sha256": "8fce9b7962cc1a43639743452504d3a3afbc8ca3b03555189b7968f2c656092a"
+    },
+    {
+      "byte_count": 5818,
+      "path": "files/documents/politicas/2022/Norma de Retenção Documental — Instituto Épsilon.xlsx",
+      "sha256": "adc3e64a39736c02bb77728a8f2a0b361cf04c338bfd1c174faa2ecaa0a30b18"
+    },
+    {
+      "byte_count": 3296,
+      "path": "files/documents/politicas/2022/Política Interna de Segurança da Informação — 2022.epub",
+      "sha256": "a6309276932d9bddb20bae26df1e4bcdfede5fe5fb7ede51ff8595c310e91bde"
+    },
+    {
+      "byte_count": 682,
+      "path": "files/documents/politicas/2023/Política Interna de Segurança da Informação — 2023.md",
+      "sha256": "158fac0f47252e93b277928917bc53d57e1381ba0453c366502667a3e6baed35"
+    },
+    {
+      "byte_count": 917,
+      "path": "files/documents/politicas/2023/arquivo/Política Interna de Segurança da Informação — 2023 (cópia de texto 08).html",
+      "sha256": "03f51e71f000536a626ae4f57240a32e9d660d442fcad9464a29277be56a3dac"
+    },
+    {
+      "byte_count": 1166,
+      "path": "files/documents/politicas/versoes/Manual de Boas Práticas — arquivo digital (v1).rtf",
+      "sha256": "0aaea669c91dd2906b3729c88b56163c1af87b956ef69c17397e5d061fa8cf3d"
+    },
+    {
+      "byte_count": 1325,
+      "path": "files/documents/politicas/versoes/Manual de Boas Práticas — arquivo digital (v2).rtf",
+      "sha256": "3c04dce25b4dda6442aa9f5babb38754ab1f1a7bbe59885a7a68244aa71dfeb7"
+    },
+    {
+      "byte_count": 6073,
+      "path": "files/documents/reports/2020/Consolidated Technical Dossier — water efficiency.txt",
+      "sha256": "47e10486b6051447c82f2293fe9104befe8ca31cf4c83b1b808a80fd321378b0"
+    },
+    {
+      "byte_count": 8252,
+      "path": "files/documents/reports/2024/Consolidated Technical Dossier — collection conservation.pdf",
+      "sha256": "ef05a4f95e52bee2dd948ae28e90a37eec0ff01b4f8c9b6fd9e909958c514ed7"
+    },
+    {
+      "byte_count": 8252,
+      "path": "files/documents/reports/2024/arquivo/Consolidated Technical Dossier — collection conservation (cópia idêntica 08).pdf",
+      "sha256": "ef05a4f95e52bee2dd948ae28e90a37eec0ff01b4f8c9b6fd9e909958c514ed7"
+    },
+    {
+      "byte_count": 608,
+      "path": "files/documents/research/2018/Exploratory Study — Epsilon Institute.md",
+      "sha256": "add95378cc7b611056729ebd7c3fa396545a0a63bf64ecbcaa96ced25e40f519"
+    },
+    {
+      "byte_count": 5951,
+      "path": "files/documents/research/2020/Exploratory Study — Client Alpha.xlsx",
+      "sha256": "ce97d163023c1d4dc15fd28d9a82039540e780dc6645297294971954023652c6"
+    },
+    {
+      "byte_count": 2792,
+      "path": "files/documents/research/2020/Research Notes — energy efficiency.epub",
+      "sha256": "150045498921b4a1b228db3544624de9bf10c122745306be95101b8d1f5cfbad"
+    },
+    {
+      "byte_count": 565,
+      "path": "files/documents/research/2021/Research Notes — information retrieval.txt",
+      "sha256": "ab1b6f4f2fce876ad771a02a497c6bc7563ab7c7fab57419d06a14b367d10fcd"
+    },
+    {
+      "byte_count": 135906,
+      "path": "files/documents/research/2021/scans/Research Notes — information retrieval (digitalizado 03).pdf",
+      "sha256": "b95186e38f2bb73f2b20840f70d2f11b2ce521179abf011094c787bbbf1df18b"
+    },
+    {
+      "byte_count": 729,
+      "path": "files/documents/research/2023/Technical Report — information retrieval.md",
+      "sha256": "1778a9a2b002e14ba9ff6fd24ffc20804951ac78e0b53c5e14b50600314ba59d"
+    },
+    {
+      "byte_count": 859,
+      "path": "files/documents/research/2023/revisoes/Technical Report — information retrieval (versão próxima 03).md",
+      "sha256": "4d6e1b8a125512e1774ff3b45748597dc87a1087638644175874931b5f5043fd"
+    },
+    {
+      "byte_count": 5955,
+      "path": "files/documents/research/2024/Technical Report — energy efficiency.xlsx",
+      "sha256": "cdf866b47dff3fc75e2b8a992864ef4a32cc0da285aa47c58c9429e844d7beef"
+    },
+    {
+      "byte_count": 860,
+      "path": "files/documents/research/2025/Exploratory Study — Epsilon Institute.rtf",
+      "sha256": "34e3bed21304ea7313ea35bcaeed0b6f1b65f8056a3dade4070a4b630c21d2db"
+    },
+    {
+      "byte_count": 3084,
+      "path": "files/documents/research/versoes/Technical Report — information retrieval (v1).epub",
+      "sha256": "6fded0d22f0243c34c92e0f58cbdeeca8bacbae9d34c6b6418637c5513b46222"
+    },
+    {
+      "byte_count": 3218,
+      "path": "files/documents/research/versoes/Technical Report — information retrieval (v2).epub",
+      "sha256": "1dea939f71cee50b621aedbc0a99b5e20d669a9fd191c22c056c19bc13c69cdf"
+    },
+    {
+      "byte_count": 5749,
+      "path": "files/documents/σημειώσεις/2018/arquivo/Τεχνικό Σημείωμα — διαχείριση εγγράφων (cópia de texto 03).docx",
+      "sha256": "6696f4732f03002730be35bd36568ed64656892a361a209476ef7d3b031d5b75"
+    },
+    {
+      "byte_count": 843,
+      "path": "files/documents/σημειώσεις/2018/Τεχνικό Σημείωμα — διαχείριση εγγράφων.txt",
+      "sha256": "74bd52a54b14859772178ce565270ef5eb4168829a27b5e53b3bc7c7747c8244"
+    },
+    {
+      "byte_count": 812,
+      "path": "files/documents/σημειώσεις/2019/revisoes/Σύνοψη — Πελάτης Άλφα (versão próxima 09).txt",
+      "sha256": "420ce718c591668fa4a776cafc75d32a6309bbad1cfacaac2d317ced002bad7d"
+    },
+    {
+      "byte_count": 682,
+      "path": "files/documents/σημειώσεις/2019/Σύνοψη — Πελάτης Άλφα.txt",
+      "sha256": "cded22a1d72e7e52a55b455b025b4279fb20c331b5517fda0140f4d787e9927a"
+    },
+    {
+      "byte_count": 893,
+      "path": "files/documents/σημειώσεις/2019/Τεχνικό Σημείωμα — ηλιακή ενέργεια.md",
+      "sha256": "ad82ebe9517898e7a54b036e6508fcad9f39e6591029cd73aa264660feff8b9c"
+    },
+    {
+      "byte_count": 962,
+      "path": "files/documents/σημειώσεις/2021/Τεχνικό Σημείωμα — εσωτερική εκπαίδευση.md",
+      "sha256": "c776490bfef82d4df1ff799fc873c6c644e1a60a73124c78cabd071bb3be0ef7"
+    },
+    {
+      "byte_count": 614,
+      "path": "files/documents/σημειώσεις/2022/Σύνοψη — Όμιλος Γάμμα.md",
+      "sha256": "a7c7f6460e764fc3abc336c713749eb1fce008fb771789544e242ee4ad5ec326"
+    },
+    {
+      "byte_count": 960,
+      "path": "files/documents/σημειώσεις/2023/Σημειώσεις Συνάντησης — αστική εφοδιαστική.txt",
+      "sha256": "174790b348b7e8423a117a2a210f47e144645107e3ae2098ff56d62005be591d"
+    },
+    {
+      "byte_count": 1001,
+      "path": "files/documents/σημειώσεις/2024/Σημειώσεις Συνάντησης — ηλιακή ενέργεια.md",
+      "sha256": "d2e44ac31c535d2c5ddd73227a7c52781d92bfc67168afbdc97f661132915ab7"
+    },
+    {
+      "byte_count": 991,
+      "path": "files/documents/σημειώσεις/2024/Σύνοψη — Πελάτης Άλφα.txt",
+      "sha256": "84ee2d50832e4246651530f83305444b4ad5516087e605dc455e81ad9ff2e8ec"
+    },
+    {
+      "byte_count": 613,
+      "path": "files/documents/メモ/2018/打ち合わせメモ — 文書管理.txt",
+      "sha256": "54c35a9db0306df605f788a1baac31f46ea2ac3696b0a41a11167a02f9dedd4b"
+    },
+    {
+      "byte_count": 539,
+      "path": "files/documents/メモ/2018/打ち合わせメモ — 社内研修.txt",
+      "sha256": "a6adcdf1fece5e5c05166c659de828c8191af6180f19bf74d9aa120572271fa2"
+    },
+    {
+      "byte_count": 612,
+      "path": "files/documents/メモ/2019/arquivo/打ち合わせメモ — 文書管理 (cópia de texto 02).html",
+      "sha256": "0ea5e90ea93f8a726a5ff6ee9ff4d0334a63f82da1be2ff7c831d97d1e54b054"
+    },
+    {
+      "byte_count": 401,
+      "path": "files/documents/メモ/2019/打ち合わせメモ — 文書管理.md",
+      "sha256": "9ab7ae8585e982cdd9dd249404c451f0f963de368c33746f7e043c3b6bec0b79"
+    },
+    {
+      "byte_count": 480,
+      "path": "files/documents/メモ/2019/技術ノート — 太陽光発電.md",
+      "sha256": "1d9e6936524c48b66f884b8e139e634f6bd9ddadc84a9accae4342246fdf3ff6"
+    },
+    {
+      "byte_count": 685,
+      "path": "files/documents/メモ/2023/revisoes/技術ノート — 都市物流 (versão próxima 08).md",
+      "sha256": "931fe1da96a4d513dae849350e7a84e9631de43a44b4673e7ceeca56c6bfab07"
+    },
+    {
+      "byte_count": 555,
+      "path": "files/documents/メモ/2023/技術ノート — 都市物流.md",
+      "sha256": "975bddb3cf9c20ead9d529e38047650356f8807e1f3dd92118415971e9b8cbd3"
+    },
+    {
+      "byte_count": 442,
+      "path": "files/documents/メモ/2023/概要レポート — グループ・ガンマ.txt",
+      "sha256": "67303ec5d3fc5b242c8139a36e0c31fb5e756ddb080dd9bdb5cfef51553e56d1"
+    },
+    {
+      "byte_count": 639,
+      "path": "files/documents/メモ/2025/打ち合わせメモ — 太陽光発電.txt",
+      "sha256": "2dedb284e646159e8d552185c90f3c9d24e18fb9771ca024ad491f0bf7cb6b8a"
+    },
+    {
+      "byte_count": 652,
+      "path": "files/documents/メモ/2025/技術ノート — 社内研修.md",
+      "sha256": "4a96d99ec3553f10e48b622c047dbf6ae3670b714368c237d76d055dd3db1096"
+    }
+  ],
+  "generator_version": "sdc-generator/0.1.0",
+  "injection_counts": {
+    "boilerplate_documents": 32,
+    "exact_byte_copies": 12,
+    "exact_text_copies": 8,
+    "near_duplicate_documents": 12,
+    "scanned_variants": 12,
+    "version_groups": 8
+  },
+  "passage_count": 2224,
+  "profile_sha256": "590dbbf660cfe0505b0cb9236e4a85e514bc844d3a95bb39e921eb54ae8f3abf",
+  "renderer_lock_sha256": "d7103207eb7d2be814b071bf712204760adc6145151310d1f67907015856f8e1",
+  "schema_version": 1,
+  "seed": "sdc-smoke-v1",
+  "sidecars": {
+    "corpus.jsonl": "a334761de92f188929f1aa3f14c45a0f5d1c6cebbe39b522026a3860703f3455",
+    "duplicate-clusters.jsonl": "17c8a103bdd17034193aa3c8d2d2f1c42d0b118e26e91ad30df1ca7007932ff1",
+    "extraction-truth.jsonl": "9148029206415d8a155cae013630a738eae908c2a8be61b64c88f3a8fe15ee5d",
+    "passages.jsonl": "7d34b13fc16bcb62d244981a8ed557891ca1d9dc02eebbfa163bf6e1f0e19362",
+    "versions.jsonl": "a4338aa78dfdf3329bb93953449cbd0632ca51820afd48900e5649dc16a08cb1"
+  },
+  "source_set_sha256": "98186340f6cb662b3afebb998c83b304eff2b66d04386e30b429a7eeba623d9c"
+}

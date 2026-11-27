@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "template_id": "syn-code-v1",
+  "kind": "code",
+  "language": "en-US",
+  "domain": "code",
+  "folder": "code",
+  "title_forms": [
+    "Index maintenance module {seq}",
+    "Extraction pipeline helper {seq}",
+    "Search ranking utilities {seq}"
+  ],
+  "identifier": {"kind": "module", "pattern": "MOD-{year}-{seq:04d}"},
+  "identifier_sentence": "Module identifier: {id}.",
+  "entity_pools": {
+    "entity": ["index", "extractor", "ranker"],
+    "topic": ["tokenization", "ranking", "storage"]
+  },
+  "headings": [],
+  "paragraphs": [],
+  "list_items": [],
+  "table_columns": [],
+  "table_rows": [],
+  "code_languages": [
+    {
+      "name": "python",
+      "extension": ".py",
+      "units": [
+        "def {fn}_load(path):\n    \"\"\"Load a record file and return parsed lines.\"\"\"\n    with open(path, encoding=\"utf-8\") as handle:\n        return [line.rstrip(\"\\n\") for line in handle if line.strip()]\n",
+        "def {fn}_dedupe(values):\n    \"\"\"Keep the first occurrence of each value.\"\"\"\n    seen = set()\n    result = []\n    for value in values:\n        if value not in seen:\n            seen.add(value)\n            result.append(value)\n    return result\n",
+        "def {fn}_score(text, terms):\n    \"\"\"Return a simple overlap score for a passage.\"\"\"\n    tokens = text.casefold().split()\n    hits = sum(1 for term in terms if term in tokens)\n    return hits / max(1, len(terms))\n"
+      ]
+    },
+    {
+      "name": "rust",
+      "extension": ".rs",
+      "units": [
+        "pub fn {fn}_normalize(input: &str) -> String {\n    input\n        .split_whitespace()\n        .collect::<Vec<_>>()\n        .join(\" \")\n        .to_lowercase()\n}\n",
+        "pub fn {fn}_checksum(data: &[u8]) -> u64 {\n    let mut value: u64 = 0;\n    for byte in data {\n        value = value.wrapping_mul(131).wrapping_add(u64::from(*byte));\n    }\n    value\n}\n",
+        "pub fn {fn}_split(text: &str, width: usize) -> Vec<String> {\n    let mut out = Vec::new();\n    let mut current = String::new();\n    for word in text.split_whitespace() {\n        if !current.is_empty() && current.len() + 1 + word.len() > width {\n            out.push(current);\n            current = String::new();\n        }\n        if !current.is_empty() {\n            current.push(' ');\n        }\n        current.push_str(word);\n    }\n    if !current.is_empty() {\n        out.push(current);\n    }\n    out\n}\n"
+      ]
+    },
+    {
+      "name": "javascript",
+      "extension": ".js",
+      "units": [
+        "export function {fn}Normalize(value) {\n  return value.split(/\\s+/).filter(Boolean).join(\" \").toLowerCase();\n}\n",
+        "export function {fn}Unique(values) {\n  const seen = new Set();\n  const result = [];\n  for (const value of values) {\n    if (!seen.has(value)) {\n      seen.add(value);\n      result.push(value);\n    }\n  }\n  return result;\n}\n",
+        "export function {fn}Percent(part, total) {\n  if (total <= 0) {\n    return 0;\n  }\n  return Math.round((part / total) * 1000) / 10;\n}\n"
+      ]
+    },
+    {
+      "name": "typescript",
+      "extension": ".ts",
+      "units": [
+        "export interface {class_name}Record {\n  id: string;\n  path: string;\n  size: number;\n}\n",
+        "export function {fn}SortRecords(records: {class_name}Record[]): {class_name}Record[] {\n  return [...records].sort((left, right) => left.path.localeCompare(right.path));\n}\n",
+        "export function {fn}Filter(records: {class_name}Record[], minimum: number): {class_name}Record[] {\n  return records.filter((record) => record.size >= minimum);\n}\n"
+      ]
+    },
+    {
+      "name": "go",
+      "extension": ".go",
+      "units": [
+        "package main\n\nfunc {fn}Normalize(input string) string {\n\tfields := strings.Fields(input)\n\treturn strings.ToLower(strings.Join(fields, \" \"))\n}\n",
+        "package main\n\nfunc {fn}Clamp(value, low, high int) int {\n\tif value < low {\n\t\treturn low\n\t}\n\tif value > high {\n\t\treturn high\n\t}\n\treturn value\n}\n",
+        "package main\n\nfunc {fn}Sum(values []int) int {\n\ttotal := 0\n\tfor _, value := range values {\n\t\ttotal += value\n\t}\n\treturn total\n}\n"
+      ]
+    },
+    {
+      "name": "sql",
+      "extension": ".sql",
+      "units": [
+        "SELECT document_id, COUNT(*) AS passages\nFROM passages\nWHERE content_sha256 IS NOT NULL\nGROUP BY document_id\nORDER BY document_id;\n",
+        "SELECT cluster_id, COUNT(*) AS members\nFROM duplicate_clusters\nGROUP BY cluster_id\nHAVING COUNT(*) > 1\nORDER BY cluster_id;\n",
+        "SELECT version_group_id, document_id, version_number\nFROM versions\nWHERE is_latest = TRUE\nORDER BY version_group_id;\n"
+      ]
+    }
+  ],
+  "notes": "Synthetic source files for the opt-in code root. All identifiers are fictitious."
+}

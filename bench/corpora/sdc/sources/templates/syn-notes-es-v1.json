@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "template_id": "syn-notes-es-v1",
+  "kind": "text",
+  "language": "es-ES",
+  "domain": "notes-es",
+  "folder": "notas",
+  "title_forms": [
+    "Notas de Reunión — {topic}",
+    "Informe Breve — {client}",
+    "Resumen Ejecutivo — {topic}"
+  ],
+  "identifier": {"kind": "note", "pattern": "ES-{year}-{seq:04d}"},
+  "identifier_sentence": "Referencia del documento: {id}.",
+  "entity_pools": {
+    "client": ["Cliente Alfa", "Grupo Gama", "Instituto Épsilon"],
+    "supplier": ["Proveedor Horizonte", "Servicios Meridiano"],
+    "city": ["Madrid", "Barcelona", "Valencia"],
+    "topic": ["gestión documental", "energía solar", "logística urbana", "formación interna"]
+  },
+  "headings": ["Objetivo", "Puntos tratados", "Acuerdos", "Próximos pasos"],
+  "paragraphs": [
+    "La reunión se celebró en {city} con el objetivo de revisar el estado del proyecto de {topic}.",
+    "El equipo confirmó que el calendario previsto se mantiene sin cambios.",
+    "Se acordó preparar un informe mensual con los indicadores principales.",
+    "La referencia interna del proyecto es {uuid}.",
+    "El código de incidencia {error_code} quedó resuelto durante la sesión.",
+    "Los datos utilizados son ficticios y no contienen información personal.",
+    "La próxima revisión se fijará para el mes siguiente.",
+    "Se recomienda documentar las decisiones en un registro común."
+  ],
+  "list_items": [
+    "Revisar el inventario antes de la próxima reunión.",
+    "Confirmar el presupuesto con el proveedor.",
+    "Actualizar el calendario compartido.",
+    "Enviar las actas a los participantes."
+  ],
+  "table_columns": ["Tema", "Responsable", "Fecha", "Referencia"],
+  "table_rows": [
+    ["Inventario", "Equipo local", "{date}", "{id}"],
+    ["Presupuesto", "Administración", "{date}", "{id}"],
+    ["Calendario", "Coordinación", "{date}", "{id}"],
+    ["Actas", "Secretaría", "{date}", "{id}"]
+  ],
+  "notes": "Synthetic Spanish note template, support-language slice."
+}

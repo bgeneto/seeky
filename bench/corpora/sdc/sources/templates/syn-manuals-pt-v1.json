@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "template_id": "syn-manuals-pt-v1",
+  "kind": "text",
+  "language": "pt-BR",
+  "domain": "manuals-pt",
+  "folder": "manuais",
+  "title_forms": [
+    "Manual de Operação — {topic}",
+    "Guia de Instalação — {client}",
+    "Procedimento Técnico — {topic}"
+  ],
+  "identifier": {"kind": "manual", "pattern": "MAN-{year}-{seq:04d}"},
+  "identifier_sentence": "Documento controlado com o código {id}.",
+  "entity_pools": {
+    "client": ["Cliente Alfa", "Grupo Gama", "Instituto Épsilon"],
+    "supplier": ["Tecnologia Atlântica", "Fornecedora Horizonte"],
+    "city": ["Lisboa", "Porto", "Coimbra", "Braga"],
+    "topic": ["bomba de calor", "unidade de ventilação", "sistema de arquivo", "posto de trabalho", "rede local"]
+  },
+  "headings": [
+    "Antes de começar",
+    "Instalação passo a passo",
+    "Configuração inicial",
+    "Resolução de problemas",
+    "Manutenção periódica",
+    "Especificações técnicas",
+    "Segurança"
+  ],
+  "paragraphs": [
+    "Este manual descreve a instalação e a operação do equipamento de {topic} no local de {city}.",
+    "Confirme que a embalagem inclui o cabo de alimentação, o suporte e a documentação de garantia.",
+    "Desligue a alimentação antes de abrir qualquer painel de acesso.",
+    "Fixe o suporte à parede com os parafusos fornecidos e verifique a verticalidade com um nível.",
+    "Ligue o cabo de rede ao ponto identificado e aguarde o indicador luminoso ficar verde fixo.",
+    "A configuração inicial demora cerca de quinze minutos e não requer ferramentas adicionais.",
+    "Se o indicador piscar em vermelho, consulte a secção de resolução de problemas antes de reiniciar.",
+    "O código de erro {error_code} indica uma falha de comunicação temporária com o servidor.",
+    "A limpeza dos filtros deve ser feita a cada três meses ou sempre que o aviso aparecer.",
+    "A referência do equipamento é {uuid} e consta da etiqueta lateral.",
+    "Não utilize solventes agressivos nem jatos de água diretamente sobre os componentes.",
+    "A substituição de peças deve ser feita por técnicos autorizados pela {supplier}.",
+    "Guarde este manual junto do equipamento para consulta futura.",
+    "O número de série completo está registado no sistema de assistência."
+  ],
+  "list_items": [
+    "Verificar a tensão da rede antes de ligar.",
+    "Confirmar o aperto de todos os parafusos de fixação.",
+    "Etiquetar os cabos de rede e de alimentação.",
+    "Testar uma operação completa após a configuração.",
+    "Registar a data da primeira manutenção preventiva."
+  ],
+  "table_columns": ["Passo", "Ação", "Duração", "Referência"],
+  "table_rows": [
+    ["1", "Desembalar e inspecionar", "5 min", "{id}"],
+    ["2", "Fixar o suporte", "15 min", "{id}"],
+    ["3", "Ligar a alimentação", "2 min", "{id}"],
+    ["4", "Configurar a rede", "10 min", "{id}"],
+    ["5", "Executar o teste final", "8 min", "{id}"],
+    ["6", "Registar a instalação", "3 min", "{id}"]
+  ],
+  "notes": "Synthetic Portuguese technical-manual template."
+}

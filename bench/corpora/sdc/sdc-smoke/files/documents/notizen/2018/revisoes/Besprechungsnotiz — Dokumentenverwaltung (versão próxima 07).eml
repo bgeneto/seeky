@@ -1,0 +1,51 @@
+From: "SDC Synthetic Sender" <sender@example.com>
+To: "SDC Synthetic Recipient" <recipient@example.org>
+Subject: Besprechungsnotiz — Dokumentenverwaltung
+Date: Sun, 14 Oct 2018 14:28:23 GMT
+Message-ID: <52c46c07-7697-4c06-a4e9-82dcfa45a2d2@example.invalid>
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="sdc-9cbb60dff1103461d27364f8"
+
+This is a multi-part message in MIME format.
+
+--sdc-9cbb60dff1103461d27364f8
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+Beschlüsse
+
+Dokumentreferenz: DE-2018-0043.
+
+Die interne Projektreferenz lautet 9f7f5dc2-b421-4471-891b-a92e210de3ab.
+
+Ein Monatsbericht mit den wichtigsten Kennzahlen wird vorbereitet. Internal revision: the figures were updated.
+
+Der Fehlercode E-2655 wurde während der Sitzung behoben.
+
+Nächste Schritte
+
+Die Daten sind fiktiv und enthalten keine personenbezogenen Informationen.
+
+Den gemeinsamen Kalender aktualisieren.
+
+Revision note 07: this document incorporates internal changes against the original.
+
+--sdc-9cbb60dff1103461d27364f8
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+<html><body>
+<h2>Beschlüsse</h2>
+<p>Dokumentreferenz: DE-2018-0043.</p>
+<p>Die interne Projektreferenz lautet 9f7f5dc2-b421-4471-891b-a92e210de3ab.</p>
+<p>Ein Monatsbericht mit den wichtigsten Kennzahlen wird vorbereitet. Internal revision: the figures were updated.</p>
+<p>Der Fehlercode E-2655 wurde während der Sitzung behoben.</p>
+<h2>Nächste Schritte</h2>
+<p>Die Daten sind fiktiv und enthalten keine personenbezogenen Informationen.</p>
+<ul>
+<li>Den gemeinsamen Kalender aktualisieren.</li>
+</ul>
+<p>Revision note 07: this document incorporates internal changes against the original.</p>
+</body></html>
+
+--sdc-9cbb60dff1103461d27364f8--

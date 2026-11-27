@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "template_id": "syn-long-report-pt-v1",
+  "kind": "long",
+  "language": "pt-BR",
+  "domain": "long-reports-pt",
+  "folder": "relatorios",
+  "title_forms": [
+    "Relatório Anual de Operações — {topic}",
+    "Memória Descritiva — {client}",
+    "Dossiê Técnico Consolidado — {topic}"
+  ],
+  "identifier": {"kind": "report", "pattern": "LR-{year}-{seq:04d}"},
+  "identifier_sentence": "Referência do dossiê: {id}.",
+  "entity_pools": {
+    "client": ["Cliente Alfa", "Grupo Gama", "Instituto Épsilon"],
+    "supplier": ["Fornecedora Horizonte", "Tecnologia Atlântica"],
+    "city": ["Lisboa", "Porto", "Coimbra"],
+    "topic": ["infraestrutura urbana", "conservação de acervos", "redes de sensores", "eficiência hídrica"]
+  },
+  "headings": [
+    "Enquadramento geral",
+    "Descrição da infraestrutura",
+    "Metodologia de monitorização",
+    "Resultados por domínio",
+    "Análise de riscos",
+    "Conclusões"
+  ],
+  "paragraphs": [
+    "O presente dossiê reúne a informação técnica produzida ao longo do ano de {year}.",
+    "A estrutura do documento segue a ordem dos domínios operacionais definidos no plano anual.",
+    "Os valores apresentados resultam de medições sintéticas e não correspondem a instalações reais.",
+    "A referência global do programa é {uuid}.",
+    "O código de erro {error_code} foi observado durante a fase de arranque e encontra-se resolvido."
+  ],
+  "list_items": [
+    "Consolidar os registos mensais num único ficheiro.",
+    "Validar as leituras com uma segunda fonte independente.",
+    "Identificar desvios superiores a cinco por cento.",
+    "Documentar as ações corretivas adotadas."
+  ],
+  "table_columns": ["Domínio", "Indicador", "Valor", "Referência"],
+  "table_rows": [
+    ["Água", "Consumo médio", "124", "{id}"],
+    ["Energia", "Consumo médio", "318", "{id}"],
+    ["Resíduos", "Taxa de valorização", "67", "{id}"],
+    ["Mobilidade", "Tempo médio de viagem", "23", "{id}"],
+    ["Ar", "Qualidade média", "82", "{id}"],
+    ["Ruído", "Nível médio", "54", "{id}"]
+  ],
+  "long_paragraphs": [
+    "A primeira secção descreve o contexto institucional e os objetivos gerais do programa, incluindo os compromissos assumidos com as entidades parceiras.",
+    "O perímetro analisado abrange sete locais distribuídos por três concelhos, todos identificados por códigos internos sem referência a pessoas.",
+    "A recolha de dados decorreu em ciclos semanais, com validação automática de valores em falta e de leituras fora do intervalo esperado.",
+    "Cada ciclo produz um registo imutável que é comparado com o ciclo anterior para detetar variações abruptas.",
+    "A equipa técnica documentou as intervenções realizadas, incluindo substituições de componentes e ajustes de configuração.",
+    "Os indicadores de disponibilidade mantiveram-se acima do limiar contratual durante todos os meses analisados.",
+    "A variabilidade entre locais é explicada sobretudo por diferenças de dimensão e de intensidade de utilização.",
+    "O sistema de monitorização registou três interrupções programadas e nenhuma interrupção não planeada.",
+    "A análise de sensibilidade mostra que os resultados são robustos a pequenas alterações nos parâmetros de calibração.",
+    "O consumo específico por unidade de área diminuiu de forma consistente ao longo do período.",
+    "A comparação com o ano anterior deve ser lida com cautela devido à alteração do perímetro de medição.",
+    "Foram identificadas oportunidades de melhoria na calibração dos sensores de temperatura e de humidade.",
+    "O plano de manutenção preventiva foi cumprido em noventa e quatro por cento das intervenções previstas.",
+    "As ações corretivas foram registadas com prazo, responsável e evidência de conclusão.",
+    "O inventário de equipamentos foi reconciliado com os registos contabilísticos no final do terceiro trimestre.",
+    "A documentação de suporte inclui procedimentos, esquemas e listas de verificação utilizadas no terreno.",
+    "Os resultados por domínio são apresentados em tabelas normalizadas para permitir comparação direta.",
+    "A incerteza associada às medições foi estimada a partir de três réplicas independentes por ponto.",
+    "Os desvios superiores a cinco por cento foram investigados individualmente e justificados no anexo técnico.",
+    "A análise de riscos considera falhas de equipamento, indisponibilidade de fornecedores e eventos climáticos extremos.",
+    "Para cada risco foi definida uma medida de mitigação, um indicador de acompanhamento e uma periodicidade de revisão.",
+    "O protocolo de calibração XT-4471 exige a verificação de três padrões independentes antes de cada série de medições.",
+    "A formação das equipas locais foi reforçada com sessões práticas sobre registo de dados e resposta a incidentes.",
+    "O plano de comunicação prevê relatórios mensais resumidos e um relatório anual consolidado.",
+    "As conclusões destacam a estabilidade global dos indicadores e a necessidade de manter a monitorização contínua.",
+    "O trabalho futuro inclui a extensão do perímetro a dois novos locais e a automação da reconciliação de inventário.",
+    "O anexo A contém a lista de códigos internos utilizados em todo o documento.",
+    "O anexo B descreve o modelo de dados e as regras de validação aplicadas.",
+    "O anexo C apresenta as séries temporais completas por domínio e por local.",
+    "Todas as entidades mencionadas são fictícias e os valores servem apenas para avaliação do motor de busca."
+  ],
+  "needle": "O protocolo de calibração XT-4471 define que a válvula de compensação deve ser verificada com o manómetro de referência antes de qualquer medição oficial, conforme registado na página de controlo metrológico.",
+  "notes": "Synthetic Portuguese long report with a unique needle passage for needle-in-a-haystack queries."
+}

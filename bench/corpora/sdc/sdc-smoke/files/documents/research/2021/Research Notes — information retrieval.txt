@@ -1,0 +1,19 @@
+Discussion
+
+Technical report identifier: TR-2021-0023.
+
+The methodological annex details the inclusion and exclusion criteria.
+
+The main objective is to understand how different configurations affect observed performance under realistic conditions.
+
+Error code E-7592 was recorded during the initial equipment calibration.
+
+Background
+
+The team thanks the units that provided facilities.
+
+The qualitative analysis identified three recurring patterns in how users describe their needs.
+
+Document limitations explicitly.
+
+Report confidence intervals, not only means.

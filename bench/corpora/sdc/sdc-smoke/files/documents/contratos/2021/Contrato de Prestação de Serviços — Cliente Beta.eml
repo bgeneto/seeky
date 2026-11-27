@@ -1,0 +1,57 @@
+From: "SDC Synthetic Sender" <sender@example.com>
+To: "SDC Synthetic Recipient" <recipient@example.org>
+Subject: Contrato de Prestação de Serviços — Cliente Beta
+Date: Mon, 29 Jul 2024 03:00:54 GMT
+Message-ID: <a73d3463-1e9e-4672-8755-3bf1375bc243@example.invalid>
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="sdc-4e38163738ca0c512bbb9170"
+
+This is a multi-part message in MIME format.
+
+--sdc-4e38163738ca0c512bbb9170
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+Objeto do contrato
+
+Referência contratual: CT-2021-00016.
+
+A Cliente Beta contrata a Tecnologia Atlântica para a prestação de serviços de logística urbana nas instalações de Faro.
+
+O valor global estimado é de 4922.40 EUR, sujeito a retenção na fonte quando aplicável.
+
+As partes reconhecem que a informação trocada no âmbito deste acordo é confidencial.
+
+Condições de pagamento
+
+A Tecnologia Atlântica compromete-se a manter uma equipa técnica certificada e um canal de apoio em dias úteis.
+
+Qualquer atraso superior a dez dias úteis pode originar a aplicação de uma penalização contratual.
+
+Inventário atualizado dos equipamentos abrangidos.
+
+Procedimento de escalonamento para incidentes críticos.
+
+Relatório mensal de incidências e tempos de resposta.
+
+--sdc-4e38163738ca0c512bbb9170
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+<html><body>
+<h2>Objeto do contrato</h2>
+<p>Referência contratual: CT-2021-00016.</p>
+<p>A Cliente Beta contrata a Tecnologia Atlântica para a prestação de serviços de logística urbana nas instalações de Faro.</p>
+<p>O valor global estimado é de 4922.40 EUR, sujeito a retenção na fonte quando aplicável.</p>
+<p>As partes reconhecem que a informação trocada no âmbito deste acordo é confidencial.</p>
+<h2>Condições de pagamento</h2>
+<p>A Tecnologia Atlântica compromete-se a manter uma equipa técnica certificada e um canal de apoio em dias úteis.</p>
+<p>Qualquer atraso superior a dez dias úteis pode originar a aplicação de uma penalização contratual.</p>
+<ul>
+<li>Inventário atualizado dos equipamentos abrangidos.</li>
+<li>Procedimento de escalonamento para incidentes críticos.</li>
+<li>Relatório mensal de incidências e tempos de resposta.</li>
+</ul>
+</body></html>
+
+--sdc-4e38163738ca0c512bbb9170--

@@ -1,0 +1,254 @@
+{
+  "schema_version": 1,
+  "source_set_id": "synthetic-office-v1",
+  "redistribution_class": "permissive-core",
+  "items": [
+    {
+      "source_item_id": "syn-contracts-pt-v1",
+      "origin": "synthetic",
+      "template_id": "syn-contracts-pt-v1",
+      "template_sha256": "c7c2b610924953edd9d5d53e2810ec3baa939a04b1397d6ba16042f6dfd0d4f0",
+      "license": {
+        "id": "MIT",
+        "text_url": "https://raw.githubusercontent.com/bgeneto/seeky/1413e27/LICENSE",
+        "text_sha256": "5a95f7c1f15153520dcfe553ccebc3f9485b91f10845746ad127afc6bd1bdc4c",
+        "attribution": "Seeky Desktop Corpus synthetic templates, MIT licensed.",
+        "notice_path": "notices/synthetic-office-v1.txt"
+      }
+    },
+    {
+      "source_item_id": "syn-contracts-en-v1",
+      "origin": "synthetic",
+      "template_id": "syn-contracts-en-v1",
+      "template_sha256": "ef18b68e885778facd005c13d34ca3e89581604a1f5c0388a8cef5c10d85a7d5",
+      "license": {
+        "id": "MIT",
+        "text_url": "https://raw.githubusercontent.com/bgeneto/seeky/1413e27/LICENSE",
+        "text_sha256": "5a95f7c1f15153520dcfe553ccebc3f9485b91f10845746ad127afc6bd1bdc4c",
+        "attribution": "Seeky Desktop Corpus synthetic templates, MIT licensed.",
+        "notice_path": "notices/synthetic-office-v1.txt"
+      }
+    },
+    {
+      "source_item_id": "syn-invoices-pt-v1",
+      "origin": "synthetic",
+      "template_id": "syn-invoices-pt-v1",
+      "template_sha256": "2ea0ee37a44d7ef47d2fc9d9cec3f4942fff04105b560ccf6073d9cee9c2f7b0",
+      "license": {
+        "id": "MIT",
+        "text_url": "https://raw.githubusercontent.com/bgeneto/seeky/1413e27/LICENSE",
+        "text_sha256": "5a95f7c1f15153520dcfe553ccebc3f9485b91f10845746ad127afc6bd1bdc4c",
+        "attribution": "Seeky Desktop Corpus synthetic templates, MIT licensed.",
+        "notice_path": "notices/synthetic-office-v1.txt"
+      }
+    },
+    {
+      "source_item_id": "syn-invoices-en-v1",
+      "origin": "synthetic",
+      "template_id": "syn-invoices-en-v1",
+      "template_sha256": "c3346b7d582077c647c80209690191eca2d53f407aadaa27f62a0de7efa21c73",
+      "license": {
+        "id": "MIT",
+        "text_url": "https://raw.githubusercontent.com/bgeneto/seeky/1413e27/LICENSE",
+        "text_sha256": "5a95f7c1f15153520dcfe553ccebc3f9485b91f10845746ad127afc6bd1bdc4c",
+        "attribution": "Seeky Desktop Corpus synthetic templates, MIT licensed.",
+        "notice_path": "notices/synthetic-office-v1.txt"
+      }
+    },
+    {
+      "source_item_id": "syn-policy-pt-v1",
+      "origin": "synthetic",
+      "template_id": "syn-policy-pt-v1",
+      "template_sha256": "4b85937e8883cf694ebdf5a37b10105bc19c49b0b1d5b87a6cbe4144dc0cfc0b",
+      "license": {
+        "id": "MIT",
+        "text_url": "https://raw.githubusercontent.com/bgeneto/seeky/1413e27/LICENSE",
+        "text_sha256": "5a95f7c1f15153520dcfe553ccebc3f9485b91f10845746ad127afc6bd1bdc4c",
+        "attribution": "Seeky Desktop Corpus synthetic templates, MIT licensed.",
+        "notice_path": "notices/synthetic-office-v1.txt"
+      }
+    },
+    {
+      "source_item_id": "syn-policy-en-v1",
+      "origin": "synthetic",
+      "template_id": "syn-policy-en-v1",
+      "template_sha256": "8b4bdc2845e900bfcc9e2a511edf80b933f97b1668f9b6398ee99542dc38b0c7",
+      "license": {
+        "id": "MIT",
+        "text_url": "https://raw.githubusercontent.com/bgeneto/seeky/1413e27/LICENSE",
+        "text_sha256": "5a95f7c1f15153520dcfe553ccebc3f9485b91f10845746ad127afc6bd1bdc4c",
+        "attribution": "Seeky Desktop Corpus synthetic templates, MIT licensed.",
+        "notice_path": "notices/synthetic-office-v1.txt"
+      }
+    },
+    {
+      "source_item_id": "syn-research-pt-v1",
+      "origin": "synthetic",
+      "template_id": "syn-research-pt-v1",
+      "template_sha256": "96c2bd1fdf5e5b8bbc9073a2df11fd6ecec1a2a0bde497e9da69bb83048f5711",
+      "license": {
+        "id": "MIT",
+        "text_url": "https://raw.githubusercontent.com/bgeneto/seeky/1413e27/LICENSE",
+        "text_sha256": "5a95f7c1f15153520dcfe553ccebc3f9485b91f10845746ad127afc6bd1bdc4c",
+        "attribution": "Seeky Desktop Corpus synthetic templates, MIT licensed.",
+        "notice_path": "notices/synthetic-office-v1.txt"
+      }
+    },
+    {
+      "source_item_id": "syn-research-en-v1",
+      "origin": "synthetic",
+      "template_id": "syn-research-en-v1",
+      "template_sha256": "f59fac9394a33931d1530f7273710945d7bd7fb9ce3d770b4ff89009110633e0",
+      "license": {
+        "id": "MIT",
+        "text_url": "https://raw.githubusercontent.com/bgeneto/seeky/1413e27/LICENSE",
+        "text_sha256": "5a95f7c1f15153520dcfe553ccebc3f9485b91f10845746ad127afc6bd1bdc4c",
+        "attribution": "Seeky Desktop Corpus synthetic templates, MIT licensed.",
+        "notice_path": "notices/synthetic-office-v1.txt"
+      }
+    },
+    {
+      "source_item_id": "syn-manuals-pt-v1",
+      "origin": "synthetic",
+      "template_id": "syn-manuals-pt-v1",
+      "template_sha256": "01cf1c279fb70dd4931c5655bdc44990151d4dfbadda57d7937c2ac3d48bb765",
+      "license": {
+        "id": "MIT",
+        "text_url": "https://raw.githubusercontent.com/bgeneto/seeky/1413e27/LICENSE",
+        "text_sha256": "5a95f7c1f15153520dcfe553ccebc3f9485b91f10845746ad127afc6bd1bdc4c",
+        "attribution": "Seeky Desktop Corpus synthetic templates, MIT licensed.",
+        "notice_path": "notices/synthetic-office-v1.txt"
+      }
+    },
+    {
+      "source_item_id": "syn-manuals-en-v1",
+      "origin": "synthetic",
+      "template_id": "syn-manuals-en-v1",
+      "template_sha256": "68e7e3418ec017a72071e17568f3d35ed7b4c621d20d130ff1afdb50cbe47bef",
+      "license": {
+        "id": "MIT",
+        "text_url": "https://raw.githubusercontent.com/bgeneto/seeky/1413e27/LICENSE",
+        "text_sha256": "5a95f7c1f15153520dcfe553ccebc3f9485b91f10845746ad127afc6bd1bdc4c",
+        "attribution": "Seeky Desktop Corpus synthetic templates, MIT licensed.",
+        "notice_path": "notices/synthetic-office-v1.txt"
+      }
+    },
+    {
+      "source_item_id": "syn-long-report-pt-v1",
+      "origin": "synthetic",
+      "template_id": "syn-long-report-pt-v1",
+      "template_sha256": "879b4bdfb0c1220254e4a548c701e5ca9ad154c34391fb1827dc8a1674d2a03c",
+      "license": {
+        "id": "MIT",
+        "text_url": "https://raw.githubusercontent.com/bgeneto/seeky/1413e27/LICENSE",
+        "text_sha256": "5a95f7c1f15153520dcfe553ccebc3f9485b91f10845746ad127afc6bd1bdc4c",
+        "attribution": "Seeky Desktop Corpus synthetic templates, MIT licensed.",
+        "notice_path": "notices/synthetic-office-v1.txt"
+      }
+    },
+    {
+      "source_item_id": "syn-long-report-en-v1",
+      "origin": "synthetic",
+      "template_id": "syn-long-report-en-v1",
+      "template_sha256": "da98c7ded5c00d983463a4b34ecd8ac0ba9d956c8fdf44dc3069c99d7bdb3f64",
+      "license": {
+        "id": "MIT",
+        "text_url": "https://raw.githubusercontent.com/bgeneto/seeky/1413e27/LICENSE",
+        "text_sha256": "5a95f7c1f15153520dcfe553ccebc3f9485b91f10845746ad127afc6bd1bdc4c",
+        "attribution": "Seeky Desktop Corpus synthetic templates, MIT licensed.",
+        "notice_path": "notices/synthetic-office-v1.txt"
+      }
+    },
+    {
+      "source_item_id": "syn-notes-es-v1",
+      "origin": "synthetic",
+      "template_id": "syn-notes-es-v1",
+      "template_sha256": "3f438a9151a4a92499db645da3a78c5c4908d1eb0be267cf4b5383d3d68e0e28",
+      "license": {
+        "id": "MIT",
+        "text_url": "https://raw.githubusercontent.com/bgeneto/seeky/1413e27/LICENSE",
+        "text_sha256": "5a95f7c1f15153520dcfe553ccebc3f9485b91f10845746ad127afc6bd1bdc4c",
+        "attribution": "Seeky Desktop Corpus synthetic templates, MIT licensed.",
+        "notice_path": "notices/synthetic-office-v1.txt"
+      }
+    },
+    {
+      "source_item_id": "syn-notes-fr-v1",
+      "origin": "synthetic",
+      "template_id": "syn-notes-fr-v1",
+      "template_sha256": "f331bd03812852993583b7168f746ec8357a94e686d1fd6f3a99e826da5d3b42",
+      "license": {
+        "id": "MIT",
+        "text_url": "https://raw.githubusercontent.com/bgeneto/seeky/1413e27/LICENSE",
+        "text_sha256": "5a95f7c1f15153520dcfe553ccebc3f9485b91f10845746ad127afc6bd1bdc4c",
+        "attribution": "Seeky Desktop Corpus synthetic templates, MIT licensed.",
+        "notice_path": "notices/synthetic-office-v1.txt"
+      }
+    },
+    {
+      "source_item_id": "syn-notes-de-v1",
+      "origin": "synthetic",
+      "template_id": "syn-notes-de-v1",
+      "template_sha256": "99618b51b1d732ef9f88d45b9333c0bfc77f0398ba07c8ee796fa001b607be1c",
+      "license": {
+        "id": "MIT",
+        "text_url": "https://raw.githubusercontent.com/bgeneto/seeky/1413e27/LICENSE",
+        "text_sha256": "5a95f7c1f15153520dcfe553ccebc3f9485b91f10845746ad127afc6bd1bdc4c",
+        "attribution": "Seeky Desktop Corpus synthetic templates, MIT licensed.",
+        "notice_path": "notices/synthetic-office-v1.txt"
+      }
+    },
+    {
+      "source_item_id": "syn-notes-ja-v1",
+      "origin": "synthetic",
+      "template_id": "syn-notes-ja-v1",
+      "template_sha256": "de34c72c97ff792857c9a2f57d9a04806d74755adfba1fbc36cfa8d7c3fa41ef",
+      "license": {
+        "id": "MIT",
+        "text_url": "https://raw.githubusercontent.com/bgeneto/seeky/1413e27/LICENSE",
+        "text_sha256": "5a95f7c1f15153520dcfe553ccebc3f9485b91f10845746ad127afc6bd1bdc4c",
+        "attribution": "Seeky Desktop Corpus synthetic templates, MIT licensed.",
+        "notice_path": "notices/synthetic-office-v1.txt"
+      }
+    },
+    {
+      "source_item_id": "syn-notes-el-v1",
+      "origin": "synthetic",
+      "template_id": "syn-notes-el-v1",
+      "template_sha256": "5599c12da1255bbfe013ab0c299b3da00414ab1f778eedd624e925cc98d14c65",
+      "license": {
+        "id": "MIT",
+        "text_url": "https://raw.githubusercontent.com/bgeneto/seeky/1413e27/LICENSE",
+        "text_sha256": "5a95f7c1f15153520dcfe553ccebc3f9485b91f10845746ad127afc6bd1bdc4c",
+        "attribution": "Seeky Desktop Corpus synthetic templates, MIT licensed.",
+        "notice_path": "notices/synthetic-office-v1.txt"
+      }
+    },
+    {
+      "source_item_id": "syn-code-v1",
+      "origin": "synthetic",
+      "template_id": "syn-code-v1",
+      "template_sha256": "c9bd5248031181fa483bea29661364e948037c1e2f7e1e1fe81d15e9620e6b8a",
+      "license": {
+        "id": "MIT",
+        "text_url": "https://raw.githubusercontent.com/bgeneto/seeky/1413e27/LICENSE",
+        "text_sha256": "5a95f7c1f15153520dcfe553ccebc3f9485b91f10845746ad127afc6bd1bdc4c",
+        "attribution": "Seeky Desktop Corpus synthetic templates, MIT licensed.",
+        "notice_path": "notices/synthetic-office-v1.txt"
+      }
+    },
+    {
+      "source_item_id": "syn-boilerplate-v1",
+      "origin": "synthetic",
+      "template_id": "syn-boilerplate-v1",
+      "template_sha256": "b0c3e7959156916f1465f853d2e79d7c51d48cac4f5e9ddcf8b1d7c4e9746e63",
+      "license": {
+        "id": "MIT",
+        "text_url": "https://raw.githubusercontent.com/bgeneto/seeky/1413e27/LICENSE",
+        "text_sha256": "5a95f7c1f15153520dcfe553ccebc3f9485b91f10845746ad127afc6bd1bdc4c",
+        "attribution": "Seeky Desktop Corpus synthetic templates, MIT licensed.",
+        "notice_path": "notices/synthetic-office-v1.txt"
+      }
+    }
+  ]
+}

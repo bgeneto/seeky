@@ -1,0 +1,60 @@
+From: "SDC Synthetic Sender" <sender@example.com>
+To: "SDC Synthetic Recipient" <recipient@example.org>
+Subject: Operation Manual — local network
+Date: Tue, 02 Jun 2020 15:07:44 GMT
+Message-ID: <ffb94232-87e0-4ccb-8f02-85caed36a25f@example.invalid>
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="sdc-bd9a6383baa4e19dc94cacb1"
+
+This is a multi-part message in MIME format.
+
+--sdc-bd9a6383baa4e19dc94cacb1
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+Technical specifications
+
+Controlled document code: MAN-2025-0115.
+
+Do not use aggressive solvents or spray water directly onto the components.
+
+Keep this manual with the equipment for future reference.
+
+The full serial number is recorded in the support system.
+
+Safety
+
+This manual covers installation and operation of the local network equipment at the Boston site.
+
+Switch off the power before opening any access panel.
+
+Clean the filters every three months or whenever the warning appears.
+
+Confirm that all mounting screws are tight.
+
+Run a complete operation after configuration.
+
+Label the network and power cables.
+
+--sdc-bd9a6383baa4e19dc94cacb1
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+<html><body>
+<h2>Technical specifications</h2>
+<p>Controlled document code: MAN-2025-0115.</p>
+<p>Do not use aggressive solvents or spray water directly onto the components.</p>
+<p>Keep this manual with the equipment for future reference.</p>
+<p>The full serial number is recorded in the support system.</p>
+<h2>Safety</h2>
+<p>This manual covers installation and operation of the local network equipment at the Boston site.</p>
+<p>Switch off the power before opening any access panel.</p>
+<p>Clean the filters every three months or whenever the warning appears.</p>
+<ul>
+<li>Confirm that all mounting screws are tight.</li>
+<li>Run a complete operation after configuration.</li>
+<li>Label the network and power cables.</li>
+</ul>
+</body></html>
+
+--sdc-bd9a6383baa4e19dc94cacb1--

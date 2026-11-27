@@ -1,0 +1,14 @@
+[project]
+name = "sdc-generator"
+version = "0.1.0"
+description = "Deterministic Seeky Desktop Corpus generator (development tooling only)"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [{ name = "Seeky contributors" }]
+dependencies = []
+
+# Intentionally no build-system: the tool is used from the repository with
+# PYTHONPATH=tools/sdc-generator, or copied into an isolated development
+# environment. It is never installed into the product and never imported by an
+# engine crate.

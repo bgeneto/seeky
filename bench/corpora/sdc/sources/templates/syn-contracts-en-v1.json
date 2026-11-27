@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "template_id": "syn-contracts-en-v1",
+  "kind": "text",
+  "language": "en-US",
+  "domain": "contracts-en",
+  "folder": "contracts",
+  "title_forms": [
+    "Service Agreement — {client}",
+    "Maintenance Contract Amendment — {client}",
+    "Supply Agreement — {topic}"
+  ],
+  "identifier": {"kind": "contract", "pattern": "CT-{year}-{seq:05d}"},
+  "identifier_sentence": "Contract reference: {id}.",
+  "entity_pools": {
+    "client": ["Client Alpha", "Client Beta", "Gamma Group", "Delta Cooperative", "Epsilon Institute"],
+    "supplier": ["Horizon Supplier", "Meridian Services", "Atlantic Technology", "Central Workshop"],
+    "city": ["Boston", "Seattle", "Austin", "Denver", "Portland"],
+    "topic": ["building maintenance", "solar energy", "urban logistics", "records management", "technical training"]
+  },
+  "headings": [
+    "Scope of the agreement",
+    "Term and renewal",
+    "Payment terms",
+    "Obligations of the parties",
+    "Confidentiality",
+    "Termination",
+    "Governing law"
+  ],
+  "paragraphs": [
+    "{client} engages {supplier} to provide {topic} services at the {city} site.",
+    "This agreement takes effect on {date} and has an initial term of twelve months.",
+    "The estimated total value is {amount} {currency}, subject to withholding where applicable.",
+    "The agreement renews automatically for quarterly periods unless written notice is given thirty days in advance.",
+    "Invoices must be issued by the fifth business day of the month following the service period.",
+    "{supplier} shall keep a certified technical team and a business-day support channel.",
+    "Any delay beyond ten business days may trigger a contractual penalty.",
+    "The parties acknowledge that information exchanged under this agreement is confidential.",
+    "Termination for breach requires written notice and a fifteen-day cure period.",
+    "The courts of the {city} district have jurisdiction over disputes.",
+    "This document is the complete agreement and supersedes earlier communications.",
+    "The technical annexes describe service levels and escalation procedures.",
+    "{client} appoints a contract manager responsible for accepting deliverables.",
+    "Prices may be revised annually using the cost index agreed by the parties.",
+    "Each extraordinary work request must be confirmed in writing before execution."
+  ],
+  "list_items": [
+    "An up-to-date inventory of covered equipment.",
+    "A preventive maintenance plan on a quarterly calendar.",
+    "A monthly incident and response-time report.",
+    "An access log for the premises and technical rooms.",
+    "An escalation procedure for critical incidents."
+  ],
+  "table_columns": ["Reference", "Description", "Amount", "Date"],
+  "table_rows": [
+    ["{id}", "{topic} service", "{amount}", "{date}"],
+    ["{id}-A1", "Initial technical visit", "{amount}", "{date}"],
+    ["{id}-A2", "Quarterly preventive maintenance", "{amount}", "{date}"],
+    ["{id}-A3", "Component replacement", "{amount}", "{date}"],
+    ["{id}-A4", "Local team training", "{amount}", "{date}"],
+    ["{id}-A5", "Annual performance report", "{amount}", "{date}"]
+  ],
+  "notes": "Synthetic English contract template. All entities and identifiers are fictitious."
+}

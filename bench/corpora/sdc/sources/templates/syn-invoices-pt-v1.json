@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "template_id": "syn-invoices-pt-v1",
+  "kind": "text",
+  "language": "pt-BR",
+  "domain": "invoices-pt",
+  "folder": "faturas",
+  "title_forms": [
+    "Fatura de Serviços — {client}",
+    "Nota de Débito — {topic}",
+    "Recibo de Prestação — {client}"
+  ],
+  "identifier": {"kind": "invoice", "pattern": "INV-{year}-{seq:06d}"},
+  "identifier_sentence": "Número do documento fiscal: {id}.",
+  "entity_pools": {
+    "client": ["Cliente Alfa", "Cliente Beta", "Grupo Gama", "Cooperativa Delta", "Instituto Épsilon"],
+    "supplier": ["Fornecedora Horizonte", "Serviços Meridiano", "Tecnologia Atlântica"],
+    "city": ["Lisboa", "Porto", "Coimbra", "Braga", "Faro"],
+    "topic": ["consultoria de processos", "licenciamento de software", "transporte de materiais", "auditoria energética", "suporte técnico"]
+  },
+  "headings": [
+    "Dados do documento",
+    "Descrição dos serviços",
+    "Valores e impostos",
+    "Condições de pagamento",
+    "Elementos de conferência"
+  ],
+  "paragraphs": [
+    "Documento emitido por {supplier} a favor de {client}, com data de {date}.",
+    "Os serviços de {topic} foram prestados nas instalações de {city} durante o período faturado.",
+    "O valor base é de {amount} {currency}, acrescido de imposto quando legalmente devido.",
+    "O pagamento deve ser efetuado por transferência até trinta dias após a emissão.",
+    "O comprovativo de transferência deve mencionar o número {id} para conciliação automática.",
+    "A {supplier} declara que os serviços foram prestados de acordo com a proposta aprovada.",
+    "Qualquer divergência de valores deve ser comunicada por escrito no prazo de oito dias.",
+    "Este documento serve de recibo depois de confirmada a liquidação integral.",
+    "Os dados de faturação são fictícios e destinam-se apenas à avaliação do motor de busca.",
+    "A referência interna de projeto é {uuid}.",
+    "O código de erro de integração associado é {error_code}, sem impacto no valor faturado.",
+    "O resumo executivo indica uma redução de custos operacionais de sete por cento."
+  ],
+  "list_items": [
+    "Horas de consultoria e respetiva descrição.",
+    "Deslocações e ajudas de custo documentadas.",
+    "Licenças anuais e renovações de suporte.",
+    "Materiais consumíveis utilizados na intervenção.",
+    "Descontos comerciais acordados por escrito."
+  ],
+  "table_columns": ["Artigo", "Descrição", "Quantidade", "Valor"],
+  "table_rows": [
+    ["{id}-01", "{topic}", "12", "{amount}"],
+    ["{id}-02", "Deslocação a {city}", "4", "{amount}"],
+    ["{id}-03", "Licença anual", "1", "{amount}"],
+    ["{id}-04", "Suporte adicional", "8", "{amount}"],
+    ["{id}-05", "Material consumível", "20", "{amount}"],
+    ["{id}-06", "Desconto contratual", "1", "-{amount}"]
+  ],
+  "notes": "Synthetic Portuguese invoice template with reserved example identifiers."
+}

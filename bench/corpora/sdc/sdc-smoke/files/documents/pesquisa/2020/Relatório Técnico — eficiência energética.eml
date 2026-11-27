@@ -1,0 +1,51 @@
+From: "SDC Synthetic Sender" <sender@example.com>
+To: "SDC Synthetic Recipient" <recipient@example.org>
+Subject: Relatório Técnico — eficiência energética
+Date: Tue, 14 Mar 2023 00:59:06 GMT
+Message-ID: <44d4d60f-6f9e-4d51-be84-3b1f0bee9335@example.invalid>
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="sdc-e8690c7db04f00f346e9e877"
+
+This is a multi-part message in MIME format.
+
+--sdc-e8690c7db04f00f346e9e877
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+Enquadramento
+
+Identificador do relatório técnico: RT-2020-0022.
+
+O anexo metodológico detalha os critérios de inclusão e exclusão.
+
+O objetivo principal é compreender como diferentes configurações afetam o desempenho observado em condições realistas.
+
+Os resultados sugerem que a variabilidade entre execuções é inferior a dois por cento quando o ambiente é controlado.
+
+Trabalho futuro
+
+O efeito observado mantém-se após ajuste para o tamanho do documento e para o número de secções.
+
+Registar todas as decisões de pré-processamento.
+
+Comparar sempre com uma linha de base simples.
+
+--sdc-e8690c7db04f00f346e9e877
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+<html><body>
+<h2>Enquadramento</h2>
+<p>Identificador do relatório técnico: RT-2020-0022.</p>
+<p>O anexo metodológico detalha os critérios de inclusão e exclusão.</p>
+<p>O objetivo principal é compreender como diferentes configurações afetam o desempenho observado em condições realistas.</p>
+<p>Os resultados sugerem que a variabilidade entre execuções é inferior a dois por cento quando o ambiente é controlado.</p>
+<h2>Trabalho futuro</h2>
+<p>O efeito observado mantém-se após ajuste para o tamanho do documento e para o número de secções.</p>
+<ul>
+<li>Registar todas as decisões de pré-processamento.</li>
+<li>Comparar sempre com uma linha de base simples.</li>
+</ul>
+</body></html>
+
+--sdc-e8690c7db04f00f346e9e877--

@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "renderer_lock_id": "sdc-renderers-v1",
+  "python_requires": ">=3.12,<4",
+  "generator_implementation": "python-stdlib",
+  "formats": [
+    {"format": "pdf", "writer": "sdc_generator.renderers.pdf", "recipe": "pdf-text-v1"},
+    {"format": "scanned-pdf", "writer": "sdc_generator.renderers.scan", "recipe": "scanned-pdf-v1"},
+    {"format": "scanned-image", "writer": "sdc_generator.renderers.scan", "recipe": "scanned-image-v1"},
+    {"format": "docx", "writer": "sdc_generator.renderers.ooxml", "recipe": "docx-ooxml-v1"},
+    {"format": "xlsx", "writer": "sdc_generator.renderers.ooxml", "recipe": "xlsx-ooxml-v1"},
+    {"format": "pptx", "writer": "sdc_generator.renderers.ooxml", "recipe": "pptx-ooxml-v1"},
+    {"format": "odt", "writer": "sdc_generator.renderers.odf", "recipe": "odt-odf-v1"},
+    {"format": "rtf", "writer": "sdc_generator.renderers.rtf", "recipe": "rtf-1-v1"},
+    {"format": "html", "writer": "sdc_generator.renderers.html", "recipe": "html5-v1"},
+    {"format": "epub", "writer": "sdc_generator.renderers.epub", "recipe": "epub3-v1"},
+    {"format": "eml", "writer": "sdc_generator.renderers.eml", "recipe": "eml-mime-v1"},
+    {"format": "md", "writer": "sdc_generator.renderers.text", "recipe": "markdown-v1"},
+    {"format": "txt", "writer": "sdc_generator.renderers.text", "recipe": "text-utf8-v1"},
+    {"format": "code", "writer": "sdc_generator.renderers.text", "recipe": "code-utf8-v1"}
+  ],
+  "assets": [
+    {
+      "asset_id": "pdf-base14-helvetica",
+      "kind": "pdf-standard-font",
+      "license": "LicenseRef-Adobe-Base14",
+      "embedded": false,
+      "notice": "The PDF base-14 Helvetica font is referenced by name in the PDF font dictionary and is never embedded, subset, or redistributed."
+    },
+    {
+      "asset_id": "builtin-bitmap-font-5x7",
+      "kind": "bitmap-font",
+      "license": "MIT",
+      "embedded": true,
+      "notice": "The scan rasterizer uses a 5x7 bitmap font defined in this repository under the MIT license; no external font file is used."
+    },
+    {
+      "asset_id": "python-standard-library",
+      "kind": "runtime",
+      "license": "PSF-2.0",
+      "embedded": false,
+      "notice": "Rendering uses only the Python 3.12 standard library; no third-party renderer is installed or bundled."
+    }
+  ],
+  "scan_recipes": {
+    "clean-150dpi-bilevel-png": {
+      "dpi": 150,
+      "page": "A5",
+      "noise": "none",
+      "skew_millidegrees_max": 0,
+      "compression": "png-bilevel-stored",
+      "description": "Clean 150 dpi A5 bilevel page, no skew, no noise, stored-deflate PNG."
+    },
+    "noise-skew-150dpi-bilevel-png": {
+      "dpi": 150,
+      "page": "A5",
+      "noise": "speckle-1-in-1400",
+      "skew_millidegrees_max": 500,
+      "compression": "png-bilevel-stored",
+      "description": "150 dpi A5 bilevel page with at most 0.5 degree skew and deterministic speckle noise."
+    }
+  }
+}

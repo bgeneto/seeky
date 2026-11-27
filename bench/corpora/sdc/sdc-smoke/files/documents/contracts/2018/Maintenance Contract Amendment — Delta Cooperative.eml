@@ -1,0 +1,54 @@
+From: "SDC Synthetic Sender" <sender@example.com>
+To: "SDC Synthetic Recipient" <recipient@example.org>
+Subject: Maintenance Contract Amendment — Delta Cooperative
+Date: Wed, 06 Jan 2021 15:34:12 GMT
+Message-ID: <3a4ac1db-c4db-40d0-91cd-b8922166c6c3@example.invalid>
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="sdc-3f83fcbd444add56a29e8e9b"
+
+This is a multi-part message in MIME format.
+
+--sdc-3f83fcbd444add56a29e8e9b
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+Governing law
+
+Contract reference: CT-2018-00092.
+
+This document is the complete agreement and supersedes earlier communications.
+
+The technical annexes describe service levels and escalation procedures.
+
+The agreement renews automatically for quarterly periods unless written notice is given thirty days in advance.
+
+Termination
+
+Prices may be revised annually using the cost index agreed by the parties.
+
+Any delay beyond ten business days may trigger a contractual penalty.
+
+Delta Cooperative appoints a contract manager responsible for accepting deliverables.
+
+An access log for the premises and technical rooms.
+
+--sdc-3f83fcbd444add56a29e8e9b
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+<html><body>
+<h2>Governing law</h2>
+<p>Contract reference: CT-2018-00092.</p>
+<p>This document is the complete agreement and supersedes earlier communications.</p>
+<p>The technical annexes describe service levels and escalation procedures.</p>
+<p>The agreement renews automatically for quarterly periods unless written notice is given thirty days in advance.</p>
+<h2>Termination</h2>
+<p>Prices may be revised annually using the cost index agreed by the parties.</p>
+<p>Any delay beyond ten business days may trigger a contractual penalty.</p>
+<p>Delta Cooperative appoints a contract manager responsible for accepting deliverables.</p>
+<ul>
+<li>An access log for the premises and technical rooms.</li>
+</ul>
+</body></html>
+
+--sdc-3f83fcbd444add56a29e8e9b--

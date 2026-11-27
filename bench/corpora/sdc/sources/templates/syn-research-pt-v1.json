@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "template_id": "syn-research-pt-v1",
+  "kind": "text",
+  "language": "pt-BR",
+  "domain": "research-pt",
+  "folder": "pesquisa",
+  "title_forms": [
+    "Notas de Investigação — {topic}",
+    "Relatório Técnico — {topic}",
+    "Estudo Exploratório — {client}"
+  ],
+  "identifier": {"kind": "report", "pattern": "RT-{year}-{seq:04d}"},
+  "identifier_sentence": "Identificador do relatório técnico: {id}.",
+  "entity_pools": {
+    "client": ["Cliente Alfa", "Instituto Épsilon", "Grupo Gama"],
+    "supplier": ["Laboratório Meridiano", "Centro Atlântico"],
+    "city": ["Lisboa", "Coimbra", "Braga"],
+    "topic": ["recuperação de informação", "eficiência energética", "qualidade do ar interior", "mobilidade urbana", "conservação de documentos"]
+  },
+  "headings": [
+    "Resumo",
+    "Enquadramento",
+    "Metodologia",
+    "Resultados preliminares",
+    "Discussão",
+    "Limitações",
+    "Trabalho futuro"
+  ],
+  "paragraphs": [
+    "Este relatório descreve um estudo exploratório sobre {topic} realizado em {city} durante {year}.",
+    "O objetivo principal é compreender como diferentes configurações afetam o desempenho observado em condições realistas.",
+    "A amostra inclui doze cenários sintéticos e três réplicas independentes por cenário.",
+    "Os resultados sugerem que a variabilidade entre execuções é inferior a dois por cento quando o ambiente é controlado.",
+    "A análise qualitativa identificou três padrões recorrentes na forma como os utilizadores descrevem as suas necessidades.",
+    "O efeito observado mantém-se após ajuste para o tamanho do documento e para o número de secções.",
+    "A comparação com trabalhos anteriores é limitada pela ausência de um protocolo comum de avaliação.",
+    "Os dados recolhidos são inteiramente sintéticos e não incluem informação pessoal.",
+    "A referência interna do conjunto de dados é {uuid}.",
+    "O código de erro {error_code} foi registado durante a calibração inicial do equipamento.",
+    "Uma limitação importante é a curta duração do período de observação.",
+    "Os próximos passos incluem replicar o estudo numa segunda localização e alargar a amostra.",
+    "O anexo metodológico detalha os critérios de inclusão e exclusão.",
+    "A equipa agradece a colaboração das unidades que disponibilizaram instalações."
+  ],
+  "list_items": [
+    "Definir a unidade de análise antes da recolha.",
+    "Registar todas as decisões de pré-processamento.",
+    "Comparar sempre com uma linha de base simples.",
+    "Reportar intervalos de confiança e não apenas médias.",
+    "Documentar as limitações de forma explícita."
+  ],
+  "table_columns": ["Cenário", "Descrição", "Observações", "Referência"],
+  "table_rows": [
+    ["A", "Condição de controlo", "24", "{id}"],
+    ["B", "Variação de ruído", "24", "{id}"],
+    ["C", "Documentos longos", "18", "{id}"],
+    ["D", "Consulta multilingue", "18", "{id}"],
+    ["E", "Duplicados próximos", "12", "{id}"],
+    ["F", "Cenário combinado", "12", "{id}"]
+  ],
+  "notes": "Synthetic Portuguese research-note template. No real study or personal data."
+}

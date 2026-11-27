@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "template_id": "syn-policy-pt-v1",
+  "kind": "text",
+  "language": "pt-BR",
+  "domain": "policies-pt",
+  "folder": "politicas",
+  "title_forms": [
+    "Política Interna de Segurança da Informação — {year}",
+    "Manual de Boas Práticas — {topic}",
+    "Norma de Retenção Documental — {client}"
+  ],
+  "identifier": {"kind": "policy", "pattern": "POL-{year}-{seq:04d}"},
+  "identifier_sentence": "Código da norma interna: {id}.",
+  "entity_pools": {
+    "client": ["Cliente Alfa", "Grupo Gama", "Instituto Épsilon"],
+    "supplier": ["Fornecedora Horizonte", "Serviços Meridiano"],
+    "city": ["Lisboa", "Porto", "Coimbra"],
+    "topic": ["classificação da informação", "continuidade de negócio", "gestão de acessos", "proteção de dados", "arquivo digital"]
+  },
+  "headings": [
+    "Âmbito de aplicação",
+    "Princípios gerais",
+    "Classificação da informação",
+    "Gestão de acessos",
+    "Retenção e eliminação",
+    "Responsabilidades",
+    "Revisão da política"
+  ],
+  "paragraphs": [
+    "Esta política aplica-se a todas as equipas que tratam informação da {client} nas instalações de {city}.",
+    "A informação é classificada em pública, interna, confidencial e restrita, de acordo com o impacto de uma divulgação indevida.",
+    "O acesso é concedido segundo o princípio do menor privilégio e revisto a cada trimestre.",
+    "Os pedidos de acesso são registados com o identificador {id} e aprovados pelo responsável da área.",
+    "Os documentos digitais são conservados durante sete anos, salvo prazo legal diferente.",
+    "A eliminação exige confirmação dupla e produz um registo de auditoria imutável.",
+    "As cópias de segurança são verificadas mensalmente através de um teste de restauro.",
+    "Qualquer incidente deve ser comunicado ao ponto de contacto interno no prazo de vinte e quatro horas.",
+    "A formação anual é obrigatória para todos os colaboradores com acesso a sistemas críticos.",
+    "O código de erro {error_code} identifica um pedido de acesso expirado no sistema de tickets.",
+    "A referência do projeto de conformidade é {uuid}.",
+    "Os fornecedores externos estão sujeitos às mesmas obrigações de confidencialidade.",
+    "Esta norma é revista anualmente ou após uma alteração relevante de risco.",
+    "As exceções devem ser documentadas, justificadas e aprovadas pela direção competente."
+  ],
+  "list_items": [
+    "Definir um responsável por cada repositório documental.",
+    "Registar acessos e revisões num sistema central.",
+    "Cifrar suportes removíveis com chaves geridas pela organização.",
+    "Testar planos de continuidade pelo menos uma vez por ano.",
+    "Eliminar cópias temporárias após a validação do registo final."
+  ],
+  "table_columns": ["Classe", "Exemplo", "Retenção", "Aprovação"],
+  "table_rows": [
+    ["Pública", "Comunicados institucionais", "3 anos", "{id}"],
+    ["Interna", "Atas de reunião", "5 anos", "{id}"],
+    ["Confidencial", "Contratos com fornecedores", "10 anos", "{id}"],
+    ["Restrita", "Credenciais de auditoria", "2 anos", "{id}"],
+    ["Interna", "Relatórios de desempenho", "5 anos", "{id}"],
+    ["Confidencial", "Planos de continuidade", "10 anos", "{id}"]
+  ],
+  "notes": "Synthetic Portuguese information-policy template with fictitious entities."
+}
