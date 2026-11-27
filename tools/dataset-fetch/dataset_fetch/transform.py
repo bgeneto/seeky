@@ -4,10 +4,11 @@ from __future__ import annotations
 
 from collections import Counter
 from dataclasses import dataclass, field
+import hashlib
 from pathlib import Path
 from typing import Any
 
-from .canonical import encode_text, normalize_text, sha256_bytes, sha256_file
+from .canonical import canonical_json, encode_text, normalize_text, sha256_bytes, sha256_file
 from .errors import DANGLING_REFERENCE, DUPLICATE_ID, SCHEMA, TRANSFORM, fail
 from .jsio import (
     iter_jsonl,
@@ -224,37 +225,44 @@ def write_dataset(request: BuildRequest, root: Path, *, relative_prefix: str) ->
 
     _validate_request(request)
     documents = sorted(request.documents, key=lambda item: item.id)
-    corpus_rows: list[dict[str, Any]] = []
     file_hashes: dict[str, str] = {}
     prefix = relative_prefix.rstrip("/") + "/"
-    for document in documents:
-        title, text = _document_text(document.title, document.body)
-        metadata: dict[str, Any] = {}
-        if request.files_root:
-            file_name = sha256_bytes(document.id.encode("utf-8")) + ".txt"
-            manifest_path = f"{request.files_root}/{file_name}"
-            validate_relative_path(manifest_path, "files_root")
-            if not manifest_path.startswith(prefix):
-                raise fail(
-                    TRANSFORM,
-                    f"files_root must live below {relative_prefix}/",
-                    location=manifest_path,
+    corpus_path = root / "corpus.jsonl"
+    corpus_path.parent.mkdir(parents=True, exist_ok=True)
+    corpus_hasher = hashlib.sha256()
+    with corpus_path.open("wb") as corpus_handle:
+        for document in documents:
+            title, text = _document_text(document.title, document.body)
+            metadata: dict[str, Any] = {}
+            if request.files_root:
+                file_name = sha256_bytes(document.id.encode("utf-8")) + ".txt"
+                manifest_path = f"{request.files_root}/{file_name}"
+                validate_relative_path(manifest_path, "files_root")
+                if not manifest_path.startswith(prefix):
+                    raise fail(
+                        TRANSFORM,
+                        f"files_root must live below {relative_prefix}/",
+                        location=manifest_path,
+                    )
+                data = encode_text(text)
+                write_bytes(root / manifest_path[len(prefix) :], data)
+                file_hashes[manifest_path] = sha256_bytes(data)
+                metadata["relative_path"] = manifest_path
+            line = (
+                canonical_json(
+                    {
+                        "_id": document.id,
+                        "title": title,
+                        "text": text,
+                        "metadata": metadata,
+                    }
                 )
-            data = encode_text(text)
-            write_bytes(root / manifest_path[len(prefix) :], data)
-            file_hashes[manifest_path] = sha256_bytes(data)
-            metadata["relative_path"] = manifest_path
-        corpus_rows.append(
-            {
-                "_id": document.id,
-                "title": title,
-                "text": text,
-                "metadata": metadata,
-            }
-        )
-    corpus = jsonl_bytes(corpus_rows)
-    write_bytes(root / "corpus.jsonl", corpus)
-    file_hashes[f"{relative_prefix}/corpus.jsonl"] = sha256_bytes(corpus)
+                + "\n"
+            ).encode("utf-8")
+            corpus_handle.write(line)
+            corpus_hasher.update(line)
+    corpus_sha = corpus_hasher.hexdigest()
+    file_hashes[f"{relative_prefix}/corpus.jsonl"] = corpus_sha
 
     query_set_hashes: dict[str, str] = {}
     all_slices: Counter[str] = Counter()
@@ -322,7 +330,7 @@ def write_dataset(request: BuildRequest, root: Path, *, relative_prefix: str) ->
         counts=counts,
         language_slices=dict(sorted(all_slices.items())),
         categories=dict(sorted(all_categories.items())),
-        corpus_sha256=sha256_bytes(corpus),
+        corpus_sha256=corpus_sha,
         query_set_sha256=query_set_hashes,
         document_count=len(documents),
         notes=request.notes,
@@ -399,7 +407,7 @@ def parse_prepared(
                     "corpus text differs from the engine file",
                     location=location,
                 )
-        documents[doc_id] = record
+        documents[doc_id] = {}
     if not documents:
         raise fail(SCHEMA, "corpus is empty", location=corpus_rel)
 

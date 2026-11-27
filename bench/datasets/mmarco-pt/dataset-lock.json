@@ -1,0 +1,133 @@
+{
+  "categories": {
+    "conceptual": 6980
+  },
+  "corpus_sha256": "30f702672aa65bc5c47ce114e1218f96e078b7e23f00118faea9b03f470b4d63",
+  "counts": {
+    "documents": 8841823,
+    "splits": {
+      "dev": {
+        "categories": {
+          "conceptual": 3490
+        },
+        "language_slices": {
+          "pt": 3490
+        },
+        "positive_qrels": 3716,
+        "qrels": 3716,
+        "queries": 3490
+      },
+      "test": {
+        "categories": {
+          "conceptual": 3490
+        },
+        "language_slices": {
+          "pt": 3490
+        },
+        "positive_qrels": 3721,
+        "qrels": 3721,
+        "queries": 3490
+      }
+    }
+  },
+  "dataset_id": "mmarco-pt",
+  "fingerprint": "b0b6628d510542681b87375faf823dc3be5c0927573d4b9d8b25c8154362b5ca",
+  "language_slices": {
+    "pt": 6980
+  },
+  "layout": "beir",
+  "license": {
+    "id": "MS-MARCO-Research",
+    "redistribution": "download-only",
+    "terms_sha256": "bff638032720d33c3e99843ebde1b12a6b65ab517d0491ab8cd0a89737a297ca",
+    "terms_url": "https://huggingface.co/datasets/unicamp-dl/mmarco/raw/6d039c4638c0ba3e46a9cb7b498b145e7edc6230/README.md",
+    "url": "https://microsoft.github.io/msmarco/"
+  },
+  "local_file_count": 5,
+  "notes": {
+    "cross_lingual": false,
+    "source_format": "mmarco-tsv",
+    "split_source": "deterministic carve-out of dev (no public test qrels)",
+    "transform_seed": "dataset-transform-v1"
+  },
+  "parsed": {
+    "categories": {
+      "conceptual": 6980
+    },
+    "corpus_sha256": "30f702672aa65bc5c47ce114e1218f96e078b7e23f00118faea9b03f470b4d63",
+    "counts": {
+      "documents": 8841823,
+      "splits": {
+        "dev": {
+          "categories": {
+            "conceptual": 3490
+          },
+          "language_slices": {
+            "pt": 3490
+          },
+          "positive_qrels": 3716,
+          "qrels": 3716,
+          "queries": 3490
+        },
+        "test": {
+          "categories": {
+            "conceptual": 3490
+          },
+          "language_slices": {
+            "pt": 3490
+          },
+          "positive_qrels": 3721,
+          "qrels": 3721,
+          "queries": 3490
+        }
+      }
+    },
+    "documents": 8841823,
+    "language_slices": {
+      "pt": 6980
+    }
+  },
+  "query_set_sha256": {
+    "dev": "d68be8ba462edcffa0af1d4fbf20326acbe84c528417f4d6f008ee94756ef1bf",
+    "test": "3e139ec891073451e12a36cd90cd8f9e7d8bb1fe01bcb1cb36226bcc6fd4a128"
+  },
+  "reproduce": {
+    "command": "python -m dataset_fetch prepare --dataset mmarco-pt --cache <cache>",
+    "offline_verify": "python -m dataset_fetch verify --dataset mmarco-pt"
+  },
+  "schema_version": 1,
+  "source": {
+    "files": [
+      {
+        "sha256": "bd0074d22ec0deacb08e9f9851f8f3aeb6d03b0d59b1b05f926ad4961a229520",
+        "size_bytes": 3431011785,
+        "url": "https://huggingface.co/datasets/unicamp-dl/mmarco/resolve/6d039c4638c0ba3e46a9cb7b498b145e7edc6230/data/google/collections/portuguese_collection.tsv"
+      },
+      {
+        "sha256": "3aa1bc9e67c009c96180864b37546eb9562a78e3a3f663d0e1a70f6aea6eb541",
+        "size_bytes": 322542,
+        "url": "https://huggingface.co/datasets/unicamp-dl/mmarco/resolve/6d039c4638c0ba3e46a9cb7b498b145e7edc6230/data/google/queries/dev/portuguese_queries.dev.small.tsv"
+      },
+      {
+        "sha256": "ddc607dbe7b748d7168e8675a242f0811d47febaa2e69d3af09d7ab249c68d7e",
+        "size_bytes": 143300,
+        "url": "https://huggingface.co/datasets/unicamp-dl/mmarco/resolve/6d039c4638c0ba3e46a9cb7b498b145e7edc6230/data/qrels.dev.small.tsv"
+      }
+    ],
+    "revision": "6d039c4638c0ba3e46a9cb7b498b145e7edc6230"
+  },
+  "terms": {
+    "sha256": "bff638032720d33c3e99843ebde1b12a6b65ab517d0491ab8cd0a89737a297ca",
+    "size_bytes": 3661,
+    "url": "https://huggingface.co/datasets/unicamp-dl/mmarco/raw/6d039c4638c0ba3e46a9cb7b498b145e7edc6230/README.md"
+  },
+  "tool": {
+    "name": "dataset-fetch",
+    "version": "0.1.0"
+  },
+  "transform": {
+    "script": "tools/dataset-fetch",
+    "seed": "dataset-transform-v1",
+    "version": 1
+  }
+}

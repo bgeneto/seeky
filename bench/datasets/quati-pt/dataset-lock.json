@@ -1,0 +1,133 @@
+{
+  "categories": {
+    "conceptual": 50
+  },
+  "corpus_sha256": "046680a816be784a7cb7491f8794e37e3e334327bfbf214dcd3b18b11bb51d99",
+  "counts": {
+    "documents": 1000000,
+    "splits": {
+      "dev": {
+        "categories": {
+          "conceptual": 25
+        },
+        "language_slices": {
+          "pt": 25
+        },
+        "positive_qrels": 484,
+        "qrels": 1007,
+        "queries": 25
+      },
+      "test": {
+        "categories": {
+          "conceptual": 25
+        },
+        "language_slices": {
+          "pt": 25
+        },
+        "positive_qrels": 410,
+        "qrels": 926,
+        "queries": 25
+      }
+    }
+  },
+  "dataset_id": "quati-pt",
+  "fingerprint": "142a0be605f865bb55fab0bed4460ee591a1db819b014dc06fd74f4be37f6620",
+  "language_slices": {
+    "pt": 50
+  },
+  "layout": "beir",
+  "license": {
+    "id": "CC-BY-4.0",
+    "redistribution": "download-only",
+    "terms_sha256": "8dec16ddf7ff6722ea96cbc3d921e691782e101c46141367a7c89ea599a8103c",
+    "terms_url": "https://huggingface.co/datasets/unicamp-dl/quati/raw/e5279055bba3e7ba1bece5c0eddd0ba232df49c3/README.md",
+    "url": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "local_file_count": 5,
+  "notes": {
+    "source_format": "quati-1M",
+    "source_language": "pt",
+    "split_source": "deterministic 50/50 carve-out of judged topics (single public qrels set)",
+    "transform_seed": "dataset-transform-v1"
+  },
+  "parsed": {
+    "categories": {
+      "conceptual": 50
+    },
+    "corpus_sha256": "046680a816be784a7cb7491f8794e37e3e334327bfbf214dcd3b18b11bb51d99",
+    "counts": {
+      "documents": 1000000,
+      "splits": {
+        "dev": {
+          "categories": {
+            "conceptual": 25
+          },
+          "language_slices": {
+            "pt": 25
+          },
+          "positive_qrels": 484,
+          "qrels": 1007,
+          "queries": 25
+        },
+        "test": {
+          "categories": {
+            "conceptual": 25
+          },
+          "language_slices": {
+            "pt": 25
+          },
+          "positive_qrels": 410,
+          "qrels": 926,
+          "queries": 25
+        }
+      }
+    },
+    "documents": 1000000,
+    "language_slices": {
+      "pt": 50
+    }
+  },
+  "query_set_sha256": {
+    "dev": "08671162937cb8bce2eb10e753e45a7603d4cfcc410e23fa678ad93c33ae288f",
+    "test": "2b984a1275bf7a1f6eb21b12df5f4b3ed9b16fe24bb21f102cd440098f064f26"
+  },
+  "reproduce": {
+    "command": "python -m dataset_fetch prepare --dataset quati-pt --cache <cache>",
+    "offline_verify": "python -m dataset_fetch verify --dataset quati-pt"
+  },
+  "schema_version": 1,
+  "source": {
+    "files": [
+      {
+        "sha256": "096b262a3444df3487eecedbdb26b9e443481b7d70d5cea9c6cbd0bf11219ec4",
+        "size_bytes": 1173426846,
+        "url": "https://huggingface.co/datasets/unicamp-dl/quati/resolve/e5279055bba3e7ba1bece5c0eddd0ba232df49c3/quati_1M.tsv"
+      },
+      {
+        "sha256": "61936c7b582b3d9b4d47ec7ff94033841578aa2c843c31b9a54f01e3549db466",
+        "size_bytes": 2751,
+        "url": "https://huggingface.co/datasets/unicamp-dl/quati/resolve/e5279055bba3e7ba1bece5c0eddd0ba232df49c3/topics/quati_test_topics.tsv"
+      },
+      {
+        "sha256": "aafab4294572a043974bcb5fccfe76e55267e37d5d76d648ab1d3697d13f6f76",
+        "size_bytes": 68982,
+        "url": "https://huggingface.co/datasets/unicamp-dl/quati/resolve/e5279055bba3e7ba1bece5c0eddd0ba232df49c3/qrels/quati_1M_qrels.txt"
+      }
+    ],
+    "revision": "e5279055bba3e7ba1bece5c0eddd0ba232df49c3"
+  },
+  "terms": {
+    "sha256": "8dec16ddf7ff6722ea96cbc3d921e691782e101c46141367a7c89ea599a8103c",
+    "size_bytes": 5248,
+    "url": "https://huggingface.co/datasets/unicamp-dl/quati/raw/e5279055bba3e7ba1bece5c0eddd0ba232df49c3/README.md"
+  },
+  "tool": {
+    "name": "dataset-fetch",
+    "version": "0.1.0"
+  },
+  "transform": {
+    "script": "tools/dataset-fetch",
+    "seed": "dataset-transform-v1",
+    "version": 1
+  }
+}

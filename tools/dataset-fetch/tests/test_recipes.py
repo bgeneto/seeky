@@ -9,7 +9,7 @@ from pathlib import Path
 from dataset_fetch.cache import CachedFile
 from dataset_fetch.canonical import sha256_bytes
 from dataset_fetch.errors import DatasetFetchError
-from dataset_fetch.recipes import beir, mldr, mmarco
+from dataset_fetch.recipes import beir, miracl, mldr, mmarco, quati
 from dataset_fetch.transform import QrelSpec, write_dataset
 import support
 
@@ -215,6 +215,133 @@ class CrossLingualTests(unittest.TestCase):
                 self.assertEqual(query.target_languages, ("en",))
         built = write_dataset(request, root / "out", relative_prefix="data")
         self.assertTrue(built.local_hashes)
+
+
+class CarveOutRecipeTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.temp = tempfile.TemporaryDirectory()
+        self.root = Path(self.temp.name)
+
+    def tearDown(self) -> None:
+        self.temp.cleanup()
+
+    def test_beir_test_only_dataset_carves_out_deterministic_splits(self) -> None:
+        files = support.source_files()
+        combined_qrels = (
+            b"query-id\tcorpus-id\tscore\n"
+            b"q1\td1\t2\n"
+            b"q1\td2\t-1\n"
+            b"q2\td2\t1\n"
+            b"q3\td3\t2\n"
+            b"q4\td4\t1\n"
+        )
+        base = "https://example.invalid/trec-covid"
+        (self.root / "corpus.jsonl").write_bytes(files["corpus.jsonl"])
+        (self.root / "queries.jsonl").write_bytes(files["queries.jsonl"])
+        (self.root / "test.tsv").write_bytes(combined_qrels)
+        sources = [
+            cached(f"{base}/corpus.jsonl", self.root / "corpus.jsonl"),
+            cached(f"{base}/queries.jsonl", self.root / "queries.jsonl"),
+            cached(f"{base}/qrels/test.tsv", self.root / "test.tsv"),
+        ]
+        manifest = support.manifest("beir-trec-covid")
+        manifest["files_root"] = None
+        first = beir.prepare_trec_covid(manifest, sources, "dataset-transform-v1")
+        second = beir.prepare_trec_covid(manifest, sources, "dataset-transform-v1")
+        self.assertEqual(
+            [q.id for q in first.splits["dev"].queries],
+            [q.id for q in second.splits["dev"].queries],
+        )
+        self.assertEqual(len(first.splits["dev"].queries), 2)
+        self.assertEqual(len(first.splits["test"].queries), 2)
+        self.assertIn("carve-out", first.notes["split_source"])
+        self.assertEqual(first.notes["negative_qrel_grades_mapped_to_zero"], 1)
+
+    def test_miracl_recipe_reads_multiple_shards_and_carves_out_splits(self) -> None:
+        downloads = self.root / "miracl"
+        support.write_gzip_jsonl(
+            downloads / "docs-0.jsonl.gz",
+            [{"docid": "1#0", "title": "Sol", "text": "El sol es una estrella."}],
+        )
+        support.write_gzip_jsonl(
+            downloads / "docs-1.jsonl.gz",
+            [{"docid": "2#0", "title": "Luna", "text": "La luna orbita la Tierra."}],
+        )
+        (downloads / "topics.miracl-v1.0-es-dev.tsv").write_text(
+            "10#0\t¿Qué es el sol?\n20#0\t¿Qué orbita la luna?\n", encoding="utf-8"
+        )
+        (downloads / "qrels.miracl-v1.0-es-dev.tsv").write_text(
+            "10#0\tQ0\t1#0\t1\n20#0\tQ0\t2#0\t1\n", encoding="utf-8"
+        )
+        base = "https://example.invalid/miracl"
+        sources = [
+            cached(f"{base}/miracl-corpus-v1.0-es/docs-1.jsonl.gz", downloads / "docs-1.jsonl.gz"),
+            cached(f"{base}/miracl-corpus-v1.0-es/docs-0.jsonl.gz", downloads / "docs-0.jsonl.gz"),
+            cached(
+                f"{base}/miracl-v1.0-es/topics/topics.miracl-v1.0-es-dev.tsv",
+                downloads / "topics.miracl-v1.0-es-dev.tsv",
+            ),
+            cached(
+                f"{base}/miracl-v1.0-es/qrels/qrels.miracl-v1.0-es-dev.tsv",
+                downloads / "qrels.miracl-v1.0-es-dev.tsv",
+            ),
+        ]
+        manifest = support.manifest(
+            "miracl-es",
+            defaults={
+                "language": "es",
+                "target_languages": ["es"],
+                "language_slice": "other",
+            },
+        )
+        manifest["files_root"] = None
+        request = miracl.prepare_es(manifest, sources, "dataset-transform-v1")
+        self.assertEqual(len(request.documents), 2)
+        self.assertEqual(request.notes["corpus_shards"], 2)
+        for split in ("dev", "test"):
+            self.assertEqual(len(request.splits[split].queries), 1)
+            self.assertEqual(request.splits[split].queries[0].language, "es")
+            self.assertEqual(request.splits[split].queries[0].language_slice, "other")
+        built = write_dataset(request, self.root / "miracl-out", relative_prefix="data")
+        self.assertEqual(len(built.local_hashes), 5)
+
+    def test_quati_recipe_parses_space_qrels_and_carves_out_splits(self) -> None:
+        downloads = self.root / "quati"
+        downloads.mkdir()
+        (downloads / "quati_1M.tsv").write_text(
+            "clueweb-1\tFauna brasileira diversa.\nclueweb-2\tGuiana e Suriname na América do Sul.\n",
+            encoding="utf-8",
+        )
+        (downloads / "quati_test_topics.tsv").write_text(
+            "query_id\tquery\n1\tQual a fauna brasileira?\n2\tPor que Guiana e Suriname?\n",
+            encoding="utf-8",
+        )
+        (downloads / "quati_1M_qrels.txt").write_text(
+            "1 0 clueweb-1 2\n2 0 clueweb-2 1\n", encoding="utf-8"
+        )
+        base = "https://example.invalid/quati"
+        sources = [
+            cached(f"{base}/quati_1M.tsv", downloads / "quati_1M.tsv"),
+            cached(f"{base}/topics/quati_test_topics.tsv", downloads / "quati_test_topics.tsv"),
+            cached(f"{base}/qrels/quati_1M_qrels.txt", downloads / "quati_1M_qrels.txt"),
+        ]
+        manifest = support.manifest(
+            "quati-pt",
+            defaults={
+                "language": "pt",
+                "target_languages": ["pt"],
+                "language_slice": "pt",
+            },
+        )
+        manifest["files_root"] = None
+        request = quati.prepare_quati_pt(manifest, sources, "dataset-transform-v1")
+        self.assertEqual(len(request.documents), 2)
+        for split in ("dev", "test"):
+            self.assertEqual(len(request.splits[split].queries), 1)
+            self.assertEqual(request.splits[split].queries[0].language, "pt")
+            self.assertEqual(request.splits[split].queries[0].language_slice, "pt")
+        built = write_dataset(request, self.root / "quati-out", relative_prefix="data")
+        self.assertEqual(len(built.local_hashes), 5)
 
 
 if __name__ == "__main__":
