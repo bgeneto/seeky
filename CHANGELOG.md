@@ -12,6 +12,14 @@ roadmap (§6), with the date.
 ## Unreleased
 
 ### Added
+- WP-1.7 performance prep and Gate H3 approval (`T1-emulated`: CPUs `0-7`,
+  `12 GiB` Windows Job Object cap, High Performance): `seeky-bench index` now
+  validates SDC corpora directly when frozen qrels are not yet published,
+  `seeky-bench perf --queries-file <path>` accepts dev-only query files without
+  requiring frozen qrels (rejecting `test`-named or `test`-only files before
+  opening the engine), and `tools/seeky-bench/scripts/run-t1-emulated.ps1` plus
+  `b0-poc-{cpu,lexical}.json` and `docs/benchmarks/wp17-perf-runbook.md` prepare
+  the budget-eligible B0 performance runs.
 - WP-1.8 CI smoke gate activation prep (`Smoke gate (WP-1.8)`): pinned and
   SHA-256-verified Linux x64 PDFium (`chromium/8179`, Apache-2.0) cached on
   the runner via `SEEKY_PDFIUM_DLL`, documented OCR absence until WP-3.8,
