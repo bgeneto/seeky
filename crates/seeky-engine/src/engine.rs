@@ -953,13 +953,20 @@ impl Engine {
 
     /// One uncached batch-1 query embedding. The vector and text are dropped.
     pub fn probe_query_embedding(&self, text: &str) -> Result<QueryEmbeddingProbe> {
-        if self.inner.model_root.is_none() || self.inner.test_lexical {
+        if self.inner.test_lexical {
             return Ok(QueryEmbeddingProbe::Unavailable);
         }
-        match ensure_engine(&self.inner) {
-            Ok(()) => {}
-            Err(EngineError::ModelUnavailable(_)) => return Ok(QueryEmbeddingProbe::Unavailable),
-            Err(error) => return Err(error),
+        // A test embedder can be injected without a deployed model root. Only
+        // ask the real model loader when a root exists; otherwise the slot
+        // itself decides availability.
+        if self.inner.model_root.is_some() {
+            match ensure_engine(&self.inner) {
+                Ok(()) => {}
+                Err(EngineError::ModelUnavailable(_)) => {
+                    return Ok(QueryEmbeddingProbe::Unavailable);
+                }
+                Err(error) => return Err(error),
+            }
         }
         let started = Instant::now();
         let mut engine = self
@@ -967,9 +974,9 @@ impl Engine {
             .engine
             .lock()
             .map_err(|_| internal!("engine lock poisoned"))?;
-        let engine = engine
-            .as_mut()
-            .ok_or_else(|| internal!("engine not initialized"))?;
+        let Some(engine) = engine.as_mut() else {
+            return Ok(QueryEmbeddingProbe::Unavailable);
+        };
         let identity = engine.identity();
         let mut vectors = engine.embed(&[text.to_string()])?;
         // The vector is intentionally dropped: only duration and identity leave.
