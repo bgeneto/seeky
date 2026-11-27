@@ -993,6 +993,7 @@ corrections they name landed in the same commit.
 
 | Version | Date | Change |
 |---|---|---|
+| 0.1 | 2026-11-27 | WP-1.3 full-scale `sdc-s` materialized and `verify` passed: 10,000 rendered files, 109,689 passages, 112.5 MB, corpus hash `1d65b8ff04091850b8deefa34f5658bee0b87ec4ff29667f002f6cec88ac2ef0`; R1-R14 complete |
 | 0.1 | 2026-11-27 | WP-1.3 implemented R14: offline `judgments validate`, `freeze-split`, and `publish` with the canonical `bench/qrels/sdc/drafts` quarantine, schema/target-hash/provenance/minima/pool checks, immutable query digests, and atomic publication; R15-R27 remain with WP-1.4 |
 | 0.1 | 2026-11-27 | Accepted (maintainer pre-approval in /goal); resolved H1 questions 1-3 with the draft recommendations: documents-only default benchmarks, verified smoke judgments for WP-1.8, and isolated Python 3.12 tooling |
 | 0.1 | 2026-11-27 | WP-1.3 implemented R1-R13: deterministic licensed generator, all renderers/scans, injections, code root, atomic build/verify, committed `sdc-smoke`; R14 remains open for judgment commands and the external-source scope is still v1-synthetic-only |

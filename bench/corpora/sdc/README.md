@@ -64,3 +64,11 @@ the renderer/font asset licenses.
 `sdc-smoke/` (rendered files and sidecars), the source manifests/templates,
 profiles, renderer lock, notices, and `logs/`. Never commit `sdc-s/`, `sdc-m/`,
 the source cache, model weights, or personal documents.
+
+## Verified scale run
+
+`sdc-s` was materialized on 2026-11-27 with seed `sdc-s-v1` from the committed
+synthetic sources, and `python -m sdc_generator verify` passed on the result:
+10,000 rendered files, 109,689 canonical passages, 112.5 MB, corpus hash
+`1d65b8ff04091850b8deefa34f5658bee0b87ec4ff29667f002f6cec88ac2ef0`. The tree
+stays git-ignored; this records the SPEC-0004 R5 scale proof.

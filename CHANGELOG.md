@@ -13,6 +13,9 @@ roadmap (§6), with the date.
 
 ### Added
 
+- Full-scale `sdc-s` was generated and verified: 10,000 rendered files,
+  109,689 passages, 112.5 MB, corpus hash `1d65b8ff…`. The tree is generated
+  on demand and remains uncommitted.
 - `tools/dataset-fetch` and `bench/datasets/` pin four download-only public
   datasets (SciFact, NFCorpus, FiQA, and MLDR-pt) with versioned manifests,
   upstream and local hashes, license/terms notices, offline verification, and
