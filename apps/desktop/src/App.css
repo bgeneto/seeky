@@ -910,6 +910,33 @@ button {
   padding-left: 16px;
 }
 
+.preference-row {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px 14px;
+  font-size: 12px;
+}
+
+.preference-row span {
+  color: var(--muted-2);
+}
+
+.preference-row select {
+  min-width: 0;
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--text);
+  background: var(--panel-2);
+  font: inherit;
+}
+
+.preference-row select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
 .health-hint {
   margin: 12px 0 0;
   color: var(--muted-2);
