@@ -1,0 +1,6 @@
+# Prepared dataset content is downloaded by tools/dataset-fetch and never
+# committed. Only manifests, locks, notices, and scripts are tracked.
+**/data/
+**/data.staging/
+**/data.bak/
+**/*.part
