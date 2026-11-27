@@ -567,7 +567,7 @@ Rules:
 |---|---|---|
 | M0 Runnable PoC | Done | 0.1.0 |
 | M1 Live incremental index | Done | 0.1.0 |
-| Phase 0 | In progress | WP-0.1 to WP-0.5 done (WP-0.4 after H4 approval on 2026-11-27); WP-0.6 open (§15.3). Pre-flight fixes done outside any WP: fmt, clippy `-D warnings`, `hw-tests` feature, HTML fix, Auto is CPU-only until the NPU is validated ([conformance audit](../validation/poc-conformance-audit.md)). SPEC-0001 and SPEC-0002 v1 Implemented; manual Phase 0 app checks remain |
+| Phase 0 | In progress | WP-0.1 to WP-0.5 done (WP-0.4 after H4 approval on 2026-11-27); WP-0.6 in progress on `wp/0.6-ort-gate` (§15.3). Pre-flight fixes done outside any WP: fmt, clippy `-D warnings`, `hw-tests` feature, HTML fix, Auto is CPU-only until the NPU is validated ([conformance audit](../validation/poc-conformance-audit.md)). SPEC-0001 and SPEC-0002 v1 Implemented; manual Phase 0 app checks remain |
 | Phase 1 | In progress | WP-1.1 `seeky-eval` merged (SPEC-0003 R1–R14); WP-1.3 Done (R1–R14, full-scale `sdc-s` verified at 10,000 files and 109,689 passages); WP-1.5 pins four public datasets, with cross-lingual and large-corpus sources blocked; SPEC-0002 v1.1 evaluation extension Accepted on 2026-11-27, unblocking WP-1.2 and WP-1.6 (§15.3) |
 | Phases 2-9 | Not started | - |
 | Phase 10 | Not started | Planned per ADR-0023, accepted 2026-11-27 (optional visual pack; off the 1.0 critical path) |
@@ -581,7 +581,7 @@ Rules:
 | 0.3 | Done | [SPEC-0002](../specs/SPEC-0002-engine-api.md) v0.2 (R1, R5–R8); thin `apps/desktop/src-tauri` shell; `open_document` resolves IDs through `Engine::document_path`, opens the §5.4 allowlist, reveals source/unknown types, and rejects unknown/stale IDs before any OS action; `deny.toml` heavy wrappers no longer list `seeky-desktop`; tests `open_allowlist_reveals_code_and_unknown_types`, `unknown_document_path_opens_nothing`, `missing_document_path_is_rejected`; [PR #6](https://github.com/bgeneto/seeky/pull/6) | CSP remains WP-7.9; source indexing opt-in remains WP-3.4/WP-7.6; manual PDF, `.py`, existing-index, and theme checks remain for Phase 0 exit |
 | 0.4 | Done | `.github/workflows/ci.yml` (`format`, `lint`, `test`, `deny`, `web`, `compile`), `.githooks/pre-commit`, `deny.toml`; [PR #1](https://github.com/bgeneto/seeky/pull/1) CI and local AGENTS §5 checks | Done: rustfmt + Prettier, clippy `-D warnings` with and without `hw-tests`, hardware-free tests on Windows/Linux, cargo-deny bans/licenses/advisories/sources, TypeScript build, and Windows/Linux/macOS compile jobs. H4: the maintainer approved the disclosed license exceptions and the temporary advisory ignores on 2026-11-27 (`deny.toml`); each ignore is still removed when its `cargo update` lands |
 | 0.5 | Done | `AGENTS.md`, `CLAUDE.md`, `docs/adr/_template.md`, `docs/specs/_template.md`, `docs/benchmarks/_report-template.md`, `.github/pull_request_template.md` | Repository reorganization |
-| 0.6 | Not started | — | Fed by the OCR Stage 0 paper screen (§16) |
+| 0.6 | In progress | Unmerged branch `wp/0.6-ort-gate` (31 commits, 39 files, 5,166 insertions): OCR Stage 0 triage in `docs/benchmarks/candidates.md`, committed `docs/benchmarks/results/2026-11-27-ort-gate/PREREGISTRATION.md`, and `tools/model-export/` (4,903 lines) with parity, quantization, NPU, Florence, PP-OCR, T0, and verdict code | Final K1–K4 gate report and PR are still missing; the reranker measurement is running; H3 (T1-emulated profile) and H5 (ADR-0019 or WP-2.3) remain maintainer decisions |
 | 1.1 | Done | [SPEC-0003](../specs/SPEC-0003-evaluation-harness.md) v0.1 (R1–R14); `crates/seeky-eval/` (BEIR and SDC loaders, graded judgments, document and passage nDCG/MRR/Recall/Success, duplicate and diversity metrics, seeded paired randomization/bootstrap with Holm adjustment, versioned JSON and Markdown reports); reference fixtures `crates/seeky-eval/tests/fixtures/`; [PR #8](https://github.com/bgeneto/seeky/pull/8); commits: `git log --grep "WP-1.1"` | R15–R22, R32 remain with WP-1.2; R23–R24 with WP-1.5; R25–R28 with WP-1.6; R29–R31 with WP-1.8 |
 | 1.2 | Not started | — | — |
 | 1.3 | Done | [SPEC-0004](../specs/SPEC-0004-sdc-corpus-and-judgments.md) R1–R14; `tools/sdc-generator/` (stdlib-only Python 3.12+), `bench/corpora/sdc/`, committed `sdc-smoke` with corpus hash `365511dd…`, 101 generator tests and real-engine renderer round trips; full-scale `sdc-s` built and verified with 10,000 rendered files, 109,689 passages, 112.5 MB, and corpus hash `1d65b8ff…`; [PR #7](https://github.com/bgeneto/seeky/pull/7), [PR #10](https://github.com/bgeneto/seeky/pull/10) | External public-domain/CC-BY sources are optional in v1 (synthetic sources satisfy R6) and need maintainer license review before they are pinned; `sdc-m` is validated at reduced scale; JPEG scans and four future extractors remain deferred |
@@ -671,8 +671,10 @@ finished items and add the next ones, so this list never points at done work.
 
 1. Maintainer reviews and accepts this plan (the
    [vision](../product/vision.md) and ADR-0015 to ADR-0023 are Accepted).
-2. Run **WP-0.6 (ORT validation gate, priority zero)** — it needs no corpus or
-   judgments, only T1 (or T1-emulated) time.
+2. WP-0.6 (ORT validation gate) is in progress on `wp/0.6-ort-gate`:
+   Stage 0 triage, preregistration, and `tools/model-export/` are committed
+   there, but the final K1-K4 report and PR are pending while the reranker
+   measurement finishes. H3 and H5 remain maintainer decisions.
 3. The **SPEC-0002 v1.1 evaluation extension** is Accepted (2026-11-27), so
    WP-1.2 and then WP-1.6 can start. Secure access to a T1
    reference laptop (or define the T1-emulated profile). SPEC-0003 and
