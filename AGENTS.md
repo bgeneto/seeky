@@ -179,9 +179,10 @@ From the workspace root (Windows; the toolchain is pinned in `rust-toolchain.tom
 ```powershell
 cargo fmt --all --check                        # rustfmt (cargo fmt --all fixes)
 cargo clippy --workspace --all-targets -- -D warnings
+cargo clippy --workspace --all-targets --features hw-tests -- -D warnings
 cargo test --workspace                         # hardware-free by default
 cargo test --workspace --features hw-tests -- --test-threads=1   # needs local models/PDFium/CUDA/NPU
-cargo deny check bans                          # crate boundaries (SPEC-0001 §4.4)
+cargo deny check                               # bans, licenses, advisories, sources
 
 cd apps\desktop
 npm install                                    # also enables the Git hooks
@@ -198,9 +199,9 @@ checks. Run the formatters before committing; never commit with
 `--no-verify`. Markdown is not Prettier-formatted yet.
 
 Hardware-dependent tests (NPU, real models) are opt-in via a cargo feature and
-must never be required for CI to pass. Until WP-0.4 makes `clippy -D warnings`
-mandatory in CI, do not introduce new warnings and fix the ones in code you
-touch.
+must never be required for CI to pass. CI runs clippy `-D warnings` with and
+without `hw-tests`, hardware-free tests on Windows and Linux, `cargo deny
+check`, the TypeScript build, and compile checks on Windows, Linux, and macOS.
 
 ## 6. Engineering rules
 

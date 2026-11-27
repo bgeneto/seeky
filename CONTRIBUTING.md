@@ -46,8 +46,9 @@ npm run tauri dev
 # workspace root
 cargo fmt --all --check   # rustfmt; `cargo fmt --all` fixes
 cargo clippy --workspace --all-targets -- -D warnings
+cargo clippy --workspace --all-targets --features hw-tests -- -D warnings
 cargo test --workspace
-cargo deny check bans     # crate boundaries (SPEC-0001)
+cargo deny check             # bans, licenses, advisories, sources
 
 cd apps\desktop
 npm run build
@@ -66,6 +67,12 @@ pushes would skip uploading LFS objects.
 PDFium, CUDA, or an NPU run with
 `cargo test --workspace --features hw-tests -- --test-threads=1` on a machine
 that has them. The full command list is in [`AGENTS.md`](AGENTS.md#5-commands).
+
+Every pull request also runs clippy with and without `hw-tests`, hardware-free
+tests on Windows and Linux, all `cargo-deny` checks, the TypeScript build, and
+`cargo check --workspace --all-targets` on Windows, Linux, and macOS. CI checks
+out Git LFS assets when compiling the shell, creates `apps/desktop/dist` for
+`tauri::generate_context!`, and installs Tauri's WebKitGTK dependencies on Linux.
 
 ## Commit style
 
