@@ -63,4 +63,4 @@ def optional_source(sources: list[CachedFile], suffix: str) -> CachedFile | None
     return matches[0] if matches else None
 
 
-from . import beir, mldr, mmarco  # noqa: E402,F401  (registration side effects)
+from . import beir, miracl, mldr, mmarco, quati  # noqa: E402,F401  (registration side effects)

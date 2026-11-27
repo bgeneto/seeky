@@ -78,17 +78,15 @@ source (the only exception is the declared cross-lingual prefix/suffix in
 
 | Identifier | Source | Notes |
 |---|---|---|
-| `beir-scifact` | BeIR/mteb SciFact mirror | `dev` = SciFact train claims, `test` = SciFact test |
-| `beir-nfcorpus` | BeIR/mteb NFCorpus mirror | native `dev` and `test` qrels |
-| `beir-fiqa` | BeIR/mteb FiQA mirror | native `dev` and `test` qrels |
-| `beir-trec-covid` | BeIR/mteb TREC-COVID mirror | recipe implemented; pin blocked by manifest size (see `bench/datasets/README.md`) |
-| `mldr-pt` | Shitao/MLDR | native Portuguese `dev` and `test` |
-| `mldr-en` | Shitao/MLDR | recipe implemented; pin blocked by source size |
-| `miracl-*` | miracl/miracl + miracl-corpus | not prepared; blocked: no public test qrels |
-| `mmarco-pt`, `mmarco-pt-en`, `mmarco-en-pt` | unicamp-dl/mmarco | recipe implemented, including constructed pairs; pin blocked by source size |
-| `quati-pt` | unicamp-dl/quati | license passes (CC-BY-4.0); not prepared: 1.17 GB minimum and validation-only qrels |
+| `beir-scifact` | BeIR/mteb SciFact mirror | `files_root`; `dev` = SciFact train claims, `test` = SciFact test |
+| `beir-nfcorpus` | BeIR/mteb NFCorpus mirror | `files_root`; native `dev` and `test` qrels |
+| `beir-fiqa` | BeIR/mteb FiQA mirror | `files_root`; native `dev` and `test` qrels |
+| `beir-trec-covid` | BeIR/mteb TREC-COVID mirror | `files_root: null` (Stage A); deterministic 50/50 carve-out of test qrels; TREC `-1` mapped to `0` |
+| `mldr-pt` | Shitao/MLDR (`mldr-v1.0-pt`) | `files_root`; native Portuguese `dev` and `test` |
+| `mldr-en` | Shitao/MLDR (`mldr-v1.0-en`) | `files_root: null` (Stage A); native English `dev` and `test` |
+| `miracl-es`, `miracl-fr`, `miracl-de`, `miracl-en` | miracl/miracl + miracl-corpus | `files_root: null` (Stage A); deterministic 50/50 carve-out of dev qrels; `miracl-es` pinned |
+| `mmarco-pt`, `mmarco-pt-en`, `mmarco-en-pt` | unicamp-dl/mmarco | `files_root: null` (Stage A); `dev.small` deterministic 50/50 carve-out + constructed `pt↔en` pairs; all three pinned |
+| `quati-pt` | unicamp-dl/quati (`quati_1M`) | `files_root: null` (Stage A); CC-BY-4.0; deterministic 50/50 carve-out of judged topics; pinned |
 
-Recipes for blocked datasets that have one are covered by synthetic tests; no
-manifest is committed until a real source pin exists. A dataset without a
-recipe is blocked at the source (size, missing test qrels), not by missing
-folder structure.
+Every committed dataset has real upstream and local SHA-256 digests verified
+offline against its external cache; bulk `data/` directories stay untracked.

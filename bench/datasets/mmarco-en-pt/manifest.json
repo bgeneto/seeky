@@ -1,0 +1,59 @@
+{
+  "corpus": "data/corpus.jsonl",
+  "dataset_id": "mmarco-en-pt",
+  "files_root": null,
+  "layout": "beir",
+  "license": {
+    "id": "MS-MARCO-Research",
+    "redistribution": "download-only",
+    "terms_url": "https://huggingface.co/datasets/unicamp-dl/mmarco/raw/6d039c4638c0ba3e46a9cb7b498b145e7edc6230/README.md",
+    "url": "https://microsoft.github.io/msmarco/"
+  },
+  "local_file_sha256": {
+    "data/corpus.jsonl": "30f702672aa65bc5c47ce114e1218f96e078b7e23f00118faea9b03f470b4d63",
+    "data/qrels.dev.tsv": "86ba17582c4a9f0e9c4c94270e2294341a2c88dfd83ab8f71c3b984d150161bf",
+    "data/qrels.test.tsv": "d7cbb8208e3f780296a3f11785ce4ef5f03b18212fb847a2f679940f63170154",
+    "data/queries.dev.jsonl": "b9db18bac57e19f2f19f6a5f2acaa948d2d05b99ac05b8f0cb78f4db0273c4e0",
+    "data/queries.test.jsonl": "b930c82d48287d871163c76a558d81d557eb44384c680d5f3e11ce6f34b2132d"
+  },
+  "query_defaults": {
+    "category": "conceptual",
+    "configuration": "default",
+    "language": "en",
+    "language_slice": "cross_lingual",
+    "target_languages": [
+      "pt"
+    ]
+  },
+  "schema_version": 1,
+  "source": {
+    "revision": "6d039c4638c0ba3e46a9cb7b498b145e7edc6230",
+    "sha256": [
+      "bd0074d22ec0deacb08e9f9851f8f3aeb6d03b0d59b1b05f926ad4961a229520",
+      "988cb8424d997bd5cf829753de7dfe7496efcdba318186c5d904a2d5c410d2e7",
+      "ddc607dbe7b748d7168e8675a242f0811d47febaa2e69d3af09d7ab249c68d7e"
+    ],
+    "urls": [
+      "https://huggingface.co/datasets/unicamp-dl/mmarco/resolve/6d039c4638c0ba3e46a9cb7b498b145e7edc6230/data/google/collections/portuguese_collection.tsv",
+      "https://huggingface.co/datasets/unicamp-dl/mmarco/resolve/6d039c4638c0ba3e46a9cb7b498b145e7edc6230/data/google/queries/dev/english_queries.dev.small.tsv",
+      "https://huggingface.co/datasets/unicamp-dl/mmarco/resolve/6d039c4638c0ba3e46a9cb7b498b145e7edc6230/data/qrels.dev.small.tsv"
+    ]
+  },
+  "splits": {
+    "dev": {
+      "qrels": "data/qrels.dev.tsv",
+      "queries": "data/queries.dev.jsonl"
+    },
+    "test": {
+      "qrels": "data/qrels.test.tsv",
+      "queries": "data/queries.test.jsonl"
+    }
+  },
+  "terms_sha256": "bff638032720d33c3e99843ebde1b12a6b65ab517d0491ab8cd0a89737a297ca",
+  "transform": {
+    "script": "tools/dataset-fetch",
+    "seed": "dataset-transform-v1",
+    "version": 1
+  },
+  "visibility": "public"
+}

@@ -1,0 +1,145 @@
+{
+  "categories": {
+    "conceptual": 50
+  },
+  "corpus_sha256": "b6e9e682087ac7241db39c880d92f442b1ecfd2bbb0b346758f44b0cc9b1f2d9",
+  "counts": {
+    "documents": 171331,
+    "splits": {
+      "dev": {
+        "categories": {
+          "conceptual": 25
+        },
+        "language_slices": {
+          "en": 25
+        },
+        "positive_qrels": 10843,
+        "qrels": 32052,
+        "queries": 25
+      },
+      "test": {
+        "categories": {
+          "conceptual": 25
+        },
+        "language_slices": {
+          "en": 25
+        },
+        "positive_qrels": 13830,
+        "qrels": 34284,
+        "queries": 25
+      }
+    }
+  },
+  "dataset_id": "beir-trec-covid",
+  "fingerprint": "29aa20d215bc46e3d2e5b452456f505426eb0829c534bdb82b5ff95ad777a879",
+  "language_slices": {
+    "en": 50
+  },
+  "layout": "beir",
+  "license": {
+    "id": "CC-BY-SA-4.0",
+    "redistribution": "download-only",
+    "terms_sha256": "d169709df9bed0dfecc17ece6b67499f9fcce7340aa433ad5450ddd8ab9656cd",
+    "terms_url": "https://huggingface.co/datasets/BeIR/trec-covid/raw/7e16fde3016c639c7f856e803f4bab92645562c4/README.md",
+    "url": "https://creativecommons.org/licenses/by-sa/4.0/"
+  },
+  "local_file_count": 5,
+  "notes": {
+    "dev_split_source": "https://huggingface.co/datasets/mteb/trec-covid/resolve/0724773f091de506941c2108e1647af956de07f7/qrels/test.tsv",
+    "empty_documents_omitted": 1,
+    "negative_qrel_grades_mapped_to_zero": 2,
+    "qrels_dropped_for_empty_documents": {
+      "dev": 0,
+      "test": 0
+    },
+    "queries_dropped_for_empty_documents": {
+      "dev": 0,
+      "test": 0
+    },
+    "query_filter": "queries with at least one qrel in the split",
+    "source_format": "mteb-beir",
+    "split_source": "deterministic 50/50 carve-out of source test qrels (no public dev/train qrels)",
+    "test_split_source": "https://huggingface.co/datasets/mteb/trec-covid/resolve/0724773f091de506941c2108e1647af956de07f7/qrels/test.tsv",
+    "transform_seed": "dataset-transform-v1"
+  },
+  "parsed": {
+    "categories": {
+      "conceptual": 50
+    },
+    "corpus_sha256": "b6e9e682087ac7241db39c880d92f442b1ecfd2bbb0b346758f44b0cc9b1f2d9",
+    "counts": {
+      "documents": 171331,
+      "splits": {
+        "dev": {
+          "categories": {
+            "conceptual": 25
+          },
+          "language_slices": {
+            "en": 25
+          },
+          "positive_qrels": 10843,
+          "qrels": 32052,
+          "queries": 25
+        },
+        "test": {
+          "categories": {
+            "conceptual": 25
+          },
+          "language_slices": {
+            "en": 25
+          },
+          "positive_qrels": 13830,
+          "qrels": 34284,
+          "queries": 25
+        }
+      }
+    },
+    "documents": 171331,
+    "language_slices": {
+      "en": 50
+    }
+  },
+  "query_set_sha256": {
+    "dev": "8e6ed875abf1fb05b483deab11c8125055b999ddae6bf56644ff86fa333de1cb",
+    "test": "30ecabd0562cd51ad778bed98d3238d6e90a3cc7cf513f8d1eec116b5bf44191"
+  },
+  "reproduce": {
+    "command": "python -m dataset_fetch prepare --dataset beir-trec-covid --cache <cache>",
+    "offline_verify": "python -m dataset_fetch verify --dataset beir-trec-covid"
+  },
+  "schema_version": 1,
+  "source": {
+    "files": [
+      {
+        "sha256": "5befacfb140bab87bc9d8026439b3575aa78ce9b11a4b9b34d6a6a3fb9e2a6bb",
+        "size_bytes": 200444373,
+        "url": "https://huggingface.co/datasets/mteb/trec-covid/resolve/0724773f091de506941c2108e1647af956de07f7/corpus.jsonl"
+      },
+      {
+        "sha256": "090595ce05258400d1f77597e4b83aadd98b2be690a655af68c60eb2c44808fc",
+        "size_bytes": 4753,
+        "url": "https://huggingface.co/datasets/mteb/trec-covid/resolve/0724773f091de506941c2108e1647af956de07f7/queries.jsonl"
+      },
+      {
+        "sha256": "10669ab7d526cb04f52079139fd88c3d467a0776441b046567f540582798982b",
+        "size_bytes": 980831,
+        "url": "https://huggingface.co/datasets/mteb/trec-covid/resolve/0724773f091de506941c2108e1647af956de07f7/qrels/test.tsv"
+      }
+    ],
+    "revision": "0724773f091de506941c2108e1647af956de07f7"
+  },
+  "terms": {
+    "sha256": "d169709df9bed0dfecc17ece6b67499f9fcce7340aa433ad5450ddd8ab9656cd",
+    "size_bytes": 10424,
+    "url": "https://huggingface.co/datasets/BeIR/trec-covid/raw/7e16fde3016c639c7f856e803f4bab92645562c4/README.md"
+  },
+  "tool": {
+    "name": "dataset-fetch",
+    "version": "0.1.0"
+  },
+  "transform": {
+    "script": "tools/dataset-fetch",
+    "seed": "dataset-transform-v1",
+    "version": 1
+  }
+}

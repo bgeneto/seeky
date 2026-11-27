@@ -1,0 +1,59 @@
+{
+  "corpus": "data/corpus.jsonl",
+  "dataset_id": "beir-trec-covid",
+  "files_root": null,
+  "layout": "beir",
+  "license": {
+    "id": "CC-BY-SA-4.0",
+    "redistribution": "download-only",
+    "terms_url": "https://huggingface.co/datasets/BeIR/trec-covid/raw/7e16fde3016c639c7f856e803f4bab92645562c4/README.md",
+    "url": "https://creativecommons.org/licenses/by-sa/4.0/"
+  },
+  "local_file_sha256": {
+    "data/corpus.jsonl": "b6e9e682087ac7241db39c880d92f442b1ecfd2bbb0b346758f44b0cc9b1f2d9",
+    "data/qrels.dev.tsv": "67c6a6c12d085dc2ac986e84c1e73b0ef788622a94ec5b50a05d91ed1b14e98a",
+    "data/qrels.test.tsv": "c4fe86d861eba77d8a0e24ac6c01f3a0be638c699c3e377254779a8150aef696",
+    "data/queries.dev.jsonl": "add7f51c18adfb92cb6c3bfacbb6ad73ab2001da8da1e4e1cfb9b2ec6bdcc6d7",
+    "data/queries.test.jsonl": "5da9ba7f8e721e8ff69185a53f91f3c5b0481b85d0453cfca40a5196fb433742"
+  },
+  "query_defaults": {
+    "category": "conceptual",
+    "configuration": "default",
+    "language": "en",
+    "language_slice": "en",
+    "target_languages": [
+      "en"
+    ]
+  },
+  "schema_version": 1,
+  "source": {
+    "revision": "0724773f091de506941c2108e1647af956de07f7",
+    "sha256": [
+      "5befacfb140bab87bc9d8026439b3575aa78ce9b11a4b9b34d6a6a3fb9e2a6bb",
+      "090595ce05258400d1f77597e4b83aadd98b2be690a655af68c60eb2c44808fc",
+      "10669ab7d526cb04f52079139fd88c3d467a0776441b046567f540582798982b"
+    ],
+    "urls": [
+      "https://huggingface.co/datasets/mteb/trec-covid/resolve/0724773f091de506941c2108e1647af956de07f7/corpus.jsonl",
+      "https://huggingface.co/datasets/mteb/trec-covid/resolve/0724773f091de506941c2108e1647af956de07f7/queries.jsonl",
+      "https://huggingface.co/datasets/mteb/trec-covid/resolve/0724773f091de506941c2108e1647af956de07f7/qrels/test.tsv"
+    ]
+  },
+  "splits": {
+    "dev": {
+      "qrels": "data/qrels.dev.tsv",
+      "queries": "data/queries.dev.jsonl"
+    },
+    "test": {
+      "qrels": "data/qrels.test.tsv",
+      "queries": "data/queries.test.jsonl"
+    }
+  },
+  "terms_sha256": "d169709df9bed0dfecc17ece6b67499f9fcce7340aa433ad5450ddd8ab9656cd",
+  "transform": {
+    "script": "tools/dataset-fetch",
+    "seed": "dataset-transform-v1",
+    "version": 1
+  },
+  "visibility": "public"
+}

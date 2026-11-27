@@ -1,0 +1,99 @@
+{
+  "corpus": "data/corpus.jsonl",
+  "dataset_id": "miracl-es",
+  "files_root": null,
+  "layout": "beir",
+  "license": {
+    "id": "Apache-2.0",
+    "redistribution": "download-only",
+    "terms_url": "https://huggingface.co/datasets/miracl/miracl/raw/5be20db9509754dadad47689368639fcec739c00/README.md",
+    "url": "https://www.apache.org/licenses/LICENSE-2.0"
+  },
+  "local_file_sha256": {
+    "data/corpus.jsonl": "0fd2a4dbdb02b58bf432df90273a5ba696c2cad14ea8cc384ddac65924b4455c",
+    "data/qrels.dev.tsv": "e9d074ad281a7eda3ee1e21687122c70a18c47a0ee1c6710bf0701fb297ca81b",
+    "data/qrels.test.tsv": "957459562ef05349b45c2deacf6837e56a91f41bfd082c1a5a2781dfe817a015",
+    "data/queries.dev.jsonl": "b5198338cfa05c156581a87bc57f35caaadd6ab46d189970ad4fc4e3d873d9b3",
+    "data/queries.test.jsonl": "58a73ef6b34e8e4ff1d94c28a9b657bdb7843a81b779846f050ec64add7875be"
+  },
+  "query_defaults": {
+    "category": "conceptual",
+    "configuration": "default",
+    "language": "es",
+    "language_slice": "other",
+    "target_languages": [
+      "es"
+    ]
+  },
+  "schema_version": 1,
+  "source": {
+    "revision": "miracl@5be20db9509754dadad47689368639fcec739c00+corpus@d921ec7e349ce0d28daf30b2da9da5ee698bef0d",
+    "sha256": [
+      "e261da2adb2a5d817756dc6d9f977ab70d5ee350faad7b6e129531413d8fae89",
+      "5b401eb58a17f0e79ae65bff467002198e0941f06e1e4be3281c2170be18e044",
+      "ec29aa9739b53773794263af43bd91a796c698c9e5afe1b42a44582eccee554c",
+      "4e10f379d2f915d141e24ea795941dc009925b3017260bb857e075559838277e",
+      "f294274f3f006e0701df91e97d2faeca5d7fce2d89ff55ccdc128ce733a03a3d",
+      "92c7c42da0695eee50da92bfd6b901ab617c6bc9d73b49501dd1d141d7f71af5",
+      "93bee2777c2a60dcf0c1d55e840b0b2a8bd910c2eacabe7241b78b6f30f05bcf",
+      "f2468bc7e7e5e8cbb255e7e6209c8b6b3811cb05dc90f6d8563a78697f544914",
+      "efb2be897deedad614cde103981c78a60609a7948e6810e439e8c753e4b57878",
+      "aeaf18be6c02823abda01da4f149b49b1860112e09572023203fed923fae0155",
+      "786c4719e7ca55c39f35bebf08187e029ff3c60cc03a3a48206c7ac82ae4cc87",
+      "9dd5999ea0758dffddae62cf520acf49df4c740b11d84edae89fde1aee61bab4",
+      "0a96b56afc525ae6d09723e261520dabdeb798e7108ac2fc6da7d86332a97e4e",
+      "4971d40595f1ac490b7a5242ded410cbed6c8688b19a53fc972c5ae36e3c216e",
+      "9191f145e01d54f6a0a1a6a82a45c9bc32289b8b8b59c16b7fd6ed9e3bb4cd80",
+      "35fb76b2007d723fef8a035478585995cefc9c96cabe2102144ed6def185c357",
+      "85f4715e859a5712512e82747bda3a397b33ae96a13f960eedb60a482d1b1bd3",
+      "69da4bf00f0c306e83c023194c64eb0aaadbf0e0db982b6ea04fec023f37770f",
+      "021d4a9d1c3c12bf3ce6452e100225325eca4334886366672e62e560b0b5f2e9",
+      "87a7ba959c95322c1c52c01fe3c963f0f985a04a2af1a0c12b79b4c86fd8c380",
+      "b83994557e57ce12211469223f1e63e47096a6e306bd6470a419d5c9eebf6448",
+      "5e93b5a1cea22a44912e6ad242147c58719dd8ce4bb6304264a53876b70e65ac",
+      "2d9441de1e25d7d2faf54f757db618ad5a2927337862a367f1a60e87ef7e40b2"
+    ],
+    "urls": [
+      "https://huggingface.co/datasets/miracl/miracl-corpus/resolve/d921ec7e349ce0d28daf30b2da9da5ee698bef0d/miracl-corpus-v1.0-es/docs-0.jsonl.gz",
+      "https://huggingface.co/datasets/miracl/miracl-corpus/resolve/d921ec7e349ce0d28daf30b2da9da5ee698bef0d/miracl-corpus-v1.0-es/docs-1.jsonl.gz",
+      "https://huggingface.co/datasets/miracl/miracl-corpus/resolve/d921ec7e349ce0d28daf30b2da9da5ee698bef0d/miracl-corpus-v1.0-es/docs-2.jsonl.gz",
+      "https://huggingface.co/datasets/miracl/miracl-corpus/resolve/d921ec7e349ce0d28daf30b2da9da5ee698bef0d/miracl-corpus-v1.0-es/docs-3.jsonl.gz",
+      "https://huggingface.co/datasets/miracl/miracl-corpus/resolve/d921ec7e349ce0d28daf30b2da9da5ee698bef0d/miracl-corpus-v1.0-es/docs-4.jsonl.gz",
+      "https://huggingface.co/datasets/miracl/miracl-corpus/resolve/d921ec7e349ce0d28daf30b2da9da5ee698bef0d/miracl-corpus-v1.0-es/docs-5.jsonl.gz",
+      "https://huggingface.co/datasets/miracl/miracl-corpus/resolve/d921ec7e349ce0d28daf30b2da9da5ee698bef0d/miracl-corpus-v1.0-es/docs-6.jsonl.gz",
+      "https://huggingface.co/datasets/miracl/miracl-corpus/resolve/d921ec7e349ce0d28daf30b2da9da5ee698bef0d/miracl-corpus-v1.0-es/docs-7.jsonl.gz",
+      "https://huggingface.co/datasets/miracl/miracl-corpus/resolve/d921ec7e349ce0d28daf30b2da9da5ee698bef0d/miracl-corpus-v1.0-es/docs-8.jsonl.gz",
+      "https://huggingface.co/datasets/miracl/miracl-corpus/resolve/d921ec7e349ce0d28daf30b2da9da5ee698bef0d/miracl-corpus-v1.0-es/docs-9.jsonl.gz",
+      "https://huggingface.co/datasets/miracl/miracl-corpus/resolve/d921ec7e349ce0d28daf30b2da9da5ee698bef0d/miracl-corpus-v1.0-es/docs-10.jsonl.gz",
+      "https://huggingface.co/datasets/miracl/miracl-corpus/resolve/d921ec7e349ce0d28daf30b2da9da5ee698bef0d/miracl-corpus-v1.0-es/docs-11.jsonl.gz",
+      "https://huggingface.co/datasets/miracl/miracl-corpus/resolve/d921ec7e349ce0d28daf30b2da9da5ee698bef0d/miracl-corpus-v1.0-es/docs-12.jsonl.gz",
+      "https://huggingface.co/datasets/miracl/miracl-corpus/resolve/d921ec7e349ce0d28daf30b2da9da5ee698bef0d/miracl-corpus-v1.0-es/docs-13.jsonl.gz",
+      "https://huggingface.co/datasets/miracl/miracl-corpus/resolve/d921ec7e349ce0d28daf30b2da9da5ee698bef0d/miracl-corpus-v1.0-es/docs-14.jsonl.gz",
+      "https://huggingface.co/datasets/miracl/miracl-corpus/resolve/d921ec7e349ce0d28daf30b2da9da5ee698bef0d/miracl-corpus-v1.0-es/docs-15.jsonl.gz",
+      "https://huggingface.co/datasets/miracl/miracl-corpus/resolve/d921ec7e349ce0d28daf30b2da9da5ee698bef0d/miracl-corpus-v1.0-es/docs-16.jsonl.gz",
+      "https://huggingface.co/datasets/miracl/miracl-corpus/resolve/d921ec7e349ce0d28daf30b2da9da5ee698bef0d/miracl-corpus-v1.0-es/docs-17.jsonl.gz",
+      "https://huggingface.co/datasets/miracl/miracl-corpus/resolve/d921ec7e349ce0d28daf30b2da9da5ee698bef0d/miracl-corpus-v1.0-es/docs-18.jsonl.gz",
+      "https://huggingface.co/datasets/miracl/miracl-corpus/resolve/d921ec7e349ce0d28daf30b2da9da5ee698bef0d/miracl-corpus-v1.0-es/docs-19.jsonl.gz",
+      "https://huggingface.co/datasets/miracl/miracl-corpus/resolve/d921ec7e349ce0d28daf30b2da9da5ee698bef0d/miracl-corpus-v1.0-es/docs-20.jsonl.gz",
+      "https://huggingface.co/datasets/miracl/miracl/resolve/5be20db9509754dadad47689368639fcec739c00/miracl-v1.0-es/topics/topics.miracl-v1.0-es-dev.tsv",
+      "https://huggingface.co/datasets/miracl/miracl/resolve/5be20db9509754dadad47689368639fcec739c00/miracl-v1.0-es/qrels/qrels.miracl-v1.0-es-dev.tsv"
+    ]
+  },
+  "splits": {
+    "dev": {
+      "qrels": "data/qrels.dev.tsv",
+      "queries": "data/queries.dev.jsonl"
+    },
+    "test": {
+      "qrels": "data/qrels.test.tsv",
+      "queries": "data/queries.test.jsonl"
+    }
+  },
+  "terms_sha256": "218fdac67872c9732e8b35416c650582837c27923a7e579ab2d4f446a3199218",
+  "transform": {
+    "script": "tools/dataset-fetch",
+    "seed": "dataset-transform-v1",
+    "version": 1
+  },
+  "visibility": "public"
+}

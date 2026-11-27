@@ -22,7 +22,7 @@ from ..canonical import normalize_text, sha256_bytes
 from ..errors import SCHEMA, fail
 from ..jsio import iter_tsv
 from ..transform import BuildRequest, DocumentSpec, QuerySpec, QrelSpec, SplitSpec
-from . import find_source, register
+from . import find_source, optional_source, register
 
 LANGUAGE_NAMES = {"pt": "portuguese", "en": "english"}
 
@@ -95,36 +95,43 @@ def carve_out_split(
     return sorted(ordered[:cut]), sorted(ordered[cut:])
 
 
-def _load_collection(path: Path, location: str) -> list[DocumentSpec]:
+def _load_collection(path: Path, location: str) -> tuple[list[DocumentSpec], set[str]]:
     documents: list[DocumentSpec] = []
+    omitted: set[str] = set()
     seen: set[str] = set()
     for line_number, fields in enumerate(iter_tsv(path), start=1):
         where = f"{location}:{line_number}"
-        if len(fields) != 2 or not fields[0] or fields[1] == "":
+        if len(fields) < 2 or not fields[0]:
             raise fail(SCHEMA, "expected two nonempty TSV columns", location=where)
-        if fields[0] in seen:
+        doc_id = fields[0]
+        body = normalize_text("\t".join(fields[1:]))
+        if doc_id in seen:
             raise fail(SCHEMA, "duplicate passage ID", location=where)
-        seen.add(fields[0])
-        documents.append(DocumentSpec(fields[0], "", normalize_text(fields[1])))
-    return documents
+        seen.add(doc_id)
+        if not body.strip():
+            omitted.add(doc_id)
+            continue
+        documents.append(DocumentSpec(doc_id, "", body))
+    return documents, omitted
 
 
 def _load_queries(path: Path, location: str) -> dict[str, str]:
     queries: dict[str, str] = {}
     for line_number, fields in enumerate(iter_tsv(path), start=1):
         where = f"{location}:{line_number}"
-        if len(fields) != 2 or not fields[0] or fields[1] == "":
+        if len(fields) < 2 or not fields[0] or fields[1] == "":
             raise fail(SCHEMA, "expected two nonempty TSV columns", location=where)
         if fields[0] in queries:
             raise fail(SCHEMA, "duplicate query ID", location=where)
-        queries[fields[0]] = normalize_text(fields[1])
+        queries[fields[0]] = normalize_text("\t".join(fields[1:]))
     return queries
 
 
 def _load_qrels(
-    path: Path, location: str, documents: dict[str, DocumentSpec]
-) -> dict[str, list[QrelSpec]]:
+    path: Path, location: str, doc_ids: set[str], omitted: set[str]
+) -> tuple[dict[str, list[QrelSpec]], int]:
     by_query: dict[str, list[QrelSpec]] = defaultdict(list)
+    dropped = 0
     for line_number, fields in enumerate(iter_tsv(path), start=1):
         where = f"{location}:{line_number}"
         if len(fields) == 4:
@@ -139,14 +146,17 @@ def _load_qrels(
             raise fail(SCHEMA, "grade must be an integer", location=where) from exc
         if not 0 <= grade <= 3:
             raise fail(SCHEMA, "grade must be in 0..=3", location=where)
-        if document_id not in documents:
+        if document_id in omitted:
+            dropped += 1
+            continue
+        if document_id not in doc_ids:
             raise fail(
                 SCHEMA,
                 f"qrel references unknown document {document_id!r}",
                 location=where,
             )
         by_query[query_id].append(QrelSpec(query_id, document_id, grade))
-    return by_query
+    return by_query, dropped
 
 
 def _prepare(
@@ -160,12 +170,16 @@ def _prepare(
     source_name = LANGUAGE_NAMES[source_language]
     target_name = LANGUAGE_NAMES[target_language or source_language]
     collection = find_source(sources, f"/{target_name}_collection.tsv")
-    queries_file = find_source(sources, f"/{source_name}_queries.dev.tsv")
-    qrels_file = find_source(sources, "/qrels.dev.tsv")
-    documents = _load_collection(collection.path, collection.url)
-    by_id = {document.id: document for document in documents}
+    queries_file = optional_source(sources, f"/{source_name}_queries.dev.small.tsv")
+    if queries_file is None:
+        queries_file = find_source(sources, f"/{source_name}_queries.dev.tsv")
+    qrels_file = optional_source(sources, "/qrels.dev.small.tsv")
+    if qrels_file is None:
+        qrels_file = find_source(sources, "/qrels.dev.tsv")
+    documents, omitted = _load_collection(collection.path, collection.url)
+    doc_ids = {document.id for document in documents}
     queries = _load_queries(queries_file.path, queries_file.url)
-    qrels = _load_qrels(qrels_file.path, qrels_file.url, by_id)
+    qrels, dropped_qrels = _load_qrels(qrels_file.path, qrels_file.url, doc_ids, omitted)
     missing = [query_id for query_id in qrels if query_id not in queries]
     if missing:
         raise fail(
@@ -199,17 +213,21 @@ def _prepare(
         )
         return SplitSpec(queries=pair_queries, qrels=pair_qrels)
 
+    notes: dict[str, Any] = {
+        "source_format": "mmarco-tsv",
+        "transform_seed": seed,
+        "split_source": "deterministic carve-out of dev (no public test qrels)",
+        "cross_lingual": target_language is not None,
+    }
+    if omitted:
+        notes["empty_documents_omitted"] = len(omitted)
+        notes["qrels_dropped_for_empty_documents"] = dropped_qrels
     return BuildRequest(
         dataset_id=manifest["dataset_id"],
         documents=documents,
         splits={"dev": build(dev_ids), "test": build(test_ids)},
         files_root=manifest.get("files_root"),
-        notes={
-            "source_format": "mmarco-tsv",
-            "transform_seed": seed,
-            "split_source": "deterministic carve-out of dev (no public test qrels)",
-            "cross_lingual": target_language is not None,
-        },
+        notes=notes,
     )
 
 
