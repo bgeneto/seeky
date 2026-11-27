@@ -18,6 +18,10 @@ roadmap (§6), with the date.
 
 ### Changed
 
+- Added the deterministic SPDX-clean SDC generator and committed a 200-file,
+  3.7 MB synthetic `sdc-smoke` corpus with all fourteen renderer formats,
+  canonical passages, extraction truth, duplicates, versions, boilerplate, and
+  a disjoint opt-in code root. `sdc-s` is generated on demand and not committed.
 - Search results open through the engine by document ID instead of sending a
   file path from the webview. Source code and other non-document formats are
   revealed in the system file manager, and stale index entries return an error
