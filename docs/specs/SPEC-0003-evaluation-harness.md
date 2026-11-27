@@ -1574,6 +1574,7 @@ an error, never a quality result.
 
 | Version | Date | Change |
 |---|---|---|
-| 0.1 | 2026-11-27 | WP-1.1 implemented R1–R14: BEIR/SDC loaders, graded judgments, reference-checked metrics, duplicate/diversity metrics, seeded paired statistics, and deterministic JSON/Markdown reports; R15–R32 remain with WP-1.2, WP-1.5, WP-1.6, and WP-1.8 |
+| 0.1 | 2026-11-27 | WP-1.5 implemented R23-R24: offline `dataset-fetch` tooling and four pinned BEIR/MLDR manifests (SciFact, NFCorpus, FiQA, MLDR-pt) with upstream/local hashes, license notices, deterministic transforms, and fingerprints; the mMARCO cross-lingual pair and the largest sources remain unpinned |
+| 0.1 | 2026-11-27 | WP-1.1 implemented R1-R14: BEIR/SDC loaders, graded judgments, reference-checked metrics, duplicate/diversity metrics, seeded paired statistics, and deterministic JSON/Markdown reports; R15-R32 remain with WP-1.2, WP-1.5, WP-1.6, and WP-1.8 |
 | 0.1 | 2026-11-27 | Accepted (maintainer pre-approval in /goal); resolved H1 questions 1–3 with the draft recommendations: a SPEC-0002 v1.1 evaluation extension for result depth, telemetry, and filters is required before WP-1.2/WP-1.6; fail closed until then |
 | 0.1 | 2026-11-27 | Initial Draft for WP-1.1, WP-1.2, WP-1.5, WP-1.6, WP-1.8: evaluator API, BEIR/SDC loaders, TREC runs, graded metrics with reference fixtures, fixed-seed paired statistics, report JSON/Markdown, environment/config hashing, test confirmation/exposure, performance metrics, and the eight-category WP-1.8 smoke gate |

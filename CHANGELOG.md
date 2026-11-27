@@ -13,6 +13,11 @@ roadmap (§6), with the date.
 
 ### Added
 
+- `tools/dataset-fetch` and `bench/datasets/` pin four download-only public
+  datasets (SciFact, NFCorpus, FiQA, and MLDR-pt) with versioned manifests,
+  upstream and local hashes, license/terms notices, offline verification, and
+  deterministic BEIR transforms. No bulk data is committed; cross-lingual and
+  large-corpus pins remain blocked.
 - `sdc-generator judgments validate|freeze-split|publish` implement the
   SPEC-0004 judgment-set lifecycle: draft quarantine, offline schema and
   target-hash validation, stratified split freezing with immutable query

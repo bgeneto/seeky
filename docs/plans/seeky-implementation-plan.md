@@ -568,7 +568,7 @@ Rules:
 | M0 Runnable PoC | Done | 0.1.0 |
 | M1 Live incremental index | Done | 0.1.0 |
 | Phase 0 | In progress | WP-0.1, WP-0.2, WP-0.3, and WP-0.5 done; WP-0.4 implementation complete and awaiting H4 approval, WP-0.6 open (§15.3). Pre-flight fixes done outside any WP: fmt, clippy `-D warnings`, `hw-tests` feature, HTML fix, Auto is CPU-only until the NPU is validated ([conformance audit](../validation/poc-conformance-audit.md)). SPEC-0001 and SPEC-0002 v1 Implemented; manual Phase 0 app checks remain |
-| Phase 1 | In progress | WP-1.1 `seeky-eval` merged (SPEC-0003 R1–R14); WP-1.3 generator merged with R1–R14 and a synthetic `sdc-smoke`, with full-scale `sdc-s` and the external-source scope remaining; SPEC-0002 v1.1 evaluation extension Draft awaits maintainer acceptance (§15.3) |
+| Phase 1 | In progress | WP-1.1 `seeky-eval` merged (SPEC-0003 R1–R14); WP-1.3 generator merged with R1–R14 and a synthetic `sdc-smoke`, with full-scale `sdc-s` and the external-source scope remaining; WP-1.5 pins four public datasets, with cross-lingual and large-corpus sources blocked; SPEC-0002 v1.1 evaluation extension Draft awaits maintainer acceptance (§15.3) |
 | Phases 2-9 | Not started | - |
 | Phase 10 | Not started | Planned per ADR-0023, accepted 2026-11-27 (optional visual pack; off the 1.0 critical path) |
 
@@ -586,7 +586,7 @@ Rules:
 | 1.2 | Not started | — | — |
 | 1.3 | In progress | [SPEC-0004](../specs/SPEC-0004-sdc-corpus-and-judgments.md) R1–R14; `tools/sdc-generator/` (stdlib-only Python 3.12+), `bench/corpora/sdc/`, committed `sdc-smoke` with corpus hash `365511dd…`, 101 generator tests and real-engine renderer round trips; R14 `judgments validate`, `freeze-split`, and `publish` with the canonical drafts quarantine; [PR #7](https://github.com/bgeneto/seeky/pull/7), [PR #10](https://github.com/bgeneto/seeky/pull/10) | Remaining: materialize full-scale `sdc-s` once to prove the §4.4 range and decide the external public-domain/CC-BY source scope with maintainer license review; `sdc-m` is validated at reduced scale, JPEG scans and four future extractors remain deferred |
 | 1.4 | Not started | — | — |
-| 1.5 | Not started | — | — |
+| 1.5 | In progress | [SPEC-0003](../specs/SPEC-0003-evaluation-harness.md) R23–R24; `tools/dataset-fetch/` (stdlib-only Python 3.12) and `bench/datasets/` with pinned `beir-scifact`, `beir-nfcorpus`, `beir-fiqa`, and `mldr-pt` manifests, locks, and notices; 56 tool tests, offline `verify` on all four, and real `seeky-eval` BEIR-loader parity; [PR #11](https://github.com/bgeneto/seeky/pull/11) | Remaining: no real mMARCO-pt/pt↔en pair pin (recipe tested synthetically), MIRACL publishes dev qrels only, and TREC-COVID/MLDR-en/Quati are deferred for size; FiQA's manifest is ~8.9 MB because §4.2 requires a per-document hash |
 | 1.6 | Not started | — | — |
 | 1.7 | Not started | — | — |
 | 1.8 | Not started | — | — |
@@ -680,10 +680,12 @@ finished items and add the next ones, so this list never points at done work.
    SPEC-0004 are Accepted with maintainer pre-approval in /goal.
 4. WP-1.1 (`seeky-eval`) is Done; WP-1.3 now implements R1–R14, leaving only a
    full-scale `sdc-s` materialization and the external-source licensing
-   decision. WP-1.5 is in progress. Schedule human time for WP-1.4 judgments,
-   including the `sdc-smoke-v1` subset required by WP-1.8; the offline drafting
-   route still needs a maintainer decision. WP-1.2 (and its R15–R22, R32) and
-   WP-1.6 wait for the accepted SPEC-0002 v1.1 evaluation extension.
+   decision. WP-1.5 is in progress with four pinned datasets; its cross-lingual
+   pair and the largest sources are blocked on size or missing test qrels.
+   Schedule human time for WP-1.4 judgments, including the `sdc-smoke-v1`
+   subset required by WP-1.8; the offline drafting route still needs a
+   maintainer decision. WP-1.2 (and its R15–R22, R32) and WP-1.6 wait for the
+   accepted SPEC-0002 v1.1 evaluation extension.
 5. In parallel (UX track): WP-7.1 and WP-7.2 on the existing UI after Phase 0.
 6. Start the OCR **Stage 0 paper screen now** (no code needed,
    [candidates §5](../benchmarks/candidates.md)): confirm the OCRia variant
