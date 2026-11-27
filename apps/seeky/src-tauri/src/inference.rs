@@ -376,11 +376,20 @@ pub fn prepare_openvino_path() -> Result<()> {
     Ok(())
 }
 
+// Audited exemption (SPEC-0001 section 5.3, audit A9); removed by WP-2.1,
+// which loads provider libraries by explicit path.
+#[allow(unsafe_code)]
 fn prepend_path(dir: &Path) {
     let current = std::env::var_os("PATH").unwrap_or_default();
     let mut paths = vec![dir.to_path_buf()];
     paths.extend(std::env::split_paths(&current));
     if let Ok(joined) = std::env::join_paths(paths) {
+        // SAFETY: `set_var` is unsound if another thread reads or writes the
+        // environment at the same time. This runs while a CUDA or OpenVINO
+        // backend is created, and other threads (Tauri, the watcher) may be
+        // alive, so the residual risk is accepted only for the PoC: Seeky's
+        // own code does not read PATH concurrently, but third-party code
+        // might. WP-2.1 deletes this function.
         unsafe {
             std::env::set_var("PATH", joined);
         }

@@ -75,9 +75,8 @@ pub fn scan_root(root_path: &Path) -> Vec<PathBuf> {
         .into_iter()
         .filter_entry(|entry| entry.depth() == 0 || !is_ignored(entry.path()))
     {
-        let entry = match entry {
-            Ok(entry) => entry,
-            Err(_) => continue,
+        let Ok(entry) = entry else {
+            continue;
         };
         if !entry.file_type().is_file() {
             continue;

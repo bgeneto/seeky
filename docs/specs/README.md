@@ -65,7 +65,7 @@ Specs are written just-in-time, as the first task of their phase (see the
 
 | Spec | Title | Phase | Work packages | Status |
 |---|---|---|---|---|
-| [SPEC-0001](SPEC-0001-workspace-and-crate-boundaries.md) | Workspace and crate boundaries | 0 | WP-0.1 | Accepted (7/18 implemented) |
+| [SPEC-0001](SPEC-0001-workspace-and-crate-boundaries.md) | Workspace and crate boundaries | 0 | WP-0.1 | Accepted (9/18 implemented) |
 | [SPEC-0002](SPEC-0002-engine-api.md) | Engine API (v1 headless; v2 progressive search) | 0, 4 | WP-0.2, WP-0.3, WP-4.3 | v1 Accepted |
 | SPEC-0003 | Evaluation and benchmark harness | 1 | WP-1.1, WP-1.2, WP-1.5, WP-1.6 | Not written |
 | SPEC-0004 | Seeky Desktop Corpus and relevance judgments (incl. the visual slice) | 1, 10 | WP-1.3, WP-1.4, WP-10.1 | Not written |

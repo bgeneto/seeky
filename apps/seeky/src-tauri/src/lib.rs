@@ -269,9 +269,8 @@ fn ensure_engine(state: &AppState) -> Result<()> {
 }
 
 fn update_health(app: &AppHandle, state: &AppState, update: impl FnOnce(&mut IndexHealth)) {
-    let mut health = match state.health.lock() {
-        Ok(health) => health,
-        Err(_) => return,
+    let Ok(mut health) = state.health.lock() else {
+        return;
     };
     update(&mut health);
     health.pending = state.watcher.pending();
@@ -293,7 +292,7 @@ fn status_of(state: &AppState) -> Result<Status> {
         .lock()
         .map_err(|_| anyhow!("engine lock poisoned"))?
         .as_ref()
-        .map(|engine| engine.info());
+        .map(inference::Engine::info);
     let available = available_backends(state.model_root.as_deref(), &state.npu_dir);
     let mut health = state
         .health
@@ -326,11 +325,13 @@ fn status_of(state: &AppState) -> Result<Status> {
 }
 
 #[tauri::command]
+#[allow(clippy::needless_pass_by_value)] // Tauri passes command arguments by value
 fn get_status(state: State<'_, AppState>) -> Result<Status, String> {
     status_of(&state).map_err(|err| format!("{err:#}"))
 }
 
 #[tauri::command]
+#[allow(clippy::needless_pass_by_value)] // Tauri passes command arguments by value
 fn add_root(app: AppHandle, state: State<'_, AppState>, path: String) -> Result<Root, String> {
     let mut root = {
         let conn = state
@@ -356,6 +357,7 @@ fn add_root(app: AppHandle, state: State<'_, AppState>, path: String) -> Result<
 }
 
 #[tauri::command]
+#[allow(clippy::needless_pass_by_value)] // Tauri passes command arguments by value
 fn remove_root(app: AppHandle, state: State<'_, AppState>, id: String) -> Result<(), String> {
     state.watcher.stop(&id);
     {
@@ -370,6 +372,7 @@ fn remove_root(app: AppHandle, state: State<'_, AppState>, id: String) -> Result
 }
 
 #[tauri::command]
+#[allow(clippy::needless_pass_by_value)] // Tauri passes command arguments by value
 fn list_roots(state: State<'_, AppState>) -> Result<Vec<Root>, String> {
     let conn = state
         .db
@@ -379,6 +382,7 @@ fn list_roots(state: State<'_, AppState>) -> Result<Vec<Root>, String> {
 }
 
 #[tauri::command]
+#[allow(clippy::needless_pass_by_value)] // Tauri passes command arguments by value
 fn set_root_watching(
     app: AppHandle,
     state: State<'_, AppState>,
@@ -426,6 +430,7 @@ fn set_root_watching(
 }
 
 #[tauri::command]
+#[allow(clippy::needless_pass_by_value)] // Tauri passes command arguments by value
 fn set_backend(state: State<'_, AppState>, backend: String) -> Result<Status, String> {
     let parsed = Backend::parse(&backend).map_err(|err| format!("{err:#}"))?;
     *state
@@ -471,7 +476,7 @@ async fn probe_backend(state: State<'_, AppState>, backend: String) -> Result<En
             .lock()
             .map_err(|_| anyhow!("engine lock poisoned"))?
             .as_ref()
-            .map(|engine| engine.info())
+            .map(inference::Engine::info)
             .ok_or_else(|| anyhow!("engine not initialized"))?;
         Ok(info)
     })
@@ -481,6 +486,7 @@ async fn probe_backend(state: State<'_, AppState>, backend: String) -> Result<En
 }
 
 #[tauri::command]
+#[allow(clippy::needless_pass_by_value)] // Tauri passes command arguments by value
 fn cancel_index(state: State<'_, AppState>) -> Result<(), String> {
     state.cancel_index.store(true, Ordering::SeqCst);
     Ok(())
@@ -622,6 +628,7 @@ async fn search_documents(
 }
 
 #[tauri::command]
+#[allow(clippy::needless_pass_by_value)] // Tauri passes command arguments by value
 fn get_document(state: State<'_, AppState>, id: String) -> Result<Option<DocumentView>, String> {
     let conn = state
         .db

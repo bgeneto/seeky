@@ -166,7 +166,7 @@ fn extract_xlsx(path: &Path) -> Result<String> {
     let mut workbook =
         open_workbook_auto(path).with_context(|| format!("open workbook {}", path.display()))?;
     let mut out = String::new();
-    for sheet in workbook.sheet_names().to_owned() {
+    for sheet in workbook.sheet_names().clone() {
         if let Ok(range) = workbook.worksheet_range(&sheet) {
             out.push_str(&format!("# Sheet: {sheet}\n"));
             for row in range.rows() {

@@ -14,3 +14,6 @@ publish = false
 hw-tests = []
 
 [dependencies]
+
+[lints]
+workspace = true

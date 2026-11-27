@@ -38,6 +38,30 @@ tokenizers = "0.23.2"
 walkdir = "2.5.1"
 zip = "9.8.2"
 
+# Shared lints (SPEC-0001 section 4.3). `-D warnings` in CI turns every warn
+# into an error. Tests may unwrap (clippy.toml).
+[workspace.lints.rust]
+unsafe_code = "deny" # item-level exemptions only, listed in SPEC-0001 section 5.3
+
+[workspace.lints.clippy]
+dbg_macro = "deny"
+todo = "deny"
+unimplemented = "deny"
+unwrap_used = "deny"
+print_stdout = "deny"
+print_stderr = "deny"
+cloned_instead_of_copied = "warn"
+explicit_iter_loop = "warn"
+flat_map_option = "warn"
+implicit_clone = "warn"
+inefficient_to_string = "warn"
+manual_let_else = "warn"
+needless_pass_by_value = "warn"
+redundant_closure_for_method_calls = "warn"
+semicolon_if_nothing_returned = "warn"
+uninlined_format_args = "warn"
+unnested_or_patterns = "warn"
+
 # Release values carried over from the PoC (SPEC-0001 R8).
 # See https://tauri.app/concept/size/#cargo-configuration
 [profile.release]

@@ -145,7 +145,7 @@ fn snippet(text: &str, query: &str) -> String {
     let needle = query
         .split_whitespace()
         .find(|t| t.len() >= 3)
-        .map(|t| t.to_lowercase());
+        .map(str::to_lowercase);
     if let Some(needle) = needle
         && let Some(byte_pos) = lower.find(&needle)
     {

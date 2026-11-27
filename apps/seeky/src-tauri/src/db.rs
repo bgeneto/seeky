@@ -342,7 +342,7 @@ pub fn last_indexed_at(conn: &Connection) -> Result<Option<i64>> {
         row.get(0)
     })
     .optional()
-    .map(|value| value.flatten())
+    .map(std::option::Option::flatten)
     .map_err(Into::into)
 }
 
