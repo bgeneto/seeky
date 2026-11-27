@@ -22,11 +22,6 @@ LLAMA_CPP = {
     "sha256": "8167d30d05420295ade9b9db3e73d0325aca75b72ced25c030d5dd3d7b0fde5a",
     "archive": "llama-b12815-bin-win-cpu-x64.zip",
 }
-MODEL_URL = (
-    "https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/resolve/"
-    f"{config.DEFAULT_MODEL.revision}/qwen2.5-1.5b-instruct-q4_k_m.gguf"
-)
-MODEL_FILE = "qwen2.5-1.5b-instruct-q4_k_m.gguf"
 
 
 def default_home() -> Path:
@@ -44,20 +39,25 @@ def _sha256(path: Path) -> str:
 
 
 def _cmd_draft(args: argparse.Namespace) -> int:
+    profile = config.PROFILES[args.profile]
     runner = None
     if args.llm_command:
-        runner = command_runner(args.llm_command)
+        runner = command_runner(args.llm_command, profile)
     elif not args.templates_only:
-        if not args.llama_cli or not args.model:
+        model = Path(args.model) if args.model else default_home() / profile.weight_file
+        if not args.llama_cli:
+            print("draft needs --llama-cli (or --llm-command, or --templates-only)", file=sys.stderr)
+            return 2
+        if not model.is_file():
+            print(f"missing model file: {model.name}", file=sys.stderr)
+            return 2
+        if _sha256(model) != profile.weight_sha256:
             print(
-                "draft needs --llama-cli and --model, or --llm-command, or --templates-only",
+                f"the model file does not match the pinned {profile.profile} weight SHA-256",
                 file=sys.stderr,
             )
             return 2
-        if _sha256(Path(args.model)) != config.DEFAULT_MODEL.weight_sha256:
-            print("the model file does not match the pinned weight SHA-256", file=sys.stderr)
-            return 2
-        runner = llama_cpp_runner(args.llama_cli, args.model, args.threads)
+        runner = llama_cpp_runner(args.llama_cli, str(model), profile, args.threads)
     summary = run_draft(Path(args.corpus), Path(args.output), runner)
     if runner is not None:
         summary["model_calls"] = runner.calls
@@ -72,12 +72,13 @@ def _cmd_audit(args: argparse.Namespace) -> int:
 
 
 def _cmd_verify_model(args: argparse.Namespace) -> int:
-    model = Path(args.model)
+    profile = config.PROFILES[args.profile]
+    model = Path(args.model) if args.model else default_home() / profile.weight_file
     if not model.is_file():
         print(f"missing model file: {model.name}", file=sys.stderr)
         return 1
     digest = _sha256(model)
-    if digest != config.DEFAULT_MODEL.weight_sha256:
+    if digest != profile.weight_sha256:
         print(f"model SHA-256 mismatch: {digest}", file=sys.stderr)
         return 1
     if args.llama_cli and not Path(args.llama_cli).is_file():
@@ -86,15 +87,42 @@ def _cmd_verify_model(args: argparse.Namespace) -> int:
     print(
         json.dumps(
             {
-                "model": config.DEFAULT_MODEL.model_id,
-                "revision": config.DEFAULT_MODEL.revision,
+                "profile": profile.profile,
+                "model": profile.model_id,
+                "revision": profile.revision,
                 "weight_sha256": digest,
-                "license": config.DEFAULT_MODEL.license,
+                "license": profile.license,
+                "decode": profile.decode,
                 "offline": True,
             },
             sort_keys=True,
         )
     )
+    return 0
+
+
+def _cmd_bakeoff(args: argparse.Namespace) -> int:
+    from .bakeoff import decide, render_table, run_bakeoff, write_report
+
+    model_dir = Path(args.model_dir) if args.model_dir else default_home()
+    if not args.llama_cli:
+        print("bakeoff needs --llama-cli", file=sys.stderr)
+        return 2
+    models: dict[str, tuple[config.ModelPin, str]] = {}
+    for name in args.profiles:
+        profile = config.PROFILES[name]
+        path = model_dir / profile.weight_file
+        if not path.is_file() or _sha256(path) != profile.weight_sha256:
+            print(f"{name}: missing or unpinned model file {path.name}", file=sys.stderr)
+            return 2
+        models[name] = (profile, str(path))
+    report = run_bakeoff(Path(args.corpus), models, args.llama_cli, args.threads)
+    chosen, reason = decide(report)
+    report["decision"] = {"profile": chosen, "reason": reason}
+    if args.out:
+        write_report(report, Path(args.out))
+    print(render_table(report))
+    print(json.dumps({"chosen": chosen, "reason": reason}, sort_keys=True))
     return 0
 
 
@@ -118,15 +146,34 @@ def _cmd_fetch_model(args: argparse.Namespace) -> int:
     """The only command that may use the network (maintainer setup)."""
 
     home = Path(args.dest) if args.dest else default_home()
-    model = home / MODEL_FILE
+    wanted = [config.PROFILES[name] for name in args.profiles]
     if args.dry_run:
-        print(json.dumps({"model": MODEL_URL, "llama_cpp": LLAMA_CPP["url"]}, indent=2))
+        print(
+            json.dumps(
+                {
+                    profile.profile: {
+                        "url": f"https://huggingface.co/{profile.repo}/resolve/{profile.revision}/{profile.weight_file}",
+                        "sha256": profile.weight_sha256,
+                    }
+                    for profile in wanted
+                },
+                indent=2,
+            )
+        )
         return 0
-    if not model.is_file():
-        _download(MODEL_URL, model, config.DEFAULT_MODEL.weight_sha256)
-    elif _sha256(model) != config.DEFAULT_MODEL.weight_sha256:
-        print("the existing model file does not match the pin", file=sys.stderr)
-        return 1
+    downloaded: dict[str, str] = {}
+    for profile in wanted:
+        model = home / profile.weight_file
+        if not model.is_file():
+            _download(
+                f"https://huggingface.co/{profile.repo}/resolve/{profile.revision}/{profile.weight_file}",
+                model,
+                profile.weight_sha256,
+            )
+        elif _sha256(model) != profile.weight_sha256:
+            print(f"{profile.weight_file} does not match the pin", file=sys.stderr)
+            return 1
+        downloaded[profile.profile] = str(model)
     archive = home / LLAMA_CPP["archive"]
     runner_dir = home / f"llama.cpp-{LLAMA_CPP['release']}"
     if not runner_dir.is_dir():
@@ -137,8 +184,7 @@ def _cmd_fetch_model(args: argparse.Namespace) -> int:
     print(
         json.dumps(
             {
-                "model": str(model),
-                "model_sha256": config.DEFAULT_MODEL.weight_sha256,
+                "models": downloaded,
                 "runner": str(runner_dir),
                 "llama_cli": str(runner_dir / "llama-completion.exe"),
             },
@@ -157,6 +203,7 @@ def build_parser() -> argparse.ArgumentParser:
     draft.add_argument("--output", required=True)
     draft.add_argument("--llama-cli", default=None)
     draft.add_argument("--model", default=None)
+    draft.add_argument("--profile", default=config.DEFAULT_PROFILE, choices=sorted(config.PROFILES))
     draft.add_argument("--threads", type=int, default=8)
     draft.add_argument("--llm-command", nargs="+", default=None)
     draft.add_argument("--templates-only", action="store_true")
@@ -166,13 +213,24 @@ def build_parser() -> argparse.ArgumentParser:
     audit.add_argument("--set", required=True)
     audit.set_defaults(handler=_cmd_audit)
 
-    verify = commands.add_parser("verify-model", help="check the pinned local model offline")
-    verify.add_argument("--model", required=True)
+    verify = commands.add_parser("verify-model", help="check a pinned local model offline")
+    verify.add_argument("--profile", default=config.DEFAULT_PROFILE, choices=sorted(config.PROFILES))
+    verify.add_argument("--model", default=None)
     verify.add_argument("--llama-cli", default=None)
     verify.set_defaults(handler=_cmd_verify_model)
 
-    fetch = commands.add_parser("fetch-model", help="download the pinned model and runner")
+    bakeoff = commands.add_parser("bakeoff", help="bounded head-to-head model comparison")
+    bakeoff.add_argument("--corpus", required=True)
+    bakeoff.add_argument("--llama-cli", required=True)
+    bakeoff.add_argument("--model-dir", default=None)
+    bakeoff.add_argument("--threads", type=int, default=8)
+    bakeoff.add_argument("--profiles", nargs="+", default=sorted(config.PROFILES))
+    bakeoff.add_argument("--out", default=None)
+    bakeoff.set_defaults(handler=_cmd_bakeoff)
+
+    fetch = commands.add_parser("fetch-model", help="download the pinned models and runner")
     fetch.add_argument("--dest", default=None)
+    fetch.add_argument("--profiles", nargs="+", default=sorted(config.PROFILES))
     fetch.add_argument("--dry-run", action="store_true")
     fetch.set_defaults(handler=_cmd_fetch_model)
     return parser

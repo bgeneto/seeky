@@ -38,6 +38,8 @@ _EXPLORATORY_FOLDERS = {
     "en": ("policies", "research", "manuals", "contracts", "invoices", "notes"),
 }
 
+_JSON_EXAMPLE = 'Example answer: {"query": "security policy home office checklist"}'
+
 
 class DraftError(RuntimeError):
     pass
@@ -55,9 +57,29 @@ def _json_object(text: str) -> dict | None:
     return value if isinstance(value, dict) else None
 
 
+def _plain_query(text: str) -> str:
+    """Accept a bare quoted or bare-line answer from a small model."""
+
+    candidate = text.strip()
+    if "{" in candidate or "}" in candidate:
+        return ""
+    lines = [line.strip() for line in candidate.splitlines() if line.strip()]
+    if not lines:
+        return ""
+    line = lines[0].strip().strip('"').strip("'").strip()
+    return " ".join(line.split())
+
+
 def _excerpt(text: str, limit: int = 240) -> str:
     flat = " ".join(text.split())
     return flat[:limit] + ("…" if len(flat) > limit else "")
+
+
+def _looks_like_identifier(text: str, anchor_id: str) -> bool:
+    """Reject an echo of the prompt's anchor instead of a search query."""
+
+    folded = text.casefold()
+    return anchor_id.casefold() in folded or folded.startswith("doc-") or "doc-" in folded
 
 
 def slug_label(text: str, fallback: str = "general") -> str:
@@ -92,13 +114,16 @@ class LlmDrafter:
         if category == "conceptual":
             body = (
                 f"TASK: conceptual\nANCHOR: {doc.id}\nLANGUAGE: {query_language}\n"
-                f"Write ONE natural search query in {language_name} that a person would type "
-                "to find a document about the topic below.\n"
-                "Rules: 4 to 12 words; use your own wording and never copy a phrase from the "
-                "text; do not mention a file name; stay specific enough that this document is "
-                "a good answer.\n"
-                f"TITLE: {doc.title}\nTEXT: {_excerpt(doc.text, 700)}\n"
-                'Answer with exactly this JSON and nothing else: {"query": "..."}'
+                f"Below are sentences from one document. Write ONE short search query in "
+                f"{language_name} that a person would type into a file-search box to find a "
+                "document about this content.\n"
+                "Rules: 3 to 10 words; a keyword phrase, not a question and not an instruction; "
+                "describe the meaning with your own words; never reuse three consecutive words "
+                "from the text; do not mention a file name; stay specific enough that this "
+                "document is a good answer.\n"
+                f"TEXT: {_excerpt(doc.text, 500)}\n"
+                'Answer with exactly this JSON and nothing else: {"query": "..."}\n'
+                + _JSON_EXAMPLE
             )
         elif category == "exploratory":
             titles = self._folder_titles(doc)
@@ -107,26 +132,29 @@ class LlmDrafter:
                 f"FOLDER: {doc.folder}\n"
                 "These titles share one folder in a personal document collection:\n"
                 + "\n".join(f"- {title}" for title in titles)
-                + f"\nWrite ONE broad search query in {language_name} that should find several "
-                "of these documents.\n"
-                "Rules: 3 to 9 words; broad topic intent, not a single title; never copy a "
-                "title; no file names.\n"
-                'Answer with exactly this JSON and nothing else: {"query": "..."}'
+                + f"\nWrite ONE broad keyword search query in {language_name} that should "
+                "find several of these documents in a file-search box.\n"
+                "Rules: 3 to 9 words; broad topic intent, not a single title; no question and "
+                "no instruction; never copy a title; no file names.\n"
+                'Answer with exactly this JSON and nothing else: {"query": "..."}\n'
+                + _JSON_EXAMPLE
             )
         elif category == "cross_language":
             body = (
                 f"TASK: cross_language\nANCHOR: {doc.id}\nLANGUAGE: {query_language}\n"
                 f"SOURCE_LANGUAGE: {doc.language}\n"
-                f"Read the {_LANGUAGE_NAMES.get(doc.language, doc.language)} document below and "
-                f"write ONE search query in {language_name} that should find it.\n"
-                "Rules: 4 to 12 words; translate the meaning, never copy source-language "
-                "phrases; do not mention a file name.\n"
-                f"TITLE: {doc.title}\nTEXT: {_excerpt(doc.text, 700)}\n"
-                'Answer with exactly this JSON and nothing else: {"query": "..."}'
+                f"Read the {_LANGUAGE_NAMES.get(doc.language, doc.language)} sentences below and "
+                f"write ONE short search query in {language_name}, as typed into a file-search "
+                "box, that should find the document they come from.\n"
+                "Rules: 3 to 10 words; a keyword phrase, not a question; translate the meaning, "
+                "never copy source-language phrases; do not mention a file name.\n"
+                f"TEXT: {_excerpt(doc.text, 500)}\n"
+                'Answer with exactly this JSON and nothing else: {"query": "..."}\n'
+                + _JSON_EXAMPLE
             )
         else:
             raise DraftError(f"no LLM prompt for {category}")
-        return body, prompt_sha256(category, "query", body)
+        return body, prompt_sha256(category, "query", body, self.model)
 
     def _grade_prompt(self, category: str, query: str, candidates: list[Document]) -> tuple[str, dict[str, str]]:
         lines = [
@@ -214,16 +242,19 @@ class LlmDrafter:
             except ModelError as exc:
                 raise DraftError(str(exc)) from exc
             parsed = _json_object(answer)
+            query = ""
             if parsed and isinstance(parsed.get("query"), str):
                 query = " ".join(parsed["query"].split()).strip()
-                if query:
-                    return query, digest
+            if not query:
+                query = _plain_query(answer)
+            if query:
+                return query, digest
             last = answer
         raise DraftError(f"the model returned no usable query (last reply: {last[:120]!r})")
 
     def _ask_grades(self, category: str, query: str, candidates: list[Document]) -> tuple[dict[str, int], str]:
         prompt, mapping = self._grade_prompt(category, query, candidates)
-        digest = prompt_sha256(category, "grade", prompt)
+        digest = prompt_sha256(category, "grade", prompt, self.model)
         for attempt in range(3):
             request = prompt if attempt == 0 else prompt + "\n\nYour previous reply was not valid JSON. Reply with the JSON object only."
             try:
@@ -286,6 +317,8 @@ class LlmDrafter:
             )
             if violation is not None:
                 continue
+            if _looks_like_identifier(text, anchor.id):
+                continue
             if text.casefold() in used:
                 continue
 
@@ -319,7 +352,7 @@ class LlmDrafter:
 
 def build_all_llm(corpus: Corpus, runner: Runner, plan: dict | None = None) -> list[Draft]:
     plan = plan or config.PLAN
-    drafter = LlmDrafter(corpus, runner)
+    drafter = LlmDrafter(corpus, runner, runner.model)
     drafts: list[Draft] = []
     used: set[str] = set()
     for category in config.LLM_CATEGORIES:
