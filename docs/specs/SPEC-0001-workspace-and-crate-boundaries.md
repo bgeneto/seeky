@@ -58,14 +58,14 @@ relying on review.
 | SPEC-0001-R8 | The root `Cargo.toml` shall define the `release` profile with the PoC values (`codegen-units = 1`, `lto = true`, `opt-level = 3`, `panic = "abort"`, `strip = true`) and a `profiling` profile that inherits `release` with `debug = "line-tables-only"` and `strip = false`. | inspection; `cargo build --profile profiling -p seeky-desktop` | Implemented (WP-0.1) |
 | SPEC-0001-R9 | The app shall move from `apps/seeky` to `apps/desktop` with `git mv`, so that `git log --follow` on a moved file shows its pre-rename history. | `git log --follow apps/desktop/src-tauri/src/lib.rs` | Implemented (WP-0.1) |
 | SPEC-0001-R10 | When the app is renamed, the product name (`Seeky`), the bundle identifier (`ai.seeky.desktop`), the version, the release executable name (`seeky`), and the app-data directory (and therefore the existing `seeky.db`) shall stay unchanged. | inspection of `tauri.conf.json` and `Cargo.toml`; manual run: an index built before the rename is listed after it | Implemented (WP-0.1) |
-| SPEC-0001-R11 | The workspace shall follow the internal dependency matrix in §4.4, enforced by `cargo-deny` `bans` entries with `wrappers` in `deny.toml`. | `cargo deny check bans` passes; a scratch commit that adds `seeky-store` to `seeky-extract` fails it | Open |
-| SPEC-0001-R12 | No engine crate shall depend, directly or transitively, on `tauri` or any `tauri-*` crate. | `cargo tree --workspace -e normal -i tauri` lists only `seeky-desktop` and Tauri plugins; `cargo deny check bans` | Open |
-| SPEC-0001-R13 | The heavy external dependencies in §4.4 shall be direct dependencies only of their owning crate (for example `rusqlite` only in `seeky-store`, `ort` only in `seeky-infer`). | `cargo deny check bans` | Open |
-| SPEC-0001-R14 | `seeky-core` shall depend only on `serde` and `thiserror` (plus `std`). | inspection of `crates/seeky-core/Cargo.toml` | Open |
+| SPEC-0001-R11 | The workspace shall follow the internal dependency matrix in §4.4, enforced by `cargo-deny` `bans` entries with `wrappers` in `deny.toml`. | `cargo deny check bans` passes; a scratch commit that adds `seeky-store` to `seeky-extract` fails it | Implemented (WP-0.1) |
+| SPEC-0001-R12 | No engine crate shall depend, directly or transitively, on `tauri` or any `tauri-*` crate. | `cargo tree --workspace -e normal -i tauri` lists only `seeky-desktop` and Tauri plugins; `cargo deny check bans` | Implemented (WP-0.1) |
+| SPEC-0001-R13 | The heavy external dependencies in §4.4 shall be direct dependencies only of their owning crate (for example `rusqlite` only in `seeky-store`, `ort` only in `seeky-infer`). | `cargo deny check bans` | Open: bans in place; `seeky-desktop` is a temporary wrapper until WP-0.2/WP-0.3 move the PoC code |
+| SPEC-0001-R14 | `seeky-core` shall depend only on `serde` and `thiserror` (plus `std`). | inspection of `crates/seeky-core/Cargo.toml` | Implemented (WP-0.1) |
 | SPEC-0001-R15 | Every member shall declare a `hw-tests` feature (empty where unused, forwarding to dependencies where they have hardware tests), so that `cargo test --workspace` is hardware-free and `cargo test --workspace --features hw-tests -- --test-threads=1` runs every hardware test. | both commands; ignored-test count without the feature equals the hardware-test count | Implemented (WP-0.1) |
 | SPEC-0001-R16 | When the rename lands, every reference to `apps/seeky` (pre-commit hook, CI workflow, `.gitignore`, `.prettierignore`, `AGENTS.md`, `CONTRIBUTING.md`, READMEs, docs) shall point to `apps/desktop`, except historical records (CHANGELOG entries, the conformance audit, `docs/archive/`). | `git grep -n "apps/seeky"` returns only the exceptions; the docs link check passes | Implemented (WP-0.1) |
 | SPEC-0001-R17 | When WP-0.1 is complete, the full PoC test suite (9 tests: 4 hardware-free, 5 `hw-tests`) shall pass unchanged from the workspace root, and `npm run build` and `npm run tauri dev` shall work from `apps/desktop`. | commands; `cargo test --workspace` reports 4 passed, 5 ignored | Implemented (WP-0.1) |
-| SPEC-0001-R18 | From WP-0.2 on, library crates shall not depend on `anyhow`; only `seeky-desktop` and `tools/*` binaries may. | `cargo tree --workspace -e normal -i anyhow --depth 1` lists no library crate | Open |
+| SPEC-0001-R18 | From WP-0.2 on, library crates shall not depend on `anyhow`; only `seeky-desktop` and `tools/*` binaries may. | `cargo tree --workspace -e normal -i anyhow --depth 1` lists no library crate | Open (WP-0.2) |
 
 ## 4. Interfaces
 
@@ -170,6 +170,8 @@ Owners of heavy external dependencies (direct dependency allowed only here):
 and `{ crate = "seeky-store", wrappers = ["seeky-search", "seeky-engine"] }`).
 Third-party crates that legitimately depend on an owned crate (for example
 `calamine` on `zip`) are added to that entry's `wrappers`.
+`walkdir` is not banned, because Tauri's build crates and `notify` depend on
+it; its ownership is checked in review.
 
 ### 4.5 PoC module → crate mapping (executed by WP-0.2)
 
@@ -262,3 +264,4 @@ measured in Phase 0 beyond the golden test.
 |---|---|---|
 | 0.1 | 2026-11-27 | Initial draft |
 | 0.1 | 2026-11-27 | Accepted by the maintainer |
+| 0.1 | 2026-11-27 | WP-0.1 implemented R1–R12 and R14–R17. §4.4: `walkdir` ownership is checked in review instead of `cargo-deny` (Tauri build crates depend on it). R13 stays open until the shell drops the PoC's heavy dependencies |

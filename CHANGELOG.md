@@ -23,6 +23,7 @@ roadmap (§6), with the date.
   toolchain is pinned to 1.99.1, and Rust checks run from the root
   (`cargo test --workspace`). The executable is still `seeky.exe`, now built
   into `<repo>/target/`; the app identity and data folder are unchanged.
+- Crate boundaries are checked with `cargo deny check bans` (`deny.toml`).
 - Auto backend selection uses the CPU only: ADR-0016 allows automatic
   NPU use only once the NPU path is validated (WP-5.1/WP-5.2). NPU and CUDA
   remain available when chosen explicitly.

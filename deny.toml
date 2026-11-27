@@ -1,0 +1,64 @@
+# cargo-deny configuration.
+#
+# [bans] enforces the crate boundaries of SPEC-0001 section 4.4: a denied crate
+# may be a direct dependency only of the crates listed in its `wrappers`.
+# Run: cargo deny check bans
+#
+# Wrappers already name the final owners, so "unmatched wrapper" warnings are
+# expected until WP-0.2 moves the PoC code into its crates.
+#
+# WP-0.4 adds [licenses] (ADR-0022) and [advisories] and runs `cargo deny check`
+# in CI.
+
+[graph]
+all-features = true
+
+[bans]
+multiple-versions = "allow" # duplicate-version policy is decided in WP-0.4
+wildcards = "allow"         # workspace path dependencies carry no version
+
+deny = [
+    # --- Internal dependency matrix -------------------------------------
+    { crate = "seeky-core", wrappers = [
+        "seeky-extract",
+        "seeky-infer",
+        "seeky-store",
+        "seeky-search",
+        "seeky-engine",
+        "seeky-provision",
+        "seeky-eval",
+    ] },
+    { crate = "seeky-extract", wrappers = ["seeky-engine"] },
+    { crate = "seeky-infer", wrappers = ["seeky-search", "seeky-engine"] },
+    { crate = "seeky-store", wrappers = ["seeky-search", "seeky-engine"] },
+    { crate = "seeky-search", wrappers = ["seeky-engine"] },
+    { crate = "seeky-provision", wrappers = ["seeky-engine"] },
+    { crate = "seeky-engine", wrappers = ["seeky-desktop", "seeky-bench"] },
+    { crate = "seeky-eval", wrappers = ["seeky-bench"] },
+
+    # --- The UI framework stays in the shell (SPEC-0001 R12) -------------
+    { crate = "tauri", wrappers = [
+        "seeky-desktop",
+        "tauri-plugin-dialog",
+        "tauri-plugin-fs",
+        "tauri-plugin-opener",
+    ] },
+    { crate = "tauri-plugin-dialog", wrappers = ["seeky-desktop"] },
+    { crate = "tauri-plugin-opener", wrappers = ["seeky-desktop"] },
+
+    # --- Owners of heavy dependencies (SPEC-0001 R13) ---------------------
+    # `seeky-desktop` is listed only while it still holds the PoC engine;
+    # WP-0.2/WP-0.3 move that code and remove it from these wrappers.
+    { crate = "rusqlite", wrappers = ["seeky-store", "seeky-desktop"] },
+    { crate = "ort", wrappers = ["seeky-infer", "seeky-desktop"] },
+    { crate = "openvino", wrappers = ["seeky-infer", "seeky-desktop"] },
+    { crate = "openvino-sys", wrappers = ["seeky-infer", "openvino", "seeky-desktop"] },
+    { crate = "tokenizers", wrappers = ["seeky-infer", "seeky-desktop"] },
+    { crate = "half", wrappers = ["seeky-infer", "ort", "seeky-desktop"] },
+    { crate = "pdfium-render", wrappers = ["seeky-extract", "seeky-desktop"] },
+    { crate = "calamine", wrappers = ["seeky-extract", "seeky-desktop"] },
+    { crate = "zip", wrappers = ["seeky-extract", "calamine", "seeky-desktop"] },
+    { crate = "notify", wrappers = ["seeky-engine", "seeky-desktop"] },
+    # `walkdir` is not banned: Tauri's build crates and `notify` depend on it,
+    # so its ownership (seeky-engine) is checked in review.
+]

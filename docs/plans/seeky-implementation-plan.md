@@ -561,7 +561,7 @@ Rules:
 |---|---|---|
 | M0 Runnable PoC | Done | 0.1.0 |
 | M1 Live incremental index | Done | 0.1.0 |
-| Phase 0 | In progress | WP-0.1 and WP-0.4 in progress, WP-0.5 done (§15.3). Pre-flight fixes done outside any WP: fmt, clippy `-D warnings`, `hw-tests` feature, HTML fix, Auto is CPU-only until the NPU is validated ([conformance audit](../validation/poc-conformance-audit.md)). SPEC-0001 and SPEC-0002 v1 Accepted |
+| Phase 0 | In progress | WP-0.1 and WP-0.5 done, WP-0.4 in progress (§15.3). Pre-flight fixes done outside any WP: fmt, clippy `-D warnings`, `hw-tests` feature, HTML fix, Auto is CPU-only until the NPU is validated ([conformance audit](../validation/poc-conformance-audit.md)). SPEC-0001 and SPEC-0002 v1 Accepted |
 | Phases 1–9 | Not started | — |
 | Phase 10 | Not started | Planned per ADR-0023, accepted 2026-11-27 (optional visual pack; off the 1.0 critical path) |
 
@@ -569,7 +569,7 @@ Rules:
 
 | WP | Status | Evidence | Notes |
 |---|---|---|---|
-| 0.1 | In progress | [SPEC-0001](../specs/SPEC-0001-workspace-and-crate-boundaries.md) | Done: root workspace, eight crate stubs, toolchain pin, profiles, `hw-tests` in every member, shared lints with the one audited `unsafe` exemption, rename to `apps/desktop` with the `seeky` binary and app identity kept (R1–R10, R15–R17). Remaining: `cargo-deny` bans (R11–R14); R18 lands with WP-0.2 |
+| 0.1 | Done | [SPEC-0001](../specs/SPEC-0001-workspace-and-crate-boundaries.md) v0.1 (R1–R12, R14–R17); root `Cargo.toml`, `rust-toolchain.toml`, `clippy.toml`, `deny.toml`, `crates/seeky-*` stubs, `apps/desktop`; commits: `git log --grep "WP-0.1"` | R13 completes when WP-0.2/WP-0.3 remove the PoC's heavy dependencies from the shell; R18 lands with WP-0.2 |
 | 0.2 | Not started | — | — |
 | 0.3 | Not started | — | — |
 | 0.4 | In progress | `.github/workflows/ci.yml` (`format` job), `.githooks/pre-commit` | Done: rustfmt + Prettier in CI and a check-only pre-commit hook; hardware tests behind the `hw-tests` feature (pre-flight). Remaining CI jobs: clippy `-D warnings`, hardware-free tests, `cargo-deny`, TypeScript typecheck + build, Windows/Linux/macOS compile |
@@ -664,7 +664,7 @@ finished items and add the next ones, so this list never points at done work.
 
 1. Maintainer reviews and accepts this plan (the
    [vision](../product/vision.md) and ADR-0015 to ADR-0023 are Accepted).
-2. Execute WP-0.1 → WP-0.2 → WP-0.3 and WP-0.4 in parallel with WP-0.2; run
+2. Execute WP-0.2 → WP-0.3, and WP-0.4 in parallel with WP-0.2; run
    **WP-0.6 (ORT validation gate, priority zero)** alongside — it needs no
    corpus or judgments, only T1 (or T1-emulated) time.
 3. Write **SPEC-0003** (harness) and **SPEC-0004** (SDC + judgments) while

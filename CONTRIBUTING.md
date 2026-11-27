@@ -34,6 +34,7 @@ model/runtime files until the provisioning phase lands.
 
 ```powershell
 git lfs install
+cargo install cargo-deny --locked   # crate-boundary checks
 cd apps\desktop
 npm install
 npm run tauri dev
