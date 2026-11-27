@@ -15,6 +15,7 @@ from .florence_run import run_florence_gate
 from .models import EMBEDDERS, PROXY_RERANKER, RERANKERS
 from .npu_run import run_npu_gate
 from .ocr_data import render_ocr_pages
+from .ocr_memory import run_ocr_memory_gate
 from .ocr_run import run_ocr_gate
 from .report_export import export_results
 from .reranker_run import run_reranker_gate
@@ -22,7 +23,7 @@ from .system import RunningProfile
 from .t0_run import run_t0_functional
 
 TIMEOUT_EXIT_CODE = 124
-GATE_COMMANDS = ("encoders", "reranker", "ocr", "florence", "npu")
+GATE_COMMANDS = ("encoders", "reranker", "ocr", "ocr-memory", "florence", "npu")
 
 
 def _workspace(value: str) -> Path:
@@ -180,6 +181,10 @@ def _dispatch(args: argparse.Namespace, workspace: Path, deadline: Deadline | No
             for name, value in result["variants"].items()
         }
         print(json.dumps(summary, sort_keys=True))
+        return 0
+    if args.command == "ocr-memory":
+        result = run_ocr_memory_gate(workspace, profile=_profile(args.profile), deadline=deadline)
+        print(json.dumps(result["variants"], sort_keys=True))
         return 0
     if args.command == "npu":
         result = run_npu_gate(workspace, profile=_profile(args.profile), deadline=deadline)

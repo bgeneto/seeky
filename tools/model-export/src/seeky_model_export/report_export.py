@@ -21,6 +21,7 @@ RESULT_FILES = {
     "encoders-granite-modernbert": "encoders-granite-modernbert.json",
     "reranker": "reranker.json",
     "ocr": "ocr.json",
+    "ocr-memory": "ocr-memory.json",
     "florence": "florence.json",
     "npu": "npu.json",
     "t0": "t0-functional.json",
