@@ -13,6 +13,10 @@ roadmap (§6), with the date.
 
 ### Added
 
+- `sdc-generator judgments validate|freeze-split|publish` implement the
+  SPEC-0004 judgment-set lifecycle: draft quarantine, offline schema and
+  target-hash validation, stratified split freezing with immutable query
+  digests, provenance/minima/pool checks, and atomic publication.
 - SPEC-0002 has a Draft v1.1 evaluation extension for `seeky-bench`:
   evaluation depth to 1,000 with a deterministic order, in-process stage and
   query-embedding timings, exact metadata filters with push-down/post reporting,
