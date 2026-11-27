@@ -594,6 +594,64 @@ class JudgmentTestCase(unittest.TestCase):
             publish(root, self.tmp / "out-tool-authority")
         self.assertIn(caught.exception.code, {"TEST_NOT_ELIGIBLE", "PROVENANCE_INCOMPLETE"})
 
+    def test_tool_draft_is_limited_to_template_faithful_categories(self) -> None:
+        # SPEC-0004-R20 and section 4.6: a tool never drafts a semantic
+        # paraphrase or a pt<->en pair; those need human: or llm: provenance.
+        tool = {
+            "drafted_by": "tool:qrels-drafter@v1",
+            "tool_config_sha256": "d" * 64,
+            "verified_by": [],
+            "state": "draft",
+            "adjudicated_by": None,
+        }
+        queries = {row["_id"]: row for row in smoke_queries()}
+
+        def draft(name: str, file: str, chosen: Any) -> Path:
+            root = _draft_root(self.tmp, name)
+            _write_smoke_draft(root, corpus_root=self.corpus)
+            path = root / file
+            rows = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+            for row in rows:
+                query = queries[row["query_id"] if "query_id" in row else row["_id"]]
+                if chosen(query):
+                    row["provenance"] = dict(tool)
+            _write_jsonl(path, rows)
+            return root
+
+        faithful = draft(
+            "tool-faithful",
+            "queries.draft.jsonl",
+            lambda q: q["category"] not in ("conceptual", "exploratory", "cross_language")
+            and q["language_slice"] != "cross_lingual",
+        )
+        validate_judgment_set(faithful, self.corpus, allow_draft=True)
+
+        rejected = {
+            "tool-conceptual-query": (
+                "queries.draft.jsonl",
+                lambda q: q["category"] == "conceptual",
+            ),
+            "tool-cross-lingual-slice": (
+                "queries.draft.jsonl",
+                lambda q: q["category"] == "known_item" and q["language_slice"] == "cross_lingual",
+            ),
+            "tool-exploratory-qrel": (
+                "qrels.draft.documents.jsonl",
+                lambda q: q["category"] == "exploratory",
+            ),
+            "tool-cross-language-passage": (
+                "qrels.draft.passages.jsonl",
+                lambda q: q["category"] == "cross_language",
+            ),
+        }
+        for name, (file, chosen) in rejected.items():
+            with self.subTest(name):
+                root = draft(name, file, chosen)
+                with self.assertRaises(SdcError) as caught:
+                    validate_judgment_set(root, self.corpus, allow_draft=True)
+                self.assertEqual(caught.exception.code, "SCHEMA_INVALID")
+                self.assertEqual(caught.exception.field, "drafted_by")
+
     def test_publish_refuses_an_existing_output_and_is_atomic(self) -> None:
         # SPEC-0004-R14, section 4.1.
         root = _draft_root(self.tmp, "publish-once")

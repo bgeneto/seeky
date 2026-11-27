@@ -86,7 +86,10 @@ use the combined `queries.draft.jsonl`, `qrels.draft.documents.jsonl`,
 Draft provenance is `human:<id>`, `llm:<model>@<revision>` with
 `llm_prompt_sha256`, or `tool:<id>@<version>` with `tool_config_sha256`. A tool
 or LLM draft is candidate data only: it has no authority over a relevance grade,
-and `publish` refuses any record without human verification.
+and `publish` refuses any record without human verification. A tool drafts only
+`known_item`, `exact_identifier`, `needle_in_haystack`,
+`mixed_semantic_metadata`, `filename_partial`, and `code_search` records, never
+a `cross_lingual` slice (SPEC-0004 §4.6).
 
 The minima applied by `freeze-split` and `publish` follow the set named by the
 spec: `sdc-smoke-*` sets use the R26 smoke minima (at least five dev queries

@@ -134,6 +134,17 @@ _BCP47 = re.compile(r"^[A-Za-z]{2,8}(?:-[A-Za-z0-9]{1,8})*$")
 _HUMAN = re.compile(r"^human:\S+$")
 _LLM = re.compile(r"^llm:[^@\s]+@\S+$")
 _TOOL = re.compile(r"^tool:[^@\s]+@\S+$")
+# SPEC-0004 section 4.6: the categories where a template copies faithfully.
+TOOL_DRAFT_CATEGORIES = frozenset(
+    {
+        "known_item",
+        "exact_identifier",
+        "needle_in_haystack",
+        "mixed_semantic_metadata",
+        "filename_partial",
+        "code_search",
+    }
+)
 _LABEL = re.compile(r"^[a-z0-9]+(?:_[a-z0-9]+)*$")
 
 
@@ -584,6 +595,23 @@ def _validate_query_row(row: _Row, manifest: dict[str, Any]) -> None:
         _bad("query split disagrees with the file split", file=row.file, line=row.line, field="split")
     _validate_filters(data["filters"], category=data["category"], file=row.file, line=row.line)
     _validate_provenance(data["provenance"], file=row.file, line=row.line)
+    _check_tool_scope(data["provenance"], data, file=row.file, line=row.line)
+
+
+def _check_tool_scope(
+    provenance: dict[str, Any], query: dict[str, Any], *, file: str, line: int | None
+) -> None:
+    """Keep tool drafts out of semantic paraphrase and pt<->en (SPEC-0004 4.6)."""
+    if not str(provenance["drafted_by"]).startswith("tool:"):
+        return
+    if query["category"] not in TOOL_DRAFT_CATEGORIES or query["language_slice"] == "cross_lingual":
+        _bad(
+            f"a tool may not draft a {query['category']}/{query['language_slice']} record; "
+            "use human: or llm: provenance",
+            file=file,
+            line=line,
+            field="drafted_by",
+        )
 
 
 def _validate_queries(rows: list[_Row], manifest: dict[str, Any]) -> dict[str, dict[str, Any]]:
@@ -629,7 +657,7 @@ def _validate_passage_qrels(
         _check_keys(data, PASSAGE_QREL_KEYS, file=row.file, line=row.line)
         if data["judgment_set_id"] != manifest["judgment_set_id"]:
             _bad("judgment_set_id disagrees with the manifest", file=row.file, line=row.line, field="judgment_set_id")
-        _query_for(data, queries, file=row.file, line=row.line)
+        query = _query_for(data, queries, file=row.file, line=row.line)
         document_id = _require_str(data["document_id"], "document_id", file=row.file, line=row.line)
         passage_id = _require_str(data["passage_id"], "passage_id", file=row.file, line=row.line)
         if not passage_id.startswith(document_id + ":p:"):
@@ -668,6 +696,7 @@ def _validate_passage_qrels(
                     _bad("evidence span splits a UTF-8 character", file=row.file, line=row.line, field="evidence_spans")
             previous_end = end
         _validate_provenance(data["provenance"], file=row.file, line=row.line)
+        _check_tool_scope(data["provenance"], query, file=row.file, line=row.line)
         grades[(data["query_id"], document_id, passage_id)] = grade
     return grades, set(grades)
 
@@ -729,6 +758,7 @@ def _validate_document_qrels(
         if any(not isinstance(label, str) or not _LABEL.match(label) for label in labels):
             _bad("subtopic labels must be ASCII snake_case", file=row.file, line=row.line, field="subtopic_labels")
         _validate_provenance(data["provenance"], file=row.file, line=row.line)
+        _check_tool_scope(data["provenance"], query, file=row.file, line=row.line)
         judged.add((data["query_id"], document_id))
     return judged
 

@@ -561,7 +561,7 @@ file before launching the lane.
 |---|---|
 | H, WP-1.2 | `tools/seeky-bench` per SPEC-0003 after the SPEC-0002 v1.1 evaluation extension is accepted: index, eval, perf (skeleton), compare, report over the `Engine` API; environment capture and config hashing. Owns `tools/seeky-bench/`, root `Cargo.toml` (`members` and dependencies: wave-4 owner), `Cargo.lock`. Internal tool that never ships (ADR-0008). Runs on this workstation. Done when `cargo run -p seeky-bench -- eval --corpus sdc-smoke --split dev` produces a report that a second run reproduces |
 | I, WP-1.5 | Public dataset manifests in `bench/datasets/` and download scripts (Python under `tools/` only): MLDR, MIRACL, mMARCO-pt with constructed pt↔en pairs, BEIR subsets; Quati only after its license check. Scripts download from the original sources and never redistribute. Owns `bench/datasets/` and its `tools/` script directory |
-| J, WP-1.4 (draft) | LLM-drafted queries and graded judgments per SPEC-0004 on `sdc-s` (at least 600 queries, 9 categories, dev/test split), every item with `drafted_by` set and `verified_by` empty. Owns `bench/qrels/` drafts only. Gate H6: the maintainer verifies; nothing unverified enters `test` |
+| J, WP-1.4 (draft) | Tool-drafted (template-faithful categories) and local-LLM-drafted (paraphrase, pt↔en) queries and candidate graded judgments per SPEC-0004 0.3 on `sdc-s`; full brief below (at least 600 queries, 9 categories, dev/test split), every item with `drafted_by` set and `verified_by` empty. Owns `bench/qrels/` drafts only. Gate H6: the maintainer verifies; nothing unverified enters `test` |
 | K, WP-7.1 then WP-7.2 | Per SPEC-0014 v1. Owns `apps/desktop/src/`, `apps/desktop/package.json` and its lockfile (an i18n library only if the spec chose one), `tauri.conf.json` (window theme and background only), and the CI catalog-parity job in `.github/workflows/` (owner at that time). Both themes and both locales checked by hand until WP-7.8 adds component tests |
 | L, WP-1.6 | `seeky-bench perf` per SPEC-0003: per-stage latency, query-embedding latency, throughput, time-to-searchable, interference, RSS, disk, startup. Owns the perf modules in `tools/seeky-bench/`. Runs on this workstation under the quiet-window rule (lane E) |
 | M, WP-1.8 | CI smoke gate: `sdc-smoke` nDCG@10 over the eight non-code categories (at most 1.0 drop versus `main`) plus the ranking invariants, through `seeky-bench compare`; code-enabled results are separate. Owns `.github/workflows/` (owner at that time). Must stay hardware-free (lexical, or a CI-safe CPU model if the spec allows one) and starts only after `sdc-smoke-v1` is human-verified (H6) |
@@ -698,7 +698,7 @@ above; report instead of guessing.
 ```text
 WORK PACKAGE: WP-1.4 draft data only, SPEC-0004 R15-R27. BRANCH:
 wp/1.4-judgments-draft. STARTS AFTER: WP-1.3 merged, SPEC-0004 0.2 accepted
-(tool-draft provenance), and sdc-s verified (hash 1d65b8ff...).
+(tool-draft provenance; 0.3 category scope), and sdc-s verified (hash 1d65b8ff...).
 OWNED PATHS: tools/qrels-drafter/ (new, Python 3.12, development tooling that
 never ships) and bench/qrels/sdc/drafts/sdc-v1/. Do not touch the plan or its
 indexes, CHANGELOG.md, specs, ADRs, the audit, tools/sdc-generator/, any crate,

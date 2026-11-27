@@ -60,6 +60,11 @@ roadmap (§6), with the date.
   authority over a relevance grade, and every item still requires human
   verification (H6). LLM drafting remains offline with local, permissively
   licensed open-weight models.
+- SPEC-0004 0.3 limits tool drafts to the template-faithful categories
+  (`known_item`, `exact_identifier`, `needle_in_haystack`,
+  `mixed_semantic_metadata`, `filename_partial`, `code_search`) and never a
+  `cross_lingual` slice; `judgments validate` rejects a tool draft for a
+  semantic paraphrase or a pt↔en pair.
 - Added the deterministic SPDX-clean SDC generator and committed a 200-file,
   3.7 MB synthetic `sdc-smoke` corpus with all fourteen renderer formats,
   canonical passages, extraction truth, duplicates, versions, boilerplate, and
