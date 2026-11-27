@@ -568,7 +568,7 @@ Rules:
 | M0 Runnable PoC | Done | 0.1.0 |
 | M1 Live incremental index | Done | 0.1.0 |
 | Phase 0 | In progress | WP-0.1, WP-0.2, WP-0.3, and WP-0.5 done; WP-0.4 implementation complete and awaiting H4 approval, WP-0.6 open (§15.3). Pre-flight fixes done outside any WP: fmt, clippy `-D warnings`, `hw-tests` feature, HTML fix, Auto is CPU-only until the NPU is validated ([conformance audit](../validation/poc-conformance-audit.md)). SPEC-0001 and SPEC-0002 v1 Implemented; manual Phase 0 app checks remain |
-| Phase 1 | In progress | WP-1.1 `seeky-eval` merged (SPEC-0003 R1–R14); WP-1.3 generator merged with a synthetic `sdc-smoke`; external sources and R14 judgment commands remain (§15.3) |
+| Phase 1 | In progress | WP-1.1 `seeky-eval` merged (SPEC-0003 R1–R14); WP-1.3 generator merged with a synthetic `sdc-smoke`; external sources and R14 judgment commands remain; SPEC-0002 v1.1 evaluation extension Draft awaits maintainer acceptance (§15.3) |
 | Phases 2-9 | Not started | - |
 | Phase 10 | Not started | Planned per ADR-0023, accepted 2026-11-27 (optional visual pack; off the 1.0 critical path) |
 
@@ -674,10 +674,10 @@ finished items and add the next ones, so this list never points at done work.
 2. Run **WP-0.6 (ORT validation gate, priority zero)** — it needs no corpus or
    judgments, only T1 (or T1-emulated) time. WP-0.4 awaits maintainer approval
    of its disclosed license exceptions and advisory ignores (H4).
-3. Draft and accept the **SPEC-0002 v1.1 evaluation extension** required by
-   WP-1.2/WP-1.6; secure access to a T1 reference laptop (or define the
-   T1-emulated profile). SPEC-0003 and SPEC-0004 are Accepted with maintainer
-   pre-approval in /goal.
+3. The **SPEC-0002 v1.1 evaluation extension** Draft is merged (PR #9); the
+   maintainer must accept it before WP-1.2/WP-1.6. Secure access to a T1
+   reference laptop (or define the T1-emulated profile). SPEC-0003 and
+   SPEC-0004 are Accepted with maintainer pre-approval in /goal.
 4. WP-1.1 (`seeky-eval`) is Done. Continue WP-1.3 with the remaining R14
    judgment subcommands and the external-source licensing review; start WP-1.5
    (public dataset scripts, SPEC-0003 R23–R24) and schedule human time for
