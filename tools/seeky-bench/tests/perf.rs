@@ -298,6 +298,62 @@ fn interference_ratio_matches_hand_calculation() {
     assert!(samples.samples_ms.iter().all(|value| *value == 1.0));
 }
 
+/// SPEC-0003-R26 regression: a probe rewrite that keeps the file's mtime (as
+/// Windows can within its timestamp resolution) must still be detected and
+/// become searchable. Before the fix every probe had the same size, so a
+/// same-mtime rewrite was skipped as unchanged and the sample was dropped.
+#[test]
+fn time_to_searchable_probe_rewrites_survive_identical_mtime() {
+    use seeky_bench::perf::{tts_probe_contents, tts_probe_token};
+    let lengths: std::collections::BTreeSet<usize> = (0..20)
+        .map(|sample| tts_probe_contents(sample).len())
+        .collect();
+    assert_eq!(
+        lengths.len(),
+        20,
+        "every probe rewrite must change the size"
+    );
+
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path().join("tts");
+    std::fs::create_dir_all(&root).unwrap();
+    let config = seeky_bench::environment::RunConfig {
+        name: "default".into(),
+        backend: "cpu".into(),
+        semantic: false,
+    };
+    let adapter =
+        seeky_bench::engine::EngineAdapter::open(&dir.path().join("data"), &config).unwrap();
+    let engine = adapter.engine();
+    let added = engine.add_root(&root).unwrap();
+    engine.set_root_watching(&added.id, false).unwrap();
+    let file = root.join("probe.txt");
+    let fixed = std::time::SystemTime::UNIX_EPOCH + Duration::from_secs(1_800_000_000);
+    for sample in 0..5 {
+        std::fs::write(&file, tts_probe_contents(sample)).unwrap();
+        // Force the identical mtime a fast rewrite can get on Windows.
+        std::fs::File::options()
+            .write(true)
+            .open(&file)
+            .unwrap()
+            .set_modified(fixed)
+            .unwrap();
+        engine.index_path(&root).unwrap();
+        let hits = engine
+            .search(&seeky_engine::SearchRequest {
+                query: tts_probe_token(sample),
+                limit: None,
+            })
+            .unwrap()
+            .hits;
+        assert!(
+            hits.iter().any(|hit| hit.path.ends_with("probe.txt")),
+            "probe {sample} was not reindexed"
+        );
+    }
+    adapter.shutdown().unwrap();
+}
+
 // --- R27 -------------------------------------------------------------------
 
 /// SPEC-0003-R27, sections 4.10 and 5.8 D (v0.2): 2.5 GB over 1 M passages is
