@@ -856,7 +856,8 @@ fn perf_queries_file_runs_sdc_without_frozen_qrels() {
     assert_eq!(report["dataset"]["split"], "dev");
     assert_eq!(report["dataset"]["judgment_set_id"], "dev-queries-only");
     assert_eq!(report["dataset"]["query_count"], 2);
-    assert_eq!(report["performance"]["search"][0]["samples"], 4);
+    assert_eq!(report["performance"]["search"][0]["queries"], 4);
+    assert_eq!(report["performance"]["search"][0]["repetitions"], 2);
 }
 
 /// SPEC-0003-R21: `--queries-file` refuses test-named files and files with no

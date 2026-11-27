@@ -17,9 +17,7 @@ pub mod smoke_gate;
 use artifact::ArtifactDir;
 use corpus::BenchPaths;
 use environment::{CombinedConfig, EvaluationSettings, RunConfig};
-use seeky_eval::{
-    Dataset, EvaluationConfiguration, MetricSelection, Split, StatsOptions, SystemInfo,
-};
+use seeky_eval::{Dataset, MetricSelection, Split, StatsOptions, SystemInfo};
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt;
 use std::path::{Path, PathBuf};
@@ -317,10 +315,8 @@ fn command_index(paths: &BenchPaths, args: &[String]) -> Result<()> {
     let config = environment::load_run_config(&config_path)?;
     let corpus = corpus::resolve(paths, &corpus_id, code_enabled)?;
 
-    // The dataset must validate before the engine is opened.
-    let dataset = corpus::load_dataset(&corpus, Split::Dev, EvaluationConfiguration::Default, None)
-        .map_err(|error| Failure::dataset(error.to_string()))?;
-    let corpus_hash = dataset.corpus_hash.clone();
+    // The corpus must validate before the engine is opened.
+    let corpus_hash = corpus::corpus_hash_for_index(&corpus)?;
 
     // Refuse to reuse an incompatible data directory before creating anything.
     let sidecar_path = engine::sidecar_path(&data_dir);
