@@ -1,6 +1,6 @@
 # ADR-0028 — Hosted-model drafting of evaluation data for synthetic corpora (amends 0021, 0026)
 
-- **Status:** Proposed
+- **Status:** Accepted (maintainer, 2026-11-28)
 - **Date:** 2026-11-28
 - **Related:** [ADR-0021](0021-no-generative-models-in-product.md) decision 3,
   [ADR-0026](0026-model-verified-evaluation-judgments.md),

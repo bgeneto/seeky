@@ -254,11 +254,14 @@ roadmap (§6), with the date.
 
 ### Product decisions
 
-- Proposed ADR-0028: a hosted model may draft evaluation queries and
-  candidate judgments for synthetic, redistributable corpora such as SDC, with
-  a pinned snapshot ID, a committed hashed drafting instruction, and review by
-  a different model (ADR-0026). Non-synthetic corpora stay offline. Pending
-  maintainer acceptance; SPEC-0004 0.5 follows on acceptance.
+- A hosted model may draft evaluation queries and candidate judgments for
+  synthetic, redistributable corpora such as SDC (ADR-0028, accepted
+  2026-11-28; SPEC-0004 0.5), with a pinned snapshot ID, a committed hashed
+  drafting instruction
+  ([`docs/benchmarks/query-drafting-brief.md`](docs/benchmarks/query-drafting-brief.md)),
+  and review by a different model (ADR-0026). Non-synthetic corpora and
+  `qrels-drafter` stay offline. The ten hosted `sdc-smoke-v1` drafts
+  (q46–q55) are now eligible for review and promotion.
 - Evaluation judgments may be verified by a model instead of a human
   (ADR-0026, SPEC-0004 0.4): `verified_by` and `adjudicated_by` accept
   `llm:<model-id>@<pinned-snapshot>` reviewers in `judgments validate`,

@@ -2,12 +2,12 @@
 
 | Field | Value |
 |---|---|
-| Status | Accepted (maintainer pre-approval in /goal; amendment approved 2026-11-27) |
-| Version | 0.4 (text corpus v1; adds category-scoped tool-draft provenance and model verification per ADR-0026; the WP-10.1 visual slice requires a later spec version) |
+| Status | Accepted (maintainer pre-approval in /goal; amendments approved 2026-11-27 and 2026-11-28) |
+| Version | 0.5 (text corpus v1; adds category-scoped tool-draft provenance, model verification per ADR-0026, and hosted drafting for synthetic corpora per ADR-0028; the WP-10.1 visual slice requires a later spec version) |
 | Owner | Maintainer |
 | Phase / work packages | Phase 1 — WP-1.3, WP-1.4; Phase 10 — WP-10.1 (later version) |
 | Crates touched | None. Offline generator under `tools/sdc-generator/`; data under `bench/`; consumed by `seeky-eval` (SPEC-0003) |
-| Governing docs | [vision](../product/vision.md) §2 (P3, P5–P8); [methodology](../benchmarks/methodology.md) §2, §6, §8.2 and §10; [ADR-0019](../adr/0019-single-inference-engine.md); [ADR-0021](../adr/0021-no-generative-models-in-product.md); [ADR-0026](../adr/0026-model-verified-evaluation-judgments.md); [ADR-0022](../adr/0022-permissive-license-gate.md); [ADR-0023](../adr/0023-multimodal-ready-engine.md); [ADR-0024](../adr/0024-source-code-indexing-opt-in.md); [SPEC-0001](SPEC-0001-workspace-and-crate-boundaries.md); [SPEC-0002](SPEC-0002-engine-api.md) |
+| Governing docs | [vision](../product/vision.md) §2 (P3, P5–P8); [methodology](../benchmarks/methodology.md) §2, §6, §8.2 and §10; [ADR-0019](../adr/0019-single-inference-engine.md); [ADR-0021](../adr/0021-no-generative-models-in-product.md); [ADR-0026](../adr/0026-model-verified-evaluation-judgments.md); [ADR-0028](../adr/0028-hosted-drafting-for-synthetic-corpora.md); [ADR-0022](../adr/0022-permissive-license-gate.md); [ADR-0023](../adr/0023-multimodal-ready-engine.md); [ADR-0024](../adr/0024-source-code-indexing-opt-in.md); [SPEC-0001](SPEC-0001-workspace-and-crate-boundaries.md); [SPEC-0002](SPEC-0002-engine-api.md) |
 | Benchmark gates | Supplies datasets for Q1–Q7 and the WP-1.8 smoke gate. This version defines no visual Q8 data and changes no latency or resource budget |
 
 ## 1. Problem and goal
@@ -78,7 +78,7 @@ All requirements are open. The WP column is the implementation owner.
 | SPEC-0004-R18 | WP-1.4 | Document judgments shall use the graded schema in §4.6 with integer relevance 0–3 and the rubric in §5.5, and shall allow a known-item target, its explicitly judged duplicates, and multiple relevant exploratory documents without collapsing them into an assumed single answer. | `document_qrels_validate_grades_and_references`; `known_item_duplicates_and_multiple_relevant_docs_are_representable` | Implemented (WP-1.4) |
 | SPEC-0004-R19 | WP-1.4 | Passage judgments shall reference stable canonical passage IDs and use integer relevance 0–3; where snippet evidence is supplied, its UTF-8 half-open offsets shall lie inside the referenced canonical passage and delimit the exact supporting text. | `passage_qrels_validate_grades_and_target_hashes`; `snippet_spans_are_ordered_in_bounds_and_exact` | Implemented (WP-1.4) |
 | SPEC-0004-R20 | WP-1.4 | Every query, document judgment, and passage judgment shall carry `drafted_by`, `verified_by`, and `state` provenance; an LLM-drafted item shall also carry immutable model/revision and prompt-hash fields; a tool-drafted item shall carry an immutable tool id/version and config-hash field; `verified_by` shall name `human:<id>` or `llm:<model-id>@<revision>` reviewers, and an `llm:` reviewer shall never verify a record it drafted itself (ADR-0026); and an adjudicated item shall identify the adjudicator and at least two distinct participating reviewers. A tool draft is candidate data only: it has no authority over a relevance grade and must pass verification before any benchmark-eligible split; a tool shall draft only queries, and judgments of queries, in the §4.6 template-faithful categories and never a `cross_lingual` language slice. | `provenance_is_complete_for_human_llm_and_tool_drafts`; `tool_draft_has_no_grade_authority`; `tool_draft_is_limited_to_template_faithful_categories`; `adjudication_requires_distinct_humans_and_adjudicator`; `model_reviewer_may_verify_but_not_its_own_draft` | Implemented (WP-1.4) |
-| SPEC-0004-R21 | WP-1.4 | When an LLM drafts queries or candidate judgments, the drafting tool shall run offline as development tooling, and a human or model reviewer (ADR-0026) shall verify the query intent and every relevance grade against the referenced corpus text before the item can enter a benchmark-eligible split. | workflow inspection; `llm_draft_cannot_be_promoted_without_human_verification`; `model_reviewer_may_verify_but_not_its_own_draft`; network-boundary test of drafting tool | Implemented (WP-1.4) |
+| SPEC-0004-R21 | WP-1.4 | When an LLM drafts queries or candidate judgments, it shall run as development tooling, offline for any corpus that is not synthetic and redistributable (a hosted model may draft only for synthetic, redistributable corpora such as SDC, ADR-0028), and a human or model reviewer (ADR-0026) shall verify the query intent and every relevance grade against the referenced corpus text before the item can enter a benchmark-eligible split. | workflow inspection; `llm_draft_cannot_be_promoted_without_human_verification`; `model_reviewer_may_verify_but_not_its_own_draft`; network-boundary test of drafting tool | Implemented (WP-1.4) |
 | SPEC-0004-R22 | WP-1.4 | If an item is unverified or lacks required provenance, then the publisher shall refuse its promotion and the SDC loader shall reject any benchmark set containing it; rejected and draft records may retain an intended split only in the quarantined draft area and shall never enter `test`. | `draft_judgment_set_is_not_benchmark_eligible`; `unverified_item_never_enters_test`; `promotion_rejects_missing_provenance` | Implemented (WP-1.4) |
 | SPEC-0004-R23 | WP-1.4 | Once a judgment set has been used on `test`, the publisher shall keep its query membership and split assignments immutable and shall write corrections or additional judgments under a new judgment-set version rather than moving, deleting, or silently rewriting test history. | `frozen_test_membership_and_splits_are_immutable`; `correction_creates_new_judgment_set_version`; audit-trail inspection | Open |
 | SPEC-0004-R24 | WP-1.4 | For each system under test, the pooling workflow shall union document and passage candidates through depth 20, include known targets and manually discovered candidates, and require every pooled candidate to have an explicit verified or adjudicated judgment before the judgment set is frozen; the `test` pooling panel shall be predeclared before the first test exposure and later candidates shall not expand it under the same judgment-set version. | `pool_is_depth_20_union_of_all_systems`; `known_targets_and_manual_candidates_are_pooled`; `frozen_pool_has_no_unjudged_candidate`; `test_pool_panel_precedes_exposure` | Open |
@@ -844,11 +844,16 @@ adjudicator. Rejected records stay in drafts and are never published. At least
 second model) as a quality check;
 disagreements entering a frozen set must be adjudicated.
 
-The LLM drafting workflow is entirely offline: no corpus text, prompt, query,
-or judgment is sent to a hosted service. A hosted model may act as a reviewer
-only for synthetic, redistributable corpora such as SDC; corpora built from
-real, private, or restricted documents are reviewed by humans or local models
-only (ADR-0026). Model ID, immutable revision, and
+For corpora built from real, private, or restricted documents the LLM drafting
+workflow is entirely offline: no corpus text, prompt, query, or judgment is
+sent to a hosted service, and such corpora are drafted and reviewed by humans
+or local models only. For synthetic, redistributable corpora such as SDC, a
+hosted model may act as a reviewer (ADR-0026) and as a drafter (ADR-0028). A
+hosted drafter is identified by its provider's pinned snapshot ID, works from a
+committed, versioned drafting instruction whose SHA-256 is the record's
+`llm_prompt_sha256` (today
+[`query-drafting-brief.md`](../benchmarks/query-drafting-brief.md)), and is
+never the reviewer of its own drafts. `qrels-drafter` itself stays offline. Model ID, immutable revision, and
 prompt/input hash are provenance only; the model and its outputs never become
 a product component or a generated answer feature.
 
@@ -982,7 +987,8 @@ not be used to claim that a model or ranking stage improved.
   instructions contain no user-specific paths (R5).
 - No engine crate depends on `tools/sdc-generator/`; the tool has no product
   runtime component or telemetry, no network call outside `fetch`, and no
-  hosted-service call in the LLM drafting workflow (R14, R21).
+  hosted-service call in the LLM drafting workflow except hosted drafting of
+  synthetic, redistributable corpora under ADR-0028 (R14, R21).
 - Default benchmark roots exclude source code; code search is reported only
   under `code_enabled` (R12, R15, R26).
 - Frozen judgment sets have complete human provenance, stable target hashes,
@@ -1022,6 +1028,7 @@ corrections they name landed in the same commit.
 
 | Version | Date | Change |
 |---|---|---|
+| 0.5 | 2026-11-28 | Accepted (maintainer decision 2026-11-28, ADR-0028): a hosted LLM may draft queries and candidate judgments for synthetic, redistributable corpora such as SDC, with a pinned snapshot ID, a committed hashed drafting instruction, and review by a different identity (ADR-0026); non-synthetic corpora stay offline; `qrels-drafter` stays offline. R21, §5.5, and §6.3 updated; no validator change (the validator never enforced offline drafting) |
 | 0.4 | 2026-11-27 | Accepted (maintainer decision 2026-11-27, ADR-0026): `verified_by` and `adjudicated_by` accept `llm:<model-id>@<revision>` reviewers besides humans, with no mandatory human sample; a model never verifies its own draft; a hosted model may review only synthetic, redistributable corpora. R20, R21, R26, §4.6, §5.5, and risk 7 updated; test `model_reviewer_may_verify_but_not_its_own_draft` |
 | 0.3 | 2026-11-27 | Added `qrels_drafter draft --smoke` and drafted `bench/qrels/sdc/drafts/sdc-smoke-v1/`: 45 dev-only queries (5 per category), 144 document and 144 passage judgments, no test split, `test_exposure: not-applicable`, and a smoke-specific tool config hash. R26 stays open until H6 verifies the set |
 | 0.3 | 2026-11-27 | WP-1.4 implemented R15–R22 and R25 as draft tooling and data: `tools/qrels-drafter/` and `bench/qrels/sdc/drafts/sdc-v1/` (732 queries, 2,572 document and 2,572 passage judgments, 0 pools), 41 tool tests, a zero-failure language/copy audit, and `judgments validate --allow-draft` on `sdc-s`. Every record stays `state: draft` with `verified_by: []`, `test_exposure: unexposed`; R23, R24, R26, R27 remain open, and H6 human verification is still required before any benchmark-eligible split |
