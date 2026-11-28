@@ -9,6 +9,7 @@ performance claims are accepted only with a reproducible report
 | [`methodology.md`](methodology.md) | Protocol: datasets, metrics, hardware tiers, budgets, statistics, decision rules |
 | [`candidates.md`](candidates.md) | Candidate registry for every bake-off (models, OCR, extractors, index engines, fusion, chunking) |
 | [`judgment-review-prompt.md`](judgment-review-prompt.md) | Versioned instruction for a model reviewer of SDC queries and judgments (ADR-0026) |
+| [`query-drafting-brief.md`](query-drafting-brief.md) | Versioned brief for a model that hand-drafts SDC queries and judgments; its hash goes in `llm_prompt_sha256` |
 | [`_report-template.md`](_report-template.md) | Required structure of every benchmark report |
 | [`results/`](results/README.md) | Committed reports, one folder per run |
 

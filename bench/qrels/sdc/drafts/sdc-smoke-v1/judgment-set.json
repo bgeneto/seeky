@@ -5,7 +5,7 @@
   "file_sha256": {},
   "judgment_set_id": "sdc-smoke-v1",
   "query_counts": {
-    "dev": 45,
+    "dev": 55,
     "test": 0
   },
   "query_file_sha256": {},

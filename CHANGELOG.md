@@ -73,6 +73,12 @@ roadmap (§6), with the date.
   verdicts are in `bench/qrels/sdc/reviews/`; the set cannot publish until
   `conceptual`, `cross_language`, and `exploratory` reach five verified
   queries each.
+- Ten replacement `sdc-smoke-v1` queries (3 conceptual in Portuguese, 2
+  Portuguese-to-English and 1 English-to-Portuguese cross_language, 4 English
+  exploratory with subtopic labels), hand-drafted with full judgments by
+  `llm:claude-opus-5-5@claude-opus-5-5` under the new
+  `docs/benchmarks/query-drafting-brief.md` v1. They stay drafts until a
+  different reviewer verifies them (ADR-0026).
 - `seeky-bench perf` measures warm-idle and warm-indexing search latency
   (p50/p95/p99 with fixed-seed bootstrap CIs), batch-1 query-embedding
   latency, bulk indexing throughput, lexical/semantic time-to-searchable, the
