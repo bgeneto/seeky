@@ -49,3 +49,4 @@ Template: [`_template.md`](_template.md).
 | [0024](0024-source-code-indexing-opt-in.md) | Source-code indexing is opt-in; source files are never opened directly | Accepted |
 | [0025](0025-automatic-provider-opt-in-gpu-tier-full-speed.md) | Automatic provider selection, opt-in GPU quality tier, and full-speed indexing (amends 0016) | Accepted |
 | [0026](0026-model-verified-evaluation-judgments.md) | Model-verified evaluation judgments (amends 0021) | Accepted |
+| [0027](0027-progressive-reranking-budget.md) | Progressive reranking with its own latency budget | Proposed |
