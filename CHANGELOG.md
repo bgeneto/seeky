@@ -102,10 +102,12 @@ roadmap (§6), with the date.
   not fire because the models alone exceed D2. The NPU gate now needs the
   pinned `openvino` wheel (telemetry opted out). At gate H5 the maintainer
   chose the isolated O2 reading, so OCR passes on ORT; ADR-0019 stands for the
-  embedder role; and ADR-0027 (Proposed) revisits the reranker budget:
+  embedder role; and ADR-0027 (Accepted) revisits the reranker budget:
   progressive reranking after the Hybrid results, with its own budget S6
   (≤ 1.5 s p95) and a depth set by the WP-4.8 bake-off, instead of a
-  challenger-engine bake-off.
+  challenger-engine bake-off. Methodology now has S6, S3 excludes reranking,
+  Q6 is measured within S6, and the reranker's K1 target is S6 at ≥ 10
+  pairs.
 - `seeky-bench` implements WP-1.2: `index`, `eval`, `perf` (skeleton),
   `compare`, and `report`; environment capture and semantic config hashing;
   atomic, reproducible artifacts; fail-closed depth; test confirmation and an

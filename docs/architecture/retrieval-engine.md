@@ -171,7 +171,11 @@ signals stay.
 ### 6.1 Cascaded, adaptive reranking
 
 - Rerank the **best 1–2 passages of the top N documents** (initial N = 30;
-  depth is a benchmark knob), not all passages.
+  depth is a benchmark knob), not all passages. WP-4.8 caps the default
+  depth at the largest that meets S6, with a floor of 10 pairs (ADR-0027).
+- Progressive: reranked results replace the Refined ordering when they
+  arrive and never block it; the reorder does not move the item under the
+  pointer or keyboard focus.
 - Passage input truncated to a tuned token budget (initial 192 tokens) — the
   cost driver on CPU.
 - Adaptive budget by query class and observed latency; skip for confident
@@ -217,7 +221,8 @@ never compresses, summarizes, or rewrites.
 |---|---|---|
 | Instant | Analysis, filename, lexical, grouping | S1 in methodology |
 | Hybrid | + dense, fusion, document layer | S2 |
-| Refined | + reranking, diversity, snippets | S3 |
+| Refined | + diversity, snippets | S3 |
+| Reranked | + cross-encoder reranking, reordered in place ([ADR-0027](../adr/0027-progressive-reranking-budget.md)) | S6 |
 
 Performance techniques required by design: resident models; query embedding in
 parallel with lexical/filename retrieval; LRU cache of query embeddings; bounded
@@ -237,7 +242,7 @@ reports:
 | Visual depth (optional pack) | 50 |
 | RRF `k` | 60 |
 | Passages per document entering refinement | 8 |
-| Documents reranked (N) | 30 |
+| Documents reranked (N) | 30 (default depth capped by S6, ADR-0027) |
 | Passages reranked per document | 1–2 |
 | Reranker passage token budget | 192 |
 | MMR `λ` | 0.8 |

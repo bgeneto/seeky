@@ -5,7 +5,7 @@
 | Work package / spec | WP-0.6 / — (gate report; protocol frozen in [`PREREGISTRATION.md`](PREREGISTRATION.md), amendments 1–4) |
 | Hypothesis | ONNX Runtime 1.22.0 can serve every model role CPU-first within the provisional budgets, reach the Intel NPU through its OpenVINO EP, and stay inside D2 (ADR-0019) |
 | Gate(s) | K1 (embedder, reranker, PP-OCR, Florence probe), K2 (deferred), K3, K4 / D2 — methodology §8.7 |
-| Decision | **Evidence only.** K1 fires for the embedder and reranker roles; K3 fires; K4 does not fire (the models alone exceed D2). H5 (2026-11-27): the maintainer chose the isolated O2 reading, so PP-OCRv6 tiny passes O1–O3 and K1 does not fire for OCR; ADR-0019 stands for the embedder role; the reranker budget goes to [ADR-0027](../../../adr/0027-progressive-reranking-budget.md) (Proposed) instead of WP-2.3 |
+| Decision | **Evidence only.** K1 fires for the embedder and reranker roles; K3 fires; K4 does not fire (the models alone exceed D2). H5 (2026-11-27): the maintainer chose the isolated O2 reading, so PP-OCRv6 tiny passes O1–O3 and K1 does not fire for OCR; ADR-0019 stands for the embedder role; the reranker budget goes to [ADR-0027](../../../adr/0027-progressive-reranking-budget.md) (Accepted) instead of WP-2.3 |
 | Commit | Harness `tools/model-export` on `main` up to `ccd8ffb`; see §3.4 for which fixes landed after which rows |
 | Config hash | n/a (no `seeky-bench` engine config; each row records model revisions, variant hashes, and providers) |
 | Hardware tier | **T1-emulated** (gate H3 approved 2026-11-27: logical CPUs 0–7, 12 GiB Job Object, High Performance) on an Intel Core Ultra 7 265KF, 20 logical CPUs, 64 GiB, Windows 11 26200; NPU "Intel AI Boost", driver 32.0.100.3717 |
@@ -276,8 +276,9 @@ gate H5:
 **H5 decisions (maintainer, 2026-11-27):** both recommendations above are
 accepted. ADR-0019 stands for the embedder role, and WP-2.3 does not start
 for embedders or OCR. The reranker budget is revisited in
-[ADR-0027](../../../adr/0027-progressive-reranking-budget.md) (Proposed);
-WP-2.3 for the reranker waits on it.
+[ADR-0027](../../../adr/0027-progressive-reranking-budget.md) (Accepted);
+WP-2.3 for the reranker starts only if no ORT candidate meets its S6 budget
+in WP-4.8.
 
 ## 5. Reproduction
 

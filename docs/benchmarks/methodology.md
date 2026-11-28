@@ -216,9 +216,10 @@ Search budgets use the `S` prefix; `P1`–`P8` are the product principles in
 |---|---|---|
 | S1 | Instant stage (filename + lexical), p95 | ≤ 30 ms |
 | S2 | Hybrid stage (+ dense, fusion, document layer), p95 | ≤ 120 ms |
-| S3 | Refined stage (+ rerank, diversity, snippets), p95 | ≤ 400 ms |
+| S3 | Refined stage (+ diversity, snippets; reranking is S6), p95 | ≤ 400 ms |
 | S4 | Stale-query cancellation | ≤ 5 ms |
 | S5 | Interference ratio (S2 under indexing ÷ idle) | ≤ 1.5 |
+| S6 | Reranked refinement at the default depth, from query submission, p95 ([ADR-0027](../adr/0027-progressive-reranking-budget.md)) | ≤ 1.5 s |
 
 ### 5.2 Indexing
 
@@ -264,7 +265,7 @@ starts. Conditions: A4 page at 300 dpi, T1 CPU-only, background priority.
 | Q3 | Candidate generation document Recall@100 ≥ 0.95 on known-item, identifier, and needle slices |
 | Q4 | Duplicate rate@10 ≤ 5 % on the duplicate-heavy slice, with Recall@10 not lower |
 | Q5 | Vector quantization/ANN: Recall@100 ≥ 0.99 versus exact f32 after rescoring |
-| Q6 | Reranker on by default on CPU only if it adds ≥ 3.0 nDCG@10 (significant) within S3; otherwise NPU-only or off |
+| Q6 | Reranker on by default on CPU only if it adds ≥ 3.0 nDCG@10 (significant) within S6; otherwise NPU-only or off |
 | Q7 | Diversity costs ≤ 1.0 nDCG@10 while improving distinct relevant@10 |
 | Q8 | Visual pack ships only if (a) its weighted nDCG@10 on the visual slices beats configuration A (OCR + filename + text, no pack) with statistical significance, and (b) with the pack enabled, no text category or language slice regresses beyond Q2 |
 
@@ -465,7 +466,7 @@ and locked with them):
 
 | ID | Fires when | Derived target |
 |---|---|---|
-| K1 | A role misses its target with its best ONNX Runtime CPU variant on T1 | Embedder: ≥ 56 passages/s sustained (I3: 100k passages in 30 min) and batch-1 query p95 ≤ 20 ms (S2 headroom). Reranker: default depth (50 pairs) p95 ≤ 250 ms (S3 headroom). OCR CPU tier: O1–O3 |
+| K1 | A role misses its target with its best ONNX Runtime CPU variant on T1 | Embedder: ≥ 56 passages/s sustained (I3: 100k passages in 30 min) and batch-1 query p95 ≤ 20 ms (S2 headroom). Reranker: S6 at a depth of at least 10 pairs ([ADR-0027](../adr/0027-progressive-reranking-budget.md); the earlier depth-50 p95 ≤ 250 ms target fired in WP-0.6 and is retired). OCR CPU tier: O1–O3 |
 | K2 | The Stage A leader of a role cannot run on ONNX Runtime with parity, and the best ORT-runnable candidate trails it by more than the §8.6 margin | — |
 | K3 | The Intel NPU cannot be reached with parity through the OpenVINO EP (other NPUs are validated in Phase 5) | Manifest parity tolerance |
 | K4 | The ONNX Runtime CPU runtime pushes the default first-run download past D2 | D2 |

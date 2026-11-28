@@ -1,6 +1,6 @@
 # ADR-0027 — Progressive reranking with its own latency budget
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-27
 - **Related:** [ADR-0019](0019-single-inference-engine.md),
   [ADR-0016](0016-cpu-first-npu-ready-execution.md),
@@ -59,20 +59,20 @@ sees Hybrid results within S2; reranking reorders them afterwards.
    measurements are not reinterpreted; the check runs in WP-4.8 with
    `seeky-bench`. WP-2.3 starts for the reranker only if no ORT-runnable
    candidate meets it there.
-5. **Reranking must earn its cost.** WP-4.8 keeps a cross-encoder in the
-   default only if it beats the Hybrid ordering on the quality gate (Q6) by
-   more than the confidence interval at the chosen depth. Otherwise the
-   default ships without a reranker, by a new ADR that also amends vision
-   §5.1.
+5. **Reranking must earn its cost.** WP-4.8 keeps a cross-encoder on by
+   default on CPU only if it meets quality gate Q6 (≥ 3.0 nDCG@10 over the
+   Hybrid ordering, significant) within S6 at the chosen depth. Otherwise
+   Q6's fallback applies (NPU-only or off); shipping without a default
+   reranker needs a new ADR that also amends vision §5.1.
 
 ## Consequences
 
 - The UI shows Hybrid results first and reorders in place when reranking
   lands; the reorder must not move the item under the pointer or keyboard
   focus (WP-4.8 integration and the UI spec).
-- Methodology §5.1 gains S6, and the §8.7 K1 reranker target changes to point
-  at it, in the commit that accepts this ADR. The retrieval engine §8 table
-  splits the Refined stage the same way.
+- Methodology §5.1 gains S6, S3 excludes reranking, Q6 is measured within
+  S6, and the §8.7 K1 reranker target points at S6; the retrieval engine
+  §6.1, §8 and §9 follow. All of this landed with the acceptance.
 - A shallower depth lowers the reranker's quality ceiling; Q6 decides whether
   what remains is worth shipping.
 - Forbidden: blocking the Hybrid results on the reranker, holding a lock
