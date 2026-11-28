@@ -100,7 +100,9 @@ roadmap (§6), with the date.
   on the new isolated `ocr-memory` probe; Florence-2-large is out of the CPU
   tier; K3 fires (the NPU runs the fp32 embedder but misses parity); K4 does
   not fire because the models alone exceed D2. The NPU gate now needs the
-  pinned `openvino` wheel (telemetry opted out). H5 is the maintainer's.
+  pinned `openvino` wheel (telemetry opted out). At gate H5 the maintainer
+  chose the isolated O2 reading, so OCR passes on ORT; H5 remains open for the
+  embedder and reranker roles.
 - `seeky-bench` implements WP-1.2: `index`, `eval`, `perf` (skeleton),
   `compare`, and `report`; environment capture and semantic config hashing;
   atomic, reproducible artifacts; fail-closed depth; test confirmation and an

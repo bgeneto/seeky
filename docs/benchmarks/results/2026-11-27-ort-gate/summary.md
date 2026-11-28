@@ -5,7 +5,7 @@
 | Work package / spec | WP-0.6 / — (gate report; protocol frozen in [`PREREGISTRATION.md`](PREREGISTRATION.md), amendments 1–4) |
 | Hypothesis | ONNX Runtime 1.22.0 can serve every model role CPU-first within the provisional budgets, reach the Intel NPU through its OpenVINO EP, and stay inside D2 (ADR-0019) |
 | Gate(s) | K1 (embedder, reranker, PP-OCR, Florence probe), K2 (deferred), K3, K4 / D2 — methodology §8.7 |
-| Decision | **Evidence only.** K1 fires for the embedder and reranker roles and, on the frozen O2 reading, for PP-OCR; K3 fires; K4 does not fire (the models alone exceed D2). Whether ADR-0019 stands or WP-2.3 starts is gate **H5** (maintainer) |
+| Decision | **Evidence only.** K1 fires for the embedder and reranker roles; K3 fires; K4 does not fire (the models alone exceed D2). H5 (2026-11-27): the maintainer chose the isolated O2 reading, so PP-OCRv6 tiny passes O1–O3 and K1 does not fire for OCR. The rest of H5 (embedder and reranker roles) is open |
 | Commit | Harness `tools/model-export` on `main` up to `ccd8ffb`; see §3.4 for which fixes landed after which rows |
 | Config hash | n/a (no `seeky-bench` engine config; each row records model revisions, variant hashes, and providers) |
 | Hardware tier | **T1-emulated** (gate H3 approved 2026-11-27: logical CPUs 0–7, 12 GiB Job Object, High Performance) on an Intel Core Ultra 7 265KF, 20 logical CPUs, 64 GiB, Windows 11 26200; NPU "Intel AI Boost", driver 32.0.100.3717 |
@@ -103,8 +103,10 @@ int8-dynamic fails at session creation: ORT has no CPU kernel for
   seen, §3.4) applies the same §7 rule in a fresh process that only loads fp32
   and reads all 16 text pages after 3 warm-up pages.
 
-On the isolated reading, PP-OCRv6 tiny meets O1–O3 and K1 would not fire for
-OCR. Which reading decides is part of H5.
+On the isolated reading, PP-OCRv6 tiny meets O1–O3 and K1 does not fire for
+OCR. **H5 decision (maintainer, 2026-11-27): the isolated reading decides.**
+`summary-data.json` is exporter output and still shows `k1_ocr` on the gate
+figure; it is not hand-edited.
 
 ### Florence-2-large probe (out of the CPU tier)
 
@@ -185,7 +187,8 @@ model comparisons (K2 is deferred to the Stage A bake-offs; OCR K2 to WP-2.11).
   this hardware, whatever the engine. The Bekko card claims native OpenVINO ran
   about 5.5× faster than ORT on an x86 CPU. That is vendor evidence and was not
   measured (amendment 2); even if it held, it would not close a 20× gap.
-- **OCR** passes O1 and O3 by wide margins; O2 depends on the reading above.
+- **OCR** passes O1 and O3 by wide margins, and O2 on the isolated reading
+  the maintainer chose at H5.
 - **K3** is a driver/compiler failure on this stack. It does not bear on the
   CPU-default runtime, and ADR-0019 already keeps the NPU optional with CPU
   fallback.
@@ -258,10 +261,9 @@ gate H5:
   reranker budget or depth (or makes reranking an opt-in Refined stage) before
   any engine bake-off. If the maintainer still wants a challenger measured,
   WP-2.3 starts for the reranker role only.
-- **OCR role.** The maintainer chooses which O2 reading decides (gate process
-  upper bound vs isolated probe). On the isolated reading PP-OCRv6 tiny passes
-  O1–O3 on ORT. On the frozen-process reading K1 fires for OCR, and WP-2.3
-  would start for OCR only.
+- **OCR role. Decided at H5 (maintainer, 2026-11-27):** the isolated O2
+  reading decides, so PP-OCRv6 tiny passes O1–O3 on ORT, K1 does not fire for
+  OCR, and WP-2.3 does not start for OCR.
 - **Florence.** Out of the CPU tier on any engine; no K1. VLM transcription
   stays a gated non-default pack (ADR-0021).
 - **K3.** Fired on OpenVINO 2025.1 with NPU driver 32.0.100.3717. Keep Auto
@@ -271,8 +273,8 @@ gate H5:
   proxies) are a model-budget miss for D2 that the bake-offs must solve.
 - **K2.** Not evaluable here; deferred to Stage A (OCR to WP-2.11).
 
-No ADR is created by this report. The H5 decision and its ADR are the
-maintainer's.
+No ADR is created by this report. The remaining H5 decisions (embedder and
+reranker roles) and their ADR are the maintainer's.
 
 ## 5. Reproduction
 
