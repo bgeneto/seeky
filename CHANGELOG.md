@@ -61,8 +61,18 @@ roadmap (§6), with the date.
 - `qrels_drafter draft --smoke` drafts the dev-only `sdc-smoke-v1` set over the
   committed smoke corpus: 45 queries, five per category, 144 document and 144
   passage judgments, no `test` split, and a smoke-specific tool config hash.
-  It is the H6 subset that unblocks WP-1.8 and WP-1.2; every record is still an
-  unverified draft (SPEC-0004 R26 remains open).
+  It is the H6 subset that unblocks WP-1.8 and WP-1.2 (SPEC-0004 R26 remains
+  open).
+- First H6 review of `sdc-smoke-v1` by a model reviewer (ADR-0026, review
+  prompt v1, `llm:claude-opus-5-5@claude-opus-5-5`), after the drafter learned
+  to grade duplicate siblings alike, keep literal holders out of grade 0, and
+  grade every holder of a shared needle: 30 tool-drafted and 5 LLM-drafted
+  queries verified, 10 LLM-drafted queries rejected (entity lookups or copied
+  identifiers filed as conceptual, garbled or duplicate queries), and 49
+  reviewer-changed judgments left as drafts for a second reviewer. The
+  verdicts are in `bench/qrels/sdc/reviews/`; the set cannot publish until
+  `conceptual`, `cross_language`, and `exploratory` reach five verified
+  queries each.
 - `seeky-bench perf` measures warm-idle and warm-indexing search latency
   (p50/p95/p99 with fixed-seed bootstrap CIs), batch-1 query-embedding
   latency, bulk indexing throughput, lexical/semantic time-to-searchable, the
