@@ -50,3 +50,4 @@ Template: [`_template.md`](_template.md).
 | [0025](0025-automatic-provider-opt-in-gpu-tier-full-speed.md) | Automatic provider selection, opt-in GPU quality tier, and full-speed indexing (amends 0016) | Accepted |
 | [0026](0026-model-verified-evaluation-judgments.md) | Model-verified evaluation judgments (amends 0021) | Accepted |
 | [0027](0027-progressive-reranking-budget.md) | Progressive reranking with its own latency budget | Accepted |
+| [0028](0028-hosted-drafting-for-synthetic-corpora.md) | Hosted-model drafting of evaluation data for synthetic corpora (amends 0021, 0026) | Proposed |
