@@ -216,6 +216,28 @@ class Corpus:
         )
         return [doc_id for _, doc_id in ranked]
 
+    def documents_with_phrase(self, phrase: str) -> list[str]:
+        """Documents whose text contains the exact token sequence of ``phrase``."""
+
+        tokens = tokenize(phrase)
+        if len(tokens) < 2:
+            return []
+        candidates: set[str] | None = None
+        for token in set(tokens):
+            ids: set[str] = set()
+            for per_lang in self._index.values():
+                ids.update(per_lang.get(token, ()))
+            candidates = ids if candidates is None else candidates & ids
+            if not candidates:
+                return []
+        assert candidates is not None
+        needle = " ".join(tokens)
+        return [
+            doc_id
+            for doc_id in sorted(candidates)
+            if needle in " ".join(tokenize(self.documents[doc_id].text))
+        ]
+
     # -- passages --------------------------------------------------------
 
     def load_passages(self) -> None:

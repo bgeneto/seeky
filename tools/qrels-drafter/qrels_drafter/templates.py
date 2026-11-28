@@ -12,7 +12,7 @@ import re
 from dataclasses import dataclass, field
 
 from . import config
-from .corpus import Corpus, Document
+from .corpus import Corpus, Document, Passage
 from .digest import uniform_int
 
 _IDENTIFIER = re.compile(r"\b[A-Z]{2,4}-\d{4}-\d{3,6}\b")
@@ -51,6 +51,10 @@ class Draft:
     evidence_passage_ids: tuple[str, ...] = ()
     grades: tuple[tuple[str, int], ...] = ()
     grade_prompt_sha256: str | None = None
+    # The distinctive text a template query reuses (code phrase, needle, title,
+    # filename fragment, identifier). A document containing it cannot be a
+    # grade-0 hard negative.
+    literal: str | None = None
 
 
 def language_for_slice(slice_name: str, index: int) -> str:
@@ -89,6 +93,12 @@ def _title_head(title: str) -> str:
     return title
 
 
+def _canonical(doc: Document) -> bool:
+    """True for a document that is not a duplicate copy or a version member."""
+
+    return not doc.duplicate_cluster_ids and doc.version_group_id is None
+
+
 def _unique(text: str) -> str:
     return " ".join(text.split()).strip()
 
@@ -98,6 +108,62 @@ class TemplateDrafter:
         self.corpus = corpus
         self.seed = seed
         self._cache: dict[tuple[str, str], list[Document]] = {}
+
+    # -- uniqueness ------------------------------------------------------
+
+    def _related(self, doc: Document) -> set[str]:
+        return {member for member, _ in self.corpus.related(doc.id)}
+
+    def _phrase_is_unique(self, doc: Document, phrase: str) -> bool:
+        """True when only the anchor (or its duplicates) contains the phrase."""
+
+        hits = self.corpus.documents_with_phrase(phrase)
+        return set(hits) <= self._related(doc) | {doc.id}
+
+    def _pick_phrase(self, doc: Document, windows) -> tuple[Passage, str] | None:
+        """The first phrase only the anchor family contains, else the first phrase.
+
+        A template corpus can repeat every sentence across documents (the SDC
+        long reports draw from one sentence pool). A shared phrase is still a
+        valid query; the judge then grades every document that contains it
+        (SPEC-0004 5.4: at least one candidate target).
+        """
+
+        fallback: tuple[Passage, str] | None = None
+        seen: set[str] = set()
+        for passage, phrase in windows:
+            if phrase is None or phrase in seen:
+                continue
+            seen.add(phrase)
+            if fallback is None:
+                fallback = (passage, phrase)
+            if self._phrase_is_unique(doc, phrase):
+                return passage, phrase
+        return fallback
+
+    def _filename_is_unique(self, doc: Document, fragment: str) -> bool:
+        """True when the filename fragment selects one document family."""
+
+        needle = fragment.casefold()
+        allowed = self._related(doc) | {doc.id}
+        for other in self.corpus.documents.values():
+            if other.id in allowed:
+                continue
+            if needle in other.basename.casefold():
+                return False
+        return True
+
+    def _title_head_is_unique(self, doc: Document, head: str) -> bool:
+        """True when a title head identifies one document family."""
+
+        needle = head.casefold()
+        allowed = self._related(doc) | {doc.id}
+        for other in self.corpus.documents.values():
+            if other.id in allowed:
+                continue
+            if needle in other.title.casefold():
+                return False
+        return True
 
     # -- eligibility -----------------------------------------------------
 
@@ -112,9 +178,14 @@ class TemplateDrafter:
 
     def _predicate(self, category: str):
         if category == "known_item":
-            return lambda doc: doc.file_class == "document" and doc.fmt in TEXT_FORMATS and len(doc.title) >= 8
+            return lambda doc: (
+                doc.file_class == "document"
+                and doc.fmt in TEXT_FORMATS
+                and len(doc.title) >= 8
+                and _canonical(doc)
+            )
         if category == "exact_identifier":
-            return lambda doc: doc.file_class == "document" and bool(
+            return lambda doc: doc.file_class == "document" and _canonical(doc) and bool(
                 _IDENTIFIER.search(doc.text) or _UUID.search(doc.text) or _ERROR_CODE.search(doc.text)
             )
         if category == "needle_in_haystack":
@@ -122,6 +193,7 @@ class TemplateDrafter:
         if category == "mixed_semantic_metadata":
             return lambda doc: (
                 doc.file_class == "document"
+                and _canonical(doc)
                 and doc.fmt in TEXT_FORMATS
                 and bool(doc.folder)
                 and doc.fmt in {"pdf", "docx", "md", "txt", "html", "odt", "rtf", "epub", "pptx", "xlsx", "eml"}
@@ -203,10 +275,13 @@ class TemplateDrafter:
             if variant == 0:
                 text = f"{words['document']} {title}"
             elif variant == 1:
-                text = f"{_title_head(title)} {words['document']}"
+                head = _title_head(title)
+                if not self._title_head_is_unique(doc, head):
+                    return None
+                text = f"{head} {words['document']}"
             else:
                 text = f"{words['find']} {title}" if words["find"] else title
-            return Draft(text=text, variant=f"known-{variant}", **base)
+            return Draft(text=text, variant=f"known-{variant}", literal=title, **base)
 
         if category == "exact_identifier":
             kinds = ("code", "uuid", "error")
@@ -222,6 +297,7 @@ class TemplateDrafter:
                 text=text,
                 variant=f"identifier-{kind}",
                 evidence_passage_ids=(passage.id,) if passage else (),
+                literal=identifier,
                 **base,
             )
 
@@ -235,18 +311,25 @@ class TemplateDrafter:
             ]
             if len(passages) < 3:
                 return None
-            passage = passages[
-                uniform_int(self.seed, "needle-passage", f"{doc.id}/{slot}", 0, len(passages) - 1)
-            ]
-            start = uniform_int(self.seed, "needle-window", f"{passage.id}/{slot}", 0, 40)
-            phrase = _phrase(passage.text, 7, start)
-            if phrase is None:
+            first = uniform_int(self.seed, "needle-passage", f"{doc.id}/{slot}", 0, len(passages) - 1)
+
+            def needle_windows():
+                for offset in range(len(passages)):
+                    passage = passages[(first + offset) % len(passages)]
+                    start = uniform_int(self.seed, "needle-window", f"{passage.id}/{slot}", 0, 40)
+                    for step in range(41):
+                        yield passage, _phrase(passage.text, 7, (start + step) % 41)
+
+            picked = self._pick_phrase(doc, needle_windows())
+            if picked is None:
                 return None
+            passage, phrase = picked
             text = f"{words['find']} {phrase}" if variant else phrase
             return Draft(
                 text=text,
                 variant=f"needle-{variant}",
                 evidence_passage_ids=(passage.id,),
+                literal=phrase,
                 **base,
             )
 
@@ -267,6 +350,7 @@ class TemplateDrafter:
                 text=text,
                 variant=f"metadata-{variant}",
                 evidence_passage_ids=(passage.id,) if passage else (),
+                literal=head,
                 **{**base, "filters": filters},
             )
 
@@ -285,11 +369,14 @@ class TemplateDrafter:
                     text = f"{stem[:cut]}{stem[cut + 1:]}.{extension}"
             if len(text) < 6:
                 return None
+            if not self._filename_is_unique(doc, text.rsplit(".", 1)[0]):
+                return None
             passage = self.corpus.best_passage(doc.id, stem.split())
             return Draft(
                 text=text,
                 variant=f"filename-{variant}",
                 evidence_passage_ids=(passage.id,) if passage else (),
+                literal=text.rsplit(".", 1)[0],
                 **base,
             )
 
@@ -297,21 +384,25 @@ class TemplateDrafter:
             passages = [p for p in self.corpus.passages(doc.id) if p.kind == "code"]
             if not passages:
                 return None
-            passage = passages[(variant + slot) % len(passages)]
-            phrase = _phrase(
-                passage.text,
-                4,
-                uniform_int(self.seed, "code-window", f"{passage.id}/{slot}", 0, 12),
-            )
-            if phrase is None:
-                return None
             head = _title_head(doc.title).lower()
             language_name = doc.path.split("/")[2] if doc.path.count("/") >= 3 else "code"
+            def code_windows():
+                for offset in range(len(passages)):
+                    passage = passages[(variant + slot + offset) % len(passages)]
+                    first = uniform_int(self.seed, "code-window", f"{passage.id}/{slot}", 0, 12)
+                    for step in range(13):
+                        yield passage, _phrase(passage.text, 4, (first + step) % 13)
+
+            picked = self._pick_phrase(doc, code_windows())
+            if picked is None:
+                return None
+            passage, phrase = picked
             text = f"{language_name} {head} {phrase}" if variant == 0 else f"{language_name} {phrase}"
             return Draft(
                 text=text,
                 variant=f"code-{variant}",
                 evidence_passage_ids=(passage.id,),
+                literal=phrase,
                 **{**base, "configuration": "code_enabled"},
             )
 
